@@ -333,7 +333,7 @@
         <dependency>
             <groupId>sun.jdk</groupId>
             <artifactId>tools</artifactId>
-            <version>1.5.0</version>
+            <version>1.8.0</version>
             <scope>system</scope>
             <systemPath>${java.home}/../lib/tools.jar</systemPath>
         </dependency>
@@ -389,17 +389,5 @@
                 </plugins>
             </build>
         </profile>
-        <!-- JDK8 is a lot more strict (by default) when it comes to Javadoc and it throws
-                a lot of erros when generating the project's javadoc.
-            For now, the easiest way to work around the stricter Java8 Javadoc is deactivating it.-->
-	    <!--<profile>
-            <id>disable-java8-doclint</id>
-            <activation>
-                <jdk>[1.8,)</jdk>
-            </activation>
-            <properties>
-                <additionalparam>-Xdoclint:none</additionalparam>
-            </properties>
-        </profile>-->
     </profiles>
 </project>
