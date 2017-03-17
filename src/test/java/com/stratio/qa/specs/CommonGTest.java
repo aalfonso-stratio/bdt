@@ -17,12 +17,15 @@ package com.stratio.qa.specs;
 
 import com.stratio.qa.utils.ThreadProperty;
 import cucumber.api.DataTable;
+import org.hjson.JsonValue;
 import org.hjson.ParseException;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.hjson.JsonObject;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import scala.xml.Null;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -52,6 +55,7 @@ public class CommonGTest {
     private JSONObject jsonObject18, jsonObject18_3;
     private JSONObject jsonObject19, jsonObject19_2, jsonObject19_3;
     private JSONArray jsonObject3_1, jsonObject17_1, jsonObject18_1;
+    private JsonObject jsonObject20, jsonObject20_1, jsonObject21, jsonObject21_1;
 
 
     @BeforeClass
@@ -157,6 +161,18 @@ public class CommonGTest {
         jsonObject19 = new JSONObject();
         jsonObject19.put("key2", jsonObject19_2).put("key1", "value1");
 
+        jsonObject20 = new JsonObject();
+        jsonObject20.add("key1", JsonValue.NULL);
+        jsonObject20_1 = new JsonObject();
+        jsonObject20_1.add("key3", JsonValue.NULL);
+        jsonObject20.add("key2", jsonObject20_1);
+
+        jsonObject21 = new JsonObject();
+        jsonObject21.add("key1", "value1");
+        jsonObject21_1 = new JsonObject();
+        jsonObject21_1.add("key3", "value3");
+        jsonObject21.add("key2", jsonObject21_1);
+
     }
 
     @Test
@@ -218,6 +234,28 @@ public class CommonGTest {
 
         String modifiedData = commong.modifyData(data, type, modifications);
         JSONAssert.assertEquals(expectedData, modifiedData, false);
+    }
+
+    @Test
+    public void removeNullsTest() throws Exception {
+        ThreadProperty.set("class", this.getClass().getCanonicalName());
+        CommonG commong = new CommonG();
+        String expectedData = "{\"key1\":\"TO_BE_NULL\",\"key2\":{\"key3\":\"TO_BE_NULL\"}}";
+
+        JsonObject nullsRemoved = commong.removeNulls(jsonObject20);
+        JSONAssert.assertEquals(expectedData, nullsRemoved.toString(), false);
+
+    }
+
+    @Test
+    public void removeNullsNoNullsTest() throws Exception {
+        ThreadProperty.set("class", this.getClass().getCanonicalName());
+        CommonG commong = new CommonG();
+        String expectedData = "{\"key1\":\"value1\",\"key2\":{\"key3\":\"value3\"}}";
+
+        JsonObject nullsRemoved = commong.removeNulls(jsonObject21);
+        JSONAssert.assertEquals(expectedData, nullsRemoved.toString(), false);
+
     }
 
     @Test
