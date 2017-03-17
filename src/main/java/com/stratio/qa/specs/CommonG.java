@@ -40,6 +40,7 @@ import org.assertj.core.api.Assertions;
 import org.assertj.core.api.Condition;
 import org.hjson.JsonArray;
 import org.hjson.JsonObject;
+import org.hjson.JsonType;
 import org.hjson.JsonValue;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -960,7 +961,7 @@ public class CommonG {
      */
     public JsonObject removeNulls(JsonObject object){
         for(int j = 0; j < object.names().size(); j++){
-            if (object.get(object.names().get(j)).toString().startsWith("{")) {
+            if (JsonType.OBJECT.equals(object.get(object.names().get(j)).getType())) {
                 removeNulls(object.get(object.names().get(j)).asObject());
             } else {
                 if (object.get(object.names().get(j)).isNull()) {
