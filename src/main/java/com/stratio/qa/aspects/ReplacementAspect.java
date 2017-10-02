@@ -255,7 +255,6 @@ public class ReplacementAspect {
 
             if (placeholder.contains(":-")) {
                 defaultValue = placeholder.substring(placeholder.indexOf(":-") + 2, placeholder.length() - 1);
-                //placeholder = placeholder.substring(0, placeholder.indexOf(":-")) + "}";
             }
 
             String placeholderAux = placeholder.substring(0, placeholder.indexOf(":-")) + "}";
