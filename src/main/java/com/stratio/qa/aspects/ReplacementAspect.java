@@ -252,12 +252,12 @@ public class ReplacementAspect {
             String sysProp;
             String defaultValue = "";
             String prop;
+            String placeholderAux = "";
 
             if (placeholder.contains(":-")) {
                 defaultValue = placeholder.substring(placeholder.indexOf(":-") + 2, placeholder.length() - 1);
+                placeholderAux = placeholder.substring(0, placeholder.indexOf(":-")) + "}";
             }
-
-            String placeholderAux = placeholder.substring(0, placeholder.indexOf(":-")) + "}";
 
             if (placeholderAux.contains(".")) {
                 if (placeholder.contains(":-")) {
@@ -269,7 +269,12 @@ public class ReplacementAspect {
                 }
             } else {
                 if (defaultValue.isEmpty()) {
-                    sysProp = placeholder.substring(2, placeholder.length() - 1);
+                    if (placeholder.contains(".")) {
+                        modifier = placeholder.substring(placeholder.indexOf(".") + 1, placeholder.length() - 1);
+                        sysProp = placeholder.substring(2, placeholder.indexOf("."));
+                    } else {
+                        sysProp = placeholder.substring(2, placeholder.length() - 1);
+                    }
                 } else {
                     sysProp = placeholder.substring(2, placeholder.indexOf(":-"));
                 }
