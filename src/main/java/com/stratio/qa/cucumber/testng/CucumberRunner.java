@@ -112,7 +112,7 @@ public class CucumberRunner {
         uniqueGlue.add("classpath:com/stratio/paas/confluentkafkaAT/specs");
         uniqueGlue.add("classpath:com/stratio/paas/dcoselasticserviceAT/specs");
         uniqueGlue.add("classpath:com/stratio/paas/cassandraframeworkAT/specs");
-	uniqueGlue.add("classpath:com/stratio/paas/hdfsframeworkAT/specs");
+        uniqueGlue.add("classpath:com/stratio/paas/hdfsframeworkAT/specs");
         runtimeOptions.getGlue().clear();
         runtimeOptions.getGlue().addAll(uniqueGlue);
 
