@@ -7,6 +7,9 @@ Feature: Cassandra steps test
     Given I create a Cassandra keyspace named 'opera'
     Then a Cassandra keyspace 'opera' exists
 
+  Scenario: Check keyspace does not exists
+    Then a Cassandra keyspace 'invalidKeyspace' does not exist
+
   Scenario: Create a table in Cassandra
     And I create a Cassandra table named 'analyzertable' using keyspace 'opera' with:
       |name  | comment |lucene |
@@ -23,6 +26,9 @@ Feature: Cassandra steps test
 
     Then a Cassandra keyspace 'opera' contains a table 'analyzertable'
     And a Cassandra keyspace 'opera' contains a table 'analyzertable' with '5' rows
+
+  Scenario: Check table does not exist
+    Then a Cassandra keyspace 'opera' does not contain a table 'invalidTable'
 
   Scenario: Querying table in Cassandra
     When a Cassandra keyspace 'opera' contains a table 'analyzertable' with values:
