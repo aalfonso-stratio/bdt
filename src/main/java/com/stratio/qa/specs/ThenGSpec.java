@@ -95,7 +95,17 @@ public class ThenGSpec extends BaseGSpec {
      */
     @Then("^a Cassandra keyspace '(.+?)' exists$")
     public void assertKeyspaceOnCassandraExists(String keyspace) {
-        assertThat(commonspec.getCassandraClient().getKeyspaces()).as("The keyspace " + keyspace + "exists on cassandra").contains(keyspace);
+        assertThat(commonspec.getCassandraClient().getKeyspaces()).as("The keyspace " + keyspace + " exists on cassandra").contains(keyspace);
+    }
+
+    /**
+     * Checks a keyspace does not exist in Cassandra.
+     *
+     * @param keyspace
+     */
+    @Then("^a Cassandra keyspace '(.+?)' does not exist$")
+    public void assertKeyspaceOnCassandraDoesNotExist(String keyspace) {
+        assertThat(commonspec.getCassandraClient().getKeyspaces()).as("The keyspace " + keyspace + " does not exist on cassandra").doesNotContain(keyspace);
     }
 
     /**
@@ -108,6 +118,18 @@ public class ThenGSpec extends BaseGSpec {
     public void assertTableExistsOnCassandraKeyspace(String keyspace, String tableName) {
         assertThat(commonspec.getCassandraClient().getTables(keyspace)).as("The table " + tableName + "exists on cassandra").contains(tableName);
     }
+
+    /**
+     * Checks a cassandra keyspace does not contain a table.
+     *
+     * @param keyspace
+     * @param tableName
+     */
+    @Then("^a Cassandra keyspace '(.+?)' does not contain a table '(.+?)'$")
+    public void assertTableDoesNotExistOnCassandraKeyspace(String keyspace, String tableName) {
+        assertThat(commonspec.getCassandraClient().getTables(keyspace)).as("The table " + tableName + "exists on cassandra").doesNotContain(tableName);
+    }
+
 
     /**
      * Checks the number of rows in a cassandra table.
@@ -153,7 +175,7 @@ public class ThenGSpec extends BaseGSpec {
             List<Row> resAsList = res.all();
             assertThat(resAsList.size()).as("The query " + execQuery + " not return any result on Cassandra").isGreaterThan(0);
             assertThat(resAsList.get(0).toString()
-                    .substring(VALUE_SUBSTRING)).as("The resultSet is not as expected").isEqualTo(data.raw().get(index).toString());
+                    .substring(VALUE_SUBSTRING)).as("The resultSet is not as expected").isEqualTo(data.raw().get(index).toString().replace("'", ""));
             index++;
         }
     }
@@ -187,19 +209,12 @@ public class ThenGSpec extends BaseGSpec {
         Pattern booleanPat = Pattern.compile("true|false");
         for (int i = 0; i < values.size() - 1; i++) {
             condition.append(columnNames[i]).append(" =");
-            if (numberPat.matcher(values.get(i)).matches() || booleanPat.matcher(values.get(i)).matches()) {
-                condition.append(" ").append(values.get(i)).append(" AND ");
-            } else {
-                condition.append(" '").append(values.get(i)).append("' AND ");
-            }
+            condition.append(" ").append(values.get(i)).append(" AND ");
         }
         condition.append(columnNames[columnNames.length - 1]).append(" =");
-        if (numberPat.matcher(values.get(values.size() - 1)).matches()
-                || booleanPat.matcher(values.get(values.size() - 1)).matches()) {
-            condition.append(" ").append(values.get(values.size() - 1));
-        } else {
-            condition.append(" '").append(values.get(values.size() - 1)).append("'");
-        }
+        condition.append(" ").append(values.get(values.size() - 1));
+
+        condition.append(" ALLOW FILTERING");
         return condition.toString();
     }
 

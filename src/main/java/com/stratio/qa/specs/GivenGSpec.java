@@ -93,6 +93,7 @@ public class GivenGSpec extends BaseGSpec {
     public void connect(String clusterType, String url) throws DBException, UnknownHostException {
         switch (clusterType) {
             case "Cassandra":
+                commonspec.getCassandraClient().setHost(url);
                 commonspec.getCassandraClient().buildCluster();
                 commonspec.getCassandraClient().connect();
                 break;

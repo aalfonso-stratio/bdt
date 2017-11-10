@@ -48,6 +48,9 @@ import java.util.regex.Pattern;
 import static com.stratio.qa.assertions.Assertions.assertThat;
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
+import com.datastax.driver.core.ResultSet;
+
+
 /**
  * Generic When Specs.
  * @see <a href="WhenGSpec-annotations.html">When Steps &amp; Matching Regex</a>
@@ -436,7 +439,8 @@ public class WhenGSpec extends BaseGSpec {
 
             }
             commonspec.getLogger().debug("query: {}", query);
-            commonspec.setCassandraResults(commonspec.getCassandraClient().executeQuery(query));
+            ResultSet results = commonspec.getCassandraClient().executeQuery(query);
+            commonspec.setCassandraResults(results);
         } catch (Exception e) {
             commonspec.getLogger().debug("Exception captured");
             commonspec.getLogger().debug(e.toString());
