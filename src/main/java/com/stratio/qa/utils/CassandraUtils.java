@@ -145,7 +145,6 @@ public class CassandraUtils {
         this.cluster = Cluster.builder().addContactPoint(this.host).build();
         this.cluster.getConfiguration().getQueryOptions()
                 .setConsistencyLevel(ConsistencyLevel.ONE);
-
     }
 
     /**
