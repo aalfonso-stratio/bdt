@@ -619,7 +619,7 @@ public class ThenGSpec extends BaseGSpec {
         String myValue = commonspec.getJSONPathString(configFile, ".labels", "0");
         String myJson = commonspec.updateMarathonJson(commonspec.removeJSONPathElement(configFile, ".labels"));
 
-        String newValue = myValue.replaceFirst("}", ", \"" + key + "\": \"" + value + "\"}");
+        String newValue = myValue.replaceFirst("\\{", "{\"" + key + "\": \"" + value + "\", ");
         newValue = "\"labels\":" + newValue;
         String myFinalJson = myJson.replaceFirst("\\{", "{" + newValue + ",");
         String test = myFinalJson.replaceAll("\"uris\"", "\"none\"");
