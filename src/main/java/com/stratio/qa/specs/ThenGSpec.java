@@ -621,7 +621,7 @@ public class ThenGSpec extends BaseGSpec {
 
         String newValue = myValue.replaceFirst("\\{", "{\"" + key + "\": \"" + value + "\", ");
         newValue = "\"labels\":" + newValue;
-        String myFinalJson = myJson.replaceFirst("\\{", "{" + newValue + ",");
+        String myFinalJson = myJson.replaceFirst("\\{", "{" + newValue.replace("\\n", "\\\\n") + ",");
         String test = myFinalJson.replaceAll("\"uris\"", "\"none\"");
 
         commonspec.runCommandAndGetResult("echo '" + test + "' > /dcos/final" + service + ".json");
