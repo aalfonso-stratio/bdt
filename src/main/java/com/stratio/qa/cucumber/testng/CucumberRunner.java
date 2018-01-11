@@ -109,12 +109,7 @@ public class CucumberRunner {
         uniqueGlue.add("classpath:com/stratio/intelligence/testsAT/specs");
         uniqueGlue.add("classpath:com/stratio/postgresbd/testsAT/specs");
         uniqueGlue.add("classpath:com/stratio/universe/testsAT/specs");
-        uniqueGlue.add("classpath:com/stratio/paas/confluentkafkaAT/specs");
-        uniqueGlue.add("classpath:com/stratio/paas/dcoselasticserviceAT/specs");
-        uniqueGlue.add("classpath:com/stratio/paas/cassandraframeworkAT/specs");
-        uniqueGlue.add("classpath:com/stratio/paas/hdfsframeworkAT/specs");
         uniqueGlue.add("classpath:com/stratio/paas/dgDatadictionaryAT/specs");
-        uniqueGlue.add("classpath:com/stratio/paas/kafkaschemaregistryAT/specs");
         uniqueGlue.add("classpath:com/stratio/paas/dgtests/specs");
         uniqueGlue.add("classpath:com/stratio/elastic/specs");
         uniqueGlue.add("classpath:com/stratio/kafka/specs");
