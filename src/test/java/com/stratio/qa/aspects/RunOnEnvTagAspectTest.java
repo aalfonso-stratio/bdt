@@ -30,7 +30,7 @@ public class RunOnEnvTagAspectTest {
 
     @Test
     public void testGetParams() throws Exception {
-        String[] expectedResponse = {"HELLO", "BYE"};
+        String[][] expectedResponse = {{"HELLO", "BYE"}, {}};
         assertThat(expectedResponse).as("Params are correctly obtained").isEqualTo(runontag.getParams("@runOnEnv(HELLO,BYE)"));
     }
 
@@ -38,12 +38,14 @@ public class RunOnEnvTagAspectTest {
     public void testCheckParams() throws Exception {
         System.setProperty("HELLO_OK","OK");
         assertThat(true).as("Params are correctly checked").isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(HELLO_OK)")));
+        System.clearProperty("HELLO_OK");
     }
 
     @Test
     public void testCheckParams_2() throws Exception {
         System.setProperty("HELLO_KO","KO");
         assertThat(false).as("Params are correctly checked 2").isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(HELLO_KO,BYE_KO)")));
+        System.clearProperty("HELLO_KO");
     }
     @Test
     public void testCheckEmptyParams() throws Exception {
@@ -76,13 +78,15 @@ public class RunOnEnvTagAspectTest {
     @Test
     public void testTagIterationRunArrayNegative() throws Exception {
         System.setProperty("HELLO","OK");
+        System.clearProperty("BYE");
         List<Tag> tagList = new ArrayList<>();
         tagList.add(new Tag("@runOnEnv(HELLO,BYE)", 1));
-        assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
+        assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
     @Test
     public void testTagIterationIgnoreRun() throws Exception {
+        System.clearProperty("BYE");
         List<Tag> tagList = new ArrayList<>();
         tagList.add(new Tag("@runOnEnv(BYE)", 1));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
@@ -90,6 +94,7 @@ public class RunOnEnvTagAspectTest {
 
     @Test
     public void testTagIterationSkip() throws Exception {
+        System.clearProperty("HELLO_NO");
         List<Tag> tagList = new ArrayList<>();
         tagList.add(new Tag("@skipOnEnv(HELLO_NO)", 1));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
@@ -97,6 +102,8 @@ public class RunOnEnvTagAspectTest {
 
     @Test
     public void testTagIterationSkipArray() throws Exception {
+        System.clearProperty("HELLO_NO");
+        System.clearProperty("BYE_NO");
         List<Tag> tagList = new ArrayList<>();
         tagList.add(new Tag("@skipOnEnv(HELLO_NO,BYE_NO)", 1));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
@@ -123,6 +130,7 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationIgnoreSkipArrayNegative() throws Exception {
         System.setProperty("HELLO","OK");
         System.setProperty("BYE","KO");
+        System.clearProperty("SEEYOU");
         List<Tag> tagList = new ArrayList<>();
         tagList.add(new Tag("@skipOnEnv(HELLO,SEEYOU)", 1));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
@@ -138,9 +146,10 @@ public class RunOnEnvTagAspectTest {
 
     @Test
     public void testTagIterationRunValueNotDefined() throws Exception {
+        System.clearProperty("HELLO");
         List<Tag> tagList = new ArrayList<>();
         tagList.add(new Tag("@runOnEnv(HELLO=OK)", 1));
-        assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
+        assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
     @Test
@@ -191,6 +200,7 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationRunValueArrayMixNegative() throws Exception {
         System.setProperty("HELLO","OK");
         System.setProperty("BYE","KO");
+        System.clearProperty("SEEYOU");
         List<Tag> tagList = new ArrayList<>();
         tagList.add(new Tag("@runOnEnv(HELLO=OK,SEEYOU)", 1));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
@@ -200,6 +210,7 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationRunValueArrayMixNegative2() throws Exception {
         System.setProperty("HELLO","OK");
         System.setProperty("BYE","KO");
+        System.clearProperty("SEEYOU");
         List<Tag> tagList = new ArrayList<>();
         tagList.add(new Tag("@runOnEnv(SEEYOU,HELLO=OK)", 1));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
@@ -215,9 +226,10 @@ public class RunOnEnvTagAspectTest {
 
     @Test
     public void testTagIterationSkipValueNotDefined() throws Exception {
+        System.clearProperty("HELLO");
         List<Tag> tagList = new ArrayList<>();
         tagList.add(new Tag("@skipOnEnv(HELLO=OK)", 1));
-        assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
+        assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
     @Test
@@ -268,6 +280,7 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationSkipValueArrayMixNegative() throws Exception {
         System.setProperty("HELLO","OK");
         System.setProperty("BYE","KO");
+        System.clearProperty("SEEYOU");
         List<Tag> tagList = new ArrayList<>();
         tagList.add(new Tag("@skipOnEnv(HELLO=OK,SEEYOU)", 1));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
@@ -277,9 +290,309 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationSkipValueArrayMixNegative2() throws Exception {
         System.setProperty("HELLO","OK");
         System.setProperty("BYE","KO");
+        System.clearProperty("SEEYOU");
         List<Tag> tagList = new ArrayList<>();
         tagList.add(new Tag("@skipOnEnv(SEEYOU,HELLO=OK)", 1));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
+    @Test
+    public void testTagBooleanExpressionRunAndPositive() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","KO");
+        List<Tag> tagList = new ArrayList<>();
+        tagList.add(new Tag("@runOnEnv(HELLO=OK&&BYE=KO)", 1));
+        assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
+    }
+
+    @Test
+    public void testTagBooleanExpressionRunAndPositive2() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","KO");
+        List<Tag> tagList = new ArrayList<>();
+        tagList.add(new Tag("@runOnEnv(HELLO&&BYE)", 1));
+        assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
+    }
+
+    @Test
+    public void testTagBooleanExpressionRunAndPositive3() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","KO");
+        List<Tag> tagList = new ArrayList<>();
+        tagList.add(new Tag("@runOnEnv(HELLO&&BYE=KO)", 1));
+        assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
+    }
+
+    @Test
+    public void testTagBooleanExpressionRunAndNegative() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","KO");
+        List<Tag> tagList = new ArrayList<>();
+        tagList.add(new Tag("@runOnEnv(HELLO=OK&&BYE=OK)", 1));
+        assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
+    }
+
+    @Test
+    public void testTagBooleanExpressionRunAndNegative2() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.clearProperty("BYE");
+        List<Tag> tagList = new ArrayList<>();
+        tagList.add(new Tag("@runOnEnv(HELLO=OK&&BYE)", 1));
+        assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
+    }
+
+    @Test
+    public void testTagBooleanExpressionRunAndNegative3() throws Exception {
+        System.clearProperty("HELLO");
+        System.clearProperty("BYE");
+        List<Tag> tagList = new ArrayList<>();
+        tagList.add(new Tag("@runOnEnv(HELLO&&BYE)", 1));
+        assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
+    }
+
+
+    @Test
+    public void testTagBooleanExpressionRunOrPositive() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","KO");
+        List<Tag> tagList = new ArrayList<>();
+        tagList.add(new Tag("@runOnEnv(HELLO=OK||BYE=KO)", 1));
+        assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
+    }
+
+    @Test
+    public void testTagBooleanExpressionRunOrPositive2() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","KO");
+        List<Tag> tagList = new ArrayList<>();
+        tagList.add(new Tag("@runOnEnv(HELLO||BYE)", 1));
+        assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
+    }
+
+    @Test
+    public void testTagBooleanExpressionRunOrPositive3() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","KO");
+        List<Tag> tagList = new ArrayList<>();
+        tagList.add(new Tag("@runOnEnv(HELLO=OK||BYE)", 1));
+        assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
+    }
+
+    @Test
+    public void testTagBooleanExpressionRunOrPositive4() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","KO");
+        List<Tag> tagList = new ArrayList<>();
+        tagList.add(new Tag("@runOnEnv(HELLO||BYE=KO)", 1));
+        assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
+    }
+
+    @Test
+    public void testTagBooleanExpressionRunOrPositive5() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","KO");
+        List<Tag> tagList = new ArrayList<>();
+        tagList.add(new Tag("@runOnEnv(HELLO=OK||BYE=OK)", 1));
+        assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
+    }
+
+    @Test
+    public void testTagBooleanExpressionRunOrPositive6() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","KO");
+        List<Tag> tagList = new ArrayList<>();
+        tagList.add(new Tag("@runOnEnv(HELLO=KO||BYE=KO)", 1));
+        assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
+    }
+
+    @Test
+    public void testTagBooleanExpressionRunOrNegative() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","KO");
+        List<Tag> tagList = new ArrayList<>();
+        tagList.add(new Tag("@runOnEnv(HELLO=KO||BYE=OK)", 1));
+        assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
+    }
+
+    @Test
+    public void testTagBooleanExpressionRunOrNegative1() throws Exception {
+        System.clearProperty("HELLO");
+        System.clearProperty("BYE");
+        List<Tag> tagList = new ArrayList<>();
+        tagList.add(new Tag("@runOnEnv(HELLO||BYE)", 1));
+        assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
+    }
+
+    @Test
+    public void testTagBooleanExpressionAndPositive() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","KO");
+        System.setProperty("SEEYOU","MAYBE");
+        List<Tag> tagList = new ArrayList<>();
+        tagList.add(new Tag("@runOnEnv(HELLO=OK&&BYE=KO||SEEYOU=MAYBE)", 1));
+        assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
+    }
+
+    @Test
+    public void testTagBooleanExpressionAndNegative() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","KO");
+        System.setProperty("SEEYOU","MAYBE");
+        List<Tag> tagList = new ArrayList<>();
+        tagList.add(new Tag("@runOnEnv(HELLO=OK&&BYE=OK||SEEYOU=OK)", 1));
+        assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
+    }
+
+    @Test
+    public void testTagBooleanExpressionSkipAndPositive() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","KO");
+        List<Tag> tagList = new ArrayList<>();
+        tagList.add(new Tag("@skipOnEnv(HELLO=OK&&BYE=KO)", 1));
+        assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
+    }
+
+    @Test
+    public void testTagBooleanExpressionSkipAndPositive2() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","KO");
+        List<Tag> tagList = new ArrayList<>();
+        tagList.add(new Tag("@skipOnEnv(HELLO&&BYE)", 1));
+        assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
+    }
+
+    @Test
+    public void testTagBooleanExpressionSkipAndPositive3() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","KO");
+        List<Tag> tagList = new ArrayList<>();
+        tagList.add(new Tag("@skipOnEnv(HELLO=OK&&BYE)", 1));
+        assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
+    }
+
+    @Test
+    public void testTagBooleanExpressionSkipAndPositive4() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","KO");
+        List<Tag> tagList = new ArrayList<>();
+        tagList.add(new Tag("@skipOnEnv(HELLO&&BYE=KO)", 1));
+        assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
+    }
+
+    @Test
+    public void testTagBooleanExpressionSkipAndNegative() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","KO");
+        List<Tag> tagList = new ArrayList<>();
+        tagList.add(new Tag("@skipOnEnv(HELLO=OK&&BYE=OK)", 1));
+        assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
+    }
+
+    @Test
+    public void testTagBooleanExpressionSkipAndNegative2() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","KO");
+        List<Tag> tagList = new ArrayList<>();
+        tagList.add(new Tag("@skipOnEnv(HELLO=KO&&BYE=KO)", 1));
+        assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
+    }
+
+    @Test
+    public void testTagBooleanExpressionSkipAndNegative3() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","KO");
+        List<Tag> tagList = new ArrayList<>();
+        tagList.add(new Tag("@skipOnEnv(HELLO=KO&&BYE=OK)", 1));
+        assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
+    }
+
+    @Test
+    public void testTagBooleanExpressionSkipOrPositive() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","KO");
+        List<Tag> tagList = new ArrayList<>();
+        tagList.add(new Tag("@skipOnEnv(HELLO=OK||BYE=KO)", 1));
+        assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
+    }
+
+    @Test
+    public void testTagBooleanExpressionSkipOrPositive2() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","KO");
+        List<Tag> tagList = new ArrayList<>();
+        tagList.add(new Tag("@skipOnEnv(HELLO=OK||BYE=OK)", 1));
+        assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
+    }
+
+    @Test
+    public void testTagBooleanExpressionSkipOrPositive3() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","KO");
+        List<Tag> tagList = new ArrayList<>();
+        tagList.add(new Tag("@skipOnEnv(HELLO=KO||BYE=KO)", 1));
+        assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
+    }
+
+    @Test
+    public void testTagBooleanExpressionSkipOrPositive4() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","KO");
+        List<Tag> tagList = new ArrayList<>();
+        tagList.add(new Tag("@skipOnEnv(HELLO=KO||BYE)", 1));
+        assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
+    }
+
+    @Test
+    public void testTagBooleanExpressionSkipOrPositive5() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","KO");
+        List<Tag> tagList = new ArrayList<>();
+        tagList.add(new Tag("@skipOnEnv(HELLO||BYE=KO)", 1));
+        assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
+    }
+
+    @Test
+    public void testTagBooleanExpressionSkipOrPositive6() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","KO");
+        List<Tag> tagList = new ArrayList<>();
+        tagList.add(new Tag("@skipOnEnv(HELLO||BYE)", 1));
+        assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
+    }
+
+    @Test
+    public void testTagBooleanExpressionSkipOrNegative() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","KO");
+        List<Tag> tagList = new ArrayList<>();
+        tagList.add(new Tag("@skipOnEnv(HELLO=KO||BYE=OK)", 1));
+        assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
+    }
+
+    @Test
+    public void testTagBooleanExpressionSkipOrNegative2() throws Exception {
+        System.clearProperty("HELLO");
+        System.clearProperty("BYE");
+        List<Tag> tagList = new ArrayList<>();
+        tagList.add(new Tag("@skipOnEnv(HELLO||BYE)", 1));
+        assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
+    }
+
+    @Test
+    public void testTagBooleanExpressionSkipOrNegative3() throws Exception {
+        System.clearProperty("HELLO");
+        System.clearProperty("BYE");
+        List<Tag> tagList = new ArrayList<>();
+        tagList.add(new Tag("@skipOnEnv(HELLO||BYE=KO)", 1));
+        assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
+    }
+
+    @Test
+    public void testTagBooleanExpressionSkipOrNegative4() throws Exception {
+        System.clearProperty("HELLO");
+        System.clearProperty("BYE");
+        List<Tag> tagList = new ArrayList<>();
+        tagList.add(new Tag("@skipOnEnv(HELLO=KO||BYE)", 1));
+        assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
+    }
 }

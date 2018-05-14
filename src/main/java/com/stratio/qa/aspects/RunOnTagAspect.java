@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import scala.util.parsing.combinator.testing.Str;
 
 import javax.swing.tree.ExpandVetoException;
+import java.util.Arrays;
 import java.util.List;
 
 @Aspect
@@ -111,39 +112,167 @@ public class RunOnTagAspect {
     /*
     * Returns a string array of params
     */
-    public String[] getParams(String s) throws Exception {
-        String[] val = s.substring((s.lastIndexOf("(") + 1), (s.length()) - 1).split(",");
+    public String[][] getParams(String s) throws Exception {
+        String delimeters = ",|&&|\\|\\|";
+        String[] val = s.substring((s.lastIndexOf("(") + 1), (s.length()) - 1).split(delimeters);
         if (val[0].startsWith("@")) {
             throw new Exception ("Error while parsing params. Format is: \"runOnEnv(PARAM)\", but found: " + s);
         }
-        return val;
+
+        String[] ops;
+        if (s.contains("&&") || s.contains("||")) {
+            ops = s.substring((s.lastIndexOf("(") + 1), (s.length()) - 1).split("[a-zA-Z_\\-0-9=]+");;
+            if (ops.length > 0) {
+                ops = Arrays.copyOfRange(ops, 1, ops.length);
+            }
+            if (ops.length != val.length - 1) {
+                throw new Exception("Error in expression. Number of conditional operators plus 1 should be equal to the number of expressions.");
+            }
+            for (String op: ops) {
+                if (!("||".equals(op) || "&&".equals(op))) {
+                    throw new Exception("Error in conditional operators. Operators should be && or ||.");
+                }
+            }
+        } else {
+            ops = new String[] {};
+        }
+
+        String[][] result = new String[][] {val, ops};
+        return result;
     }
 
    /*
     * Checks if every param in the array of strings is defined
     */
-    public boolean checkParams(String[] params) throws Exception {
-        if ("".equals(params[0])) {
+    public boolean checkParams(String[][] params) throws Exception {
+        if ("".equals(params[0][0])) {
             throw new Exception("Error while parsing params. Params must be at least one");
         }
-        for (int i = 0; i < params.length; i++) {
-            if (params[i].contains("=")) {
-                String param = params[i].split("=")[0];
-                String value = params[i].split("=")[1];
 
-                if (System.getProperty(param, "").isEmpty()) {
-                    return false;
-                }
+        boolean result = true;
+        // Si no hay operadores, hacemos validación normal (por defecto AND)
+        if (params[1].length == 0) {
+            for (int i = 0; i < params[0].length; i++) {
+                if (params[0][i].contains("=")) {
+                    String param = params[0][i].split("=")[0];
+                    String value = params[0][i].split("=")[1];
 
-                if (!System.getProperty(param).equals(value)) {
-                    return false;
-                }
-            } else {
-                if (System.getProperty(params[i], "").isEmpty()) {
-                    return false;
+                    if (System.getProperty(param, "").isEmpty()) {
+                        return false;
+                    }
+
+                    if (!System.getProperty(param).equals(value)) {
+                        return false;
+                    }
+                } else {
+                    if (System.getProperty(params[0][i], "").isEmpty()) {
+                        return false;
+                    }
                 }
             }
+            return true;
+        } else {
+            // Tenemos expresión condicional
+            // Primer elemento
+            if (params[0][0].contains("=")) {
+                String param = params[0][0].split("=")[0];
+                String value = params[0][0].split("=")[1];
+                if (System.getProperty(param, "").isEmpty()) {
+                    result = false;
+                }
+
+                if (!value.equals(System.getProperty(param))) {
+                    result = false;
+                }
+            } else {
+                if (System.getProperty(params[0][0], "").isEmpty()) {
+                    result = false;
+                }
+            }
+
+            // Elementos intermedios
+            for (int j = 1; j < params[0].length - 1; j++) {
+                if (params[0][j].contains("=")) {
+                    String param = params[0][j].split("=")[0];
+                    String value = params[0][j].split("=")[1];
+                    if (System.getProperty(param, "").isEmpty()) {
+                        if ("&&".equals(params[1][j - 1])) {
+                            result = result && false;
+                        } else {
+                            result = result || false;
+                        }
+                    } else if (!System.getProperty(param).equals(value)) {
+                        if ("&&".equals(params[1][j - 1])) {
+                            result = result && false;
+                        } else {
+                            result = result || false;
+                        }
+                    } else {
+                        if ("&&".equals(params[1][j - 1])) {
+                            result = result && true;
+                        } else {
+                            result = result || true;
+                        }
+                    }
+                } else {
+                    if (System.getProperty(params[0][j], "").isEmpty()) {
+                        if ("&&".equals(params[1][j - 1])) {
+                            result = result && false;
+                        } else {
+                            result = result || false;
+                        }
+                    } else {
+                        if ("&&".equals(params[1][j - 1])) {
+                            result = result && true;
+                        } else {
+                            result = result || true;
+                        }
+                    }
+
+                }
+            }
+
+            // Último elemento
+            if (params[0].length > 1) {
+                if (params[0][params[0].length - 1].contains("=")) {
+                    String param = params[0][params[0].length - 1].split("=")[0];
+                    String value = params[0][params[0].length - 1].split("=")[1];
+                    if (System.getProperty(param, "").isEmpty()) {
+                        if ("&&".equals(params[1][params[1].length - 1])) {
+                            result = result && false;
+                        } else {
+                            result = result || false;
+                        }
+                    } else if (!value.equals(System.getProperty(param))) {
+                        if ("&&".equals(params[1][params[1].length - 1])) {
+                            result = result && false;
+                        } else {
+                            result = result || false;
+                        }
+                    } else {
+                        if ("&&".equals(params[1][params[1].length - 1])) {
+                            result = result && true;
+                        } else {
+                            result = result || true;
+                        }
+                    }
+                } else {
+                    if (System.getProperty(params[0][params[0].length - 1], "").isEmpty()) {
+                        if ("&&".equals(params[1][params[1].length - 1])) {
+                            result = result && false;
+                        } else {
+                            result = result || false;
+                        }
+                    } else {
+                        if ("&&".equals(params[1][params[1].length - 1])) {
+                            result = result && true;
+                        } else {
+                            result = result || true;
+                        }
+                    }
+                }
+            }
+            return result;
         }
-        return true;
     }
 }
