@@ -350,7 +350,6 @@ public class RunOnEnvTagAspectTest {
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
-
     @Test
     public void testTagBooleanExpressionRunOrPositive() throws Exception {
         System.setProperty("HELLO","OK");
