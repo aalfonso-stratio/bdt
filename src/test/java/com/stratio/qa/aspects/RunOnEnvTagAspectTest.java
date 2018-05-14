@@ -594,4 +594,16 @@ public class RunOnEnvTagAspectTest {
         tagList.add(new Tag("@skipOnEnv(HELLO=KO||BYE)", 1));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
+    
+    @Test
+    public void testTagBooleanExpressionExceptionNumOperators() throws Exception {
+        assertThatExceptionOfType(Exception.class).isThrownBy(() -> runontag.checkParams(runontag.getParams("@skipOnEnv(HELLO=OK&&BYE!KK)")))
+                .withMessage("Error in expression. Number of conditional operators plus 1 should be equal to the number of expressions.");
+    }
+
+    @Test
+    public void testTagBooleanExpressionExceptionWrongOperator() throws Exception {
+        assertThatExceptionOfType(Exception.class).isThrownBy(() -> runontag.checkParams(runontag.getParams("@skipOnEnv(HELLO=OK&&BYE,KK)")))
+                .withMessage("Error in conditional operators. Operators should be && or ||.");
+    }
 }
