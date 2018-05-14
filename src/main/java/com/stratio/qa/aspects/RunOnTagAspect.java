@@ -121,7 +121,7 @@ public class RunOnTagAspect {
 
         String[] ops;
         if (s.contains("&&") || s.contains("||")) {
-            ops = s.substring((s.lastIndexOf("(") + 1), (s.length()) - 1).split("[a-zA-Z_\\-0-9=]+");;
+            ops = s.substring((s.lastIndexOf("(") + 1), (s.length()) - 1).split("[a-zA-Z_\\-0-9=]+");
             if (ops.length > 0) {
                 ops = Arrays.copyOfRange(ops, 1, ops.length);
             }
