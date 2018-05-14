@@ -5,6 +5,7 @@ Only listing significant user-visible, not internal code cleanups and minor bug 
 ## 0.8.0 (upcoming)
 
 * [QATM-967] Updated Selenium version to 3.9.1
+* [PIT-68] Updated commons-lang3 version to 3.7
 
 ## 0.7.0 (April 05, 2018)
 
