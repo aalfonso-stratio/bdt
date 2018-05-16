@@ -120,6 +120,8 @@ public class RunOnTagAspect {
         }
 
         String[] ops;
+        // Only valid operators: AND -> &&; OR -> ||
+        // Valid variables names and values can only contain: characters, numbers, underscores, hyphens, dots and equal
         if (s.contains("&&") || s.contains("||")) {
             ops = s.substring((s.lastIndexOf("(") + 1), (s.length()) - 1).split("[a-zA-Z._\\-0-9=]+");
             if (ops.length > 0) {
