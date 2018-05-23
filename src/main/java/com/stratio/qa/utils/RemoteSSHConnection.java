@@ -198,9 +198,10 @@ public class RemoteSSHConnection {
      */
     public void runCommand(String command) throws Exception {
         String result = "";
+        String extras = "export PYTHONWARNINGS=\"ignore:Unverified HTTPS request\" && ";
 
         Channel channel = session.openChannel("exec");
-        ((ChannelExec) channel).setCommand(command);
+        ((ChannelExec) channel).setCommand(extras + command);
 
         channel.setInputStream(null);
         ((ChannelExec) channel).setErrStream(System.err);
