@@ -231,7 +231,6 @@ public class RemoteSSHConnection {
                 this.exitStatus = channel.getExitStatus();
                 break;
             }
-            
             try {
                 Thread.sleep(1000);
             } catch (Exception ee) {
