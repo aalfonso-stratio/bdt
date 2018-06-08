@@ -1882,7 +1882,7 @@ public class CommonG {
     }
 
     public String updateMarathonJson(String json) {
-        return removeJSONPathElement(removeJSONPathElement(removeJSONPathElement(json, ".versionInfo"), ".version"), ".uris.*");
+        return removeJSONPathElement(removeJSONPathElement(removeJSONPathElement(json, "$.versionInfo"), "$.version"), "$.uris.*");
     }
 
     public void runCommandLoggerAndEnvVar(int exitStatus, String envVar, Boolean local) {
