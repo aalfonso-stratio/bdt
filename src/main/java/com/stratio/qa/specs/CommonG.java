@@ -1990,7 +1990,6 @@ public class CommonG {
         return jsonAsYaml;
     }
 
-
     /**
      * Connect to JDBC secured/not secured database
      *
