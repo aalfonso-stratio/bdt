@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
 public class GosecSSOUtilsIT {
     private final Logger logger = LoggerFactory.getLogger(GosecSSOUtilsIT.class);
     private static GosecSSOUtils gosecSsoUtils = new GosecSSOUtils("www.google.com",
