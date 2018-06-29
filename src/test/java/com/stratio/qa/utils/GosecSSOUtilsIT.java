@@ -26,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class GosecSSOUtilsIT {
     private final Logger logger = LoggerFactory.getLogger(GosecSSOUtilsIT.class);
     private static GosecSSOUtils gosecSsoUtils = new GosecSSOUtils("www.google.com",
-            "anyUser", "anyPassWord");
+            "anyUser", "anyPassWord", null);
 
     @Test
     public void gosecUtilsConstructorTest() throws Exception {

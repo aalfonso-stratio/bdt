@@ -49,14 +49,17 @@ public class GosecSSOUtils {
 
     public String passWord = System.getProperty("passWord", "1234");
 
+    public String tenant;
+
     public String ssoHost = System.getProperty("ssoHost", "sso.paas.labs.stratio.com");
 
     public String managementHost = System.getProperty("managementHost", "/service/gosecmanagement");
 
-    public GosecSSOUtils(String ssHost, String userName, String passWord) {
+    public GosecSSOUtils(String ssHost, String userName, String passWord, String tenant) {
         this.ssoHost = ssHost;
         this.userName = userName;
         this.passWord = passWord;
+        this.tenant = tenant;
     }
 
 
@@ -98,6 +101,11 @@ public class GosecSSOUtils {
             params.add(new BasicNameValuePair("submit", "LOGIN"));
             params.add(new BasicNameValuePair("username", userName));
             params.add(new BasicNameValuePair("password", passWord));
+
+            if (!tenant.isEmpty()) {
+                params.add(new BasicNameValuePair("tenant", tenant));
+            }
+
             params.add(new BasicNameValuePair("lt", loginCode));
             params.add(new BasicNameValuePair("execution", executionCode));
             HttpPost httpPost = new HttpPost(redirect);
