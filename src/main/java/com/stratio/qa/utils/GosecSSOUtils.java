@@ -102,7 +102,7 @@ public class GosecSSOUtils {
             params.add(new BasicNameValuePair("username", userName));
             params.add(new BasicNameValuePair("password", passWord));
 
-            if (!tenant.isEmpty()) {
+            if (tenant != null) {
                 params.add(new BasicNameValuePair("tenant", tenant));
             }
 
