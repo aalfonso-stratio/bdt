@@ -657,9 +657,12 @@ public class ThenGSpec extends BaseGSpec {
         String newValue = myValue.replaceFirst("\\{", "{\"" + key + "\": \"" + value + "\", ");
         newValue = "\"labels\":" + newValue;
         String myFinalJson = myJson.replaceFirst("\\{", "{" + newValue.replace("\\n", "\\\\n") + ",");
-        String test = myFinalJson.replaceAll("\"uris\"", "\"none\"");
-
-        commonspec.runCommandAndGetResult("echo '" + test + "' > /dcos/final" + service + ".json");
+        if (myFinalJson.contains("uris")) {
+            String test = myFinalJson.replaceAll("\"uris\"", "\"none\"");
+            commonspec.runCommandAndGetResult("echo '" + test + "' > /dcos/final" + service + ".json");
+        } else {
+            commonspec.runCommandAndGetResult("echo '" + myFinalJson + "' > /dcos/final" + service + ".json");
+        }
         commonspec.runCommandAndGetResult("dcos marathon app update " + service + " < /dcos/final" + service + ".json");
 
         commonspec.setCommandExitStatus(commonspec.getRemoteSSHConnection().getExitStatus());
