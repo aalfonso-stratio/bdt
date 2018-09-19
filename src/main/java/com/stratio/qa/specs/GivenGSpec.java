@@ -1063,4 +1063,32 @@ public class GivenGSpec extends BaseGSpec {
         }
     }
 
+    /**
+     * Convert jsonSchema to json
+     *
+     * @param jsonSchema jsonSchema to be converted to json
+     * @param envVar     environment variable where to store json
+     * @throws Exception exception     *
+     */
+    @Given("^I convert jsonSchema '(.+?)' to json and save it in variable '(.+?)'")
+    public void convertJSONSchemaToJSON(String jsonSchema, String envVar) throws Exception {
+        String json = commonspec.parseJSONSchema(new JSONObject(jsonSchema)).toString();
+        ThreadProperty.set(envVar, json);
+    }
+
+    /**
+     * Check if json is validated against a schema
+     *
+     * @param json    json to be validated against schema
+     * @param schema  schema to be validated against
+     * @throws Exception exception     *
+     */
+    @Given("^json (.+?) matches schema (.+?)$")
+    public void jsonMatchesSchema(String json, String schema) throws Exception {
+        JSONObject jsonschema = new JSONObject(schema);
+        JSONObject jsondeploy = new JSONObject(json);
+
+        commonspec.matchJsonToSchema(jsonschema, jsondeploy);
+    }
+
 }

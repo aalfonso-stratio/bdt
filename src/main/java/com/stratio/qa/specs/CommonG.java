@@ -74,6 +74,9 @@ import java.util.regex.Pattern;
 import static com.stratio.qa.assertions.Assertions.assertThat;
 import static org.testng.Assert.fail;
 
+import org.everit.json.schema.ValidationException;
+import org.everit.json.schema.loader.SchemaLoader;
+
 public class CommonG {
 
     private static final long DEFAULT_CURRENT_TIME = 1000L;
@@ -2072,6 +2075,80 @@ public class CommonG {
      */
     public Connection getConnection() {
         return this.myConnection;
+    }
+
+
+    /**
+     * Generate deployment json from schema
+     *
+     * @param schema schema obtained from deploy-api
+     */
+    public JSONObject parseJSONSchema(JSONObject schema) throws Exception {
+        JSONObject json = new JSONObject();
+        String name = "";
+        JSONObject properties = schema;
+
+        // Check if key 'properties' exists
+        if (schema.has("properties")) {
+            // Obtain properties
+            properties = schema.getJSONObject("properties");
+        }
+
+        // Obtain all keys and iterate through them
+        Iterator<?> keys = properties.keys();
+        while (keys.hasNext()) {
+            // Obtain key
+            String key = keys.next().toString();
+            // Obtain value of key
+            JSONObject element = properties.getJSONObject(key);
+            // Check if value contain properties
+            // If it DOESN'T CONTAIN properties
+            if (!element.has("properties")) {
+                // Check if it has default value
+                if (element.has("default")) {
+                    // Add element with the default value assigned
+                    json.put(key, element.get("default"));
+                // If it doesn't have default value, we assign a default value depending on the type
+                } else {
+                    switch (element.getString("type")) {
+                        case "string":
+                            json.append(key, "");
+                            break;
+                        case "boolean":
+                            json.append(key, true);
+                            break;
+                        case "number":
+                            json.append(key, 0);
+                            break;
+                        default:
+                            Assertions.fail("type not expected");
+                    }
+                }
+            // If it CONTAINS properties
+            } else {
+                // Recursive call, keep evaluating json
+                json.put(key, parseJSONSchema(element));
+            }
+        }
+
+        return json;
+    }
+
+    /**
+     * Check json matches schema
+     *
+     * @param schema schema obtained from deploy-api
+     * @param json json to be checked
+     */
+    public boolean matchJsonToSchema(JSONObject schema, JSONObject json) throws Exception {
+        SchemaLoader.builder()
+                 .useDefaults(true)
+                 .schemaJson(schema)
+                 .build()
+                 .load()
+                 .build()
+                 .validate(json);
+        return true;
     }
 
 }

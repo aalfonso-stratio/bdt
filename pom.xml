@@ -83,7 +83,7 @@
         <mongo-java-driver.version>2.12.3</mongo-java-driver.version>
         <selenium-java.version>3.9.1</selenium-java.version>
         <jsoup.version>1.7.3</jsoup.version>
-        <json.version>20140107</json.version>
+        <json.version>20180130</json.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -431,5 +431,16 @@
             <artifactId>postgresql</artifactId>
             <version>9.4-1205-jdbc42</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.everit-org.json-schema</groupId>
+            <artifactId>org.everit.json.schema</artifactId>
+            <version>1.7.0</version>
+        </dependency>
     </dependencies>
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
 </project>
