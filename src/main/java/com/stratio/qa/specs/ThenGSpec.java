@@ -1165,5 +1165,64 @@ public class ThenGSpec extends BaseGSpec {
         }
     }
 
+    /**
+     * Check service status has value specified
+     *
+     * @param service   name of the service to be checked
+     * @param cluster   URI of the cluster
+     * @param status    status expected
+     * @throws Exception exception     *
+     */
+    @Then("^service '(.+?)' status in cluster '(.+?)' is '(suspended|running|deploying)'( in less than '(\\d+?)' seconds checking every '(\\d+?)' seconds)?")
+    public void serviceStatusCheck(String service, String cluster, String status, String foo, Integer totalWait, Integer interval) throws Exception {
+        String response;
+        Integer i = 0;
+        boolean matched;
+
+        response = commonspec.retrieveServiceStatus(service, cluster);
+
+        if (foo != null) {
+            matched = status.matches(response);
+            while (!matched && i < totalWait) {
+                this.commonspec.getLogger().info("Service status not found yet after " + i + " seconds");
+                i = i + interval;
+                response = commonspec.retrieveServiceStatus(service, cluster);
+                matched = status.matches(response);
+            }
+        }
+
+        assertThat(status).as("Expected status: " + status + " doesn't match obtained one: " + response).matches(response);
+
+    }
+
+    /**
+     * Check service health status has value specified
+     *
+     * @param service   name of the service to be checked
+     * @param cluster   URI of the cluster
+     * @param status    health status expected
+     * @throws Exception exception     *
+     */
+    @Then("^service '(.+?)' health status in cluster '(.+?)' is '(unhealthy|healthy|unknown)'( in less than '(\\d+?)' seconds checking every '(\\d+?)' seconds)?")
+    public void serviceHealthStatusCheck(String service, String cluster, String status, String foo, Integer totalWait, Integer interval) throws Exception {
+        String response;
+        Integer i = 0;
+        boolean matched;
+
+        response = commonspec.retrieveHealthServiceStatus(service, cluster);
+
+        if (foo != null) {
+            matched = status.matches(response);
+            while (!matched && i < totalWait) {
+                this.commonspec.getLogger().info("Service health status not found yet after " + i + " seconds");
+                i = i + interval;
+                response = commonspec.retrieveHealthServiceStatus(service, cluster);
+                matched = status.matches(response);
+            }
+        }
+
+        assertThat(status).as("Expected status: " + status + " doesn't match obtained one: " + response).matches(response);
+    }
+
 }
 
