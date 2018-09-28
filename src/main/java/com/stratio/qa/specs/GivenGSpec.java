@@ -1140,6 +1140,7 @@ public class GivenGSpec extends BaseGSpec {
         response = this.commonspec.generateRequest("DELETE", true, null, null, endPoint, null, "json");
 
         this.commonspec.setResponse("DELETE", (Response) response.get());
+        assertThat(this.commonspec.getResponse().getStatusCode()).as("It hasn't been possible to destroy service: " + service).isIn(Arrays.asList(200, 202));
     }
 
 }

@@ -2173,20 +2173,11 @@ public class CommonG {
 
         response = this.generateRequest("GET", true, null, null, endPoint, null, "json");
         this.setResponse("GET", (Response) response.get());
+        assertThat(this.getResponse().getStatusCode()).as("It hasn't been possible to obtain status for service: " + service).isEqualTo(200);
 
-        Pattern pattern = Pattern.compile("^((.*)(\\.)+)(\\$.*)$");
-        Matcher matcher = pattern.matcher(element);
-        String json;
-        String parsedElement;
-        if (matcher.find()) {
-            json = matcher.group(2);
-            parsedElement = matcher.group(4);
-        } else {
-            json = this.getResponse().getResponse();
-            parsedElement = element;
-        }
+        String json = this.getResponse().getResponse();
 
-        String value = this.getJSONPathString(json, parsedElement, "0");
+        String value = this.getJSONPathString(json, element, null);
 
         switch (value) {
             case "0":
@@ -2228,20 +2219,11 @@ public class CommonG {
 
         response = this.generateRequest("GET", true, null, null, endPoint, null, "json");
         this.setResponse("GET", (Response) response.get());
+        assertThat(this.getResponse().getStatusCode()).as("It hasn't been possible to obtain health status for service: " + service).isEqualTo(200);
 
-        Pattern pattern = Pattern.compile("^((.*)(\\.)+)(\\$.*)$");
-        Matcher matcher = pattern.matcher(element);
-        String json;
-        String parsedElement;
-        if (matcher.find()) {
-            json = matcher.group(2);
-            parsedElement = matcher.group(4);
-        } else {
-            json = this.getResponse().getResponse();
-            parsedElement = element;
-        }
+        String json = this.getResponse().getResponse();
 
-        String value = this.getJSONPathString(json, parsedElement, "0");
+        String value = this.getJSONPathString(json, element, null);
 
         switch (value) {
             case "0":
