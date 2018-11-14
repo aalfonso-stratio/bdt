@@ -66,8 +66,7 @@ public class CucumberRunner {
         classLoader = clazz.getClassLoader();
         ResourceLoader resourceLoader = new MultiLoader(classLoader);
 
-        RuntimeOptionsFactory runtimeOptionsFactory = new RuntimeOptionsFactory(clazz,
-                new Class[]{CucumberOptions.class});
+        RuntimeOptionsFactory runtimeOptionsFactory = new RuntimeOptionsFactory(clazz);
         runtimeOptions = runtimeOptionsFactory.create();
         String testSuffix = System.getProperty("TESTSUFFIX");
         String targetExecutionsPath = "target/executions/";
@@ -128,14 +127,14 @@ public class CucumberRunner {
         runtimeOptions.getGlue().clear();
         runtimeOptions.getGlue().addAll(uniqueGlue);
 
-        runtimeOptions.addFormatter(reporterTestNG);
+        runtimeOptions.addPlugin(reporterTestNG);
         Set<Class<? extends ICucumberFormatter>> implementers = new Reflections("com.stratio.qa.utils")
                 .getSubTypesOf(ICucumberFormatter.class);
 
         for (Class<? extends ICucumberFormatter> implementerClazz : implementers) {
             Constructor<?> ctor = implementerClazz.getConstructor();
             ctor.setAccessible(true);
-            runtimeOptions.addFormatter((ICucumberFormatter) ctor.newInstance());
+            runtimeOptions.addPlugin((ICucumberFormatter) ctor.newInstance());
         }
 
         ClassFinder classFinder = new ResourceLoaderClassFinder(resourceLoader, classLoader);
