@@ -81,7 +81,7 @@ public class IgnoreTagAspect {
             runtime.buildBackendWorlds(reporter, tags, scenario);
             formatter.startOfScenarioLifeCycle(scenario);
             formatter.endOfScenarioLifeCycle(scenario);
-            runtime.disposeBackendWorlds();
+            runtime.disposeBackendWorlds(scenarioName+":"+scenario.getKeyword()+":"+scenario.getLine());
         } else {
             pjp.proceed();
         }
