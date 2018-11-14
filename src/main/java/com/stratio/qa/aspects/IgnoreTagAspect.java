@@ -78,7 +78,7 @@ public class IgnoreTagAspect {
         }
 
         if ((!(exitReason.equals(NOTIGNORED))) && (!(exitReason.equals(NOREASON)))) {
-            runtime.buildBackendWorlds(reporter, tags, scenario.getName());
+            runtime.buildBackendWorlds(reporter, tags, scenario);
             formatter.startOfScenarioLifeCycle(scenario);
             formatter.endOfScenarioLifeCycle(scenario);
             runtime.disposeBackendWorlds();
