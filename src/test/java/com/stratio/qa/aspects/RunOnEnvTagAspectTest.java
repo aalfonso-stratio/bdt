@@ -15,7 +15,8 @@
  */
 package com.stratio.qa.aspects;
 
-import gherkin.formatter.model.Tag;
+import gherkin.pickles.PickleLocation;
+import gherkin.pickles.PickleTag;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
@@ -61,8 +62,8 @@ public class RunOnEnvTagAspectTest {
     @Test
     public void testTagIterationRun() throws Exception {
         System.setProperty("HELLO","OK");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -70,8 +71,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationRunArray() throws Exception {
         System.setProperty("HELLO","OK");
         System.setProperty("BYE","KO");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO,BYE)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO,BYE)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -79,24 +80,24 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationRunArrayNegative() throws Exception {
         System.setProperty("HELLO","OK");
         System.clearProperty("BYE");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO,BYE)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO,BYE)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
     @Test
     public void testTagIterationIgnoreRun() throws Exception {
         System.clearProperty("BYE");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(BYE)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(BYE)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
     @Test
     public void testTagIterationSkip() throws Exception {
         System.clearProperty("HELLO_NO");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO_NO)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO_NO)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -104,16 +105,16 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationSkipArray() throws Exception {
         System.clearProperty("HELLO_NO");
         System.clearProperty("BYE_NO");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO_NO,BYE_NO)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO_NO,BYE_NO)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
     @Test
     public void testTagIterationIgnoreSkip() throws Exception {
         System.setProperty("HELLO","OK");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -121,8 +122,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationIgnoreSkipArray() throws Exception {
         System.setProperty("HELLO","OK");
         System.setProperty("BYE","KO");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO,BYE)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO,BYE)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -131,96 +132,96 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","OK");
         System.setProperty("BYE","KO");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO,SEEYOU)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO,SEEYOU)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
     @Test
     public void testTagIterationRunValue() throws Exception {
         System.setProperty("HELLO","OK");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=OK)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=OK)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
     @Test
     public void testTagIterationRunValueGreatherThan() throws Exception {
         System.setProperty("HELLO","SECOND");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO>FIRST)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO>FIRST)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
     @Test
     public void testTagIterationRunValueSmallerThan() throws Exception {
         System.setProperty("HELLO","FIRST");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO<SECOND)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO<SECOND)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
     @Test
     public void testTagIterationRunValueNotDefined() throws Exception {
         System.clearProperty("HELLO");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=OK)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=OK)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
     @Test
     public void testTagIterationRunValueGreatherThanNotDefined() throws Exception {
         System.clearProperty("HELLO");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO>OK)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO>OK)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
     @Test
     public void testTagIterationRunValueSmallerThanNotDefined() throws Exception {
         System.clearProperty("HELLO");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO<OK)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO<OK)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
     @Test
     public void testTagIterationRunValueNegative() throws Exception {
         System.setProperty("HELLO","OK");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=KO)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=KO)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
     @Test
     public void testTagIterationRunValueGreatherThanNegative1() throws Exception {
         System.setProperty("HELLO","FIRST");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO>SECOND)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO>SECOND)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
     @Test
     public void testTagIterationRunValueGreatherThanNegative2() throws Exception {
         System.setProperty("HELLO","FIRST");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO>FIRST)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO>FIRST)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
     @Test
     public void testTagIterationRunValueSmallerThanNegative1() throws Exception {
         System.setProperty("HELLO","SECOND");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO<FIRST)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO<FIRST)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
     @Test
     public void testTagIterationRunValueSmallerThanNegative2() throws Exception {
         System.setProperty("HELLO","SECOND");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO<SECOND)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO<SECOND)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -228,8 +229,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationRunValueArray() throws Exception {
         System.setProperty("HELLO","OK");
         System.setProperty("BYE","KO");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=OK,BYE=KO)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=OK,BYE=KO)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -237,8 +238,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationRunValueGreatherThanArray() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0-abc");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO>FIRST,BYE>1.0.0)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO>FIRST,BYE>1.0.0)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -246,8 +247,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationRunValueSmallerThanArray() throws Exception {
         System.setProperty("HELLO","FIRST");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO<SECOND,BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO<SECOND,BYE<1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -255,8 +256,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationRunValueArrayNegative1() throws Exception {
         System.setProperty("HELLO","OK");
         System.setProperty("BYE","KO");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=OK,BYE=OK)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=OK,BYE=OK)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -264,8 +265,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationRunValueArrayNegative2() throws Exception {
         System.setProperty("HELLO","OK");
         System.setProperty("BYE","KO");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=KO,BYE=KO)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=KO,BYE=KO)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -273,8 +274,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationRunValueArrayNegative3() throws Exception {
         System.setProperty("HELLO","OK");
         System.setProperty("BYE","KO");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=KO,BYE=OK)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=KO,BYE=OK)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -282,8 +283,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationRunValueGreatherThanArrayNegative1() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO>FIRST,BYE>1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO>FIRST,BYE>1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -291,8 +292,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationRunValueGreatherThanArrayNegative2() throws Exception {
         System.setProperty("HELLO","FIRST");
         System.setProperty("BYE","1.0.0-abc");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO>SECOND,BYE>1.0.0)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO>SECOND,BYE>1.0.0)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -300,8 +301,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationRunValueGreatherThanArrayNegative3() throws Exception {
         System.setProperty("HELLO","FIRST");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO>SECOND,BYE>1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO>SECOND,BYE>1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -309,8 +310,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationRunValueSmallerThanArrayNegative1() throws Exception {
         System.setProperty("HELLO","FIRST");
         System.setProperty("BYE","1.0.0-abc");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO<SECOND,BYE<1.0.0)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO<SECOND,BYE<1.0.0)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -318,8 +319,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationRunValueSmallerThanArrayNegative2() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO<FIRST,BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO<FIRST,BYE<1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -327,8 +328,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationRunValueSmallerThanArrayNegative3() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0-abc");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO<FIRST,BYE<1.0.0)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO<FIRST,BYE<1.0.0)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -336,8 +337,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationRunValueArrayMix() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=SECOND,BYE,HELLO>FIRST,BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=SECOND,BYE,HELLO>FIRST,BYE<1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -346,8 +347,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.setProperty("SEEYOU", "WAY");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=SECOND,SEEYOU,HELLO>THRID,BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=SECOND,SEEYOU,HELLO>THRID,BYE<1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -356,8 +357,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.setProperty("SEEYOU", "WAY");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=SECOND,SEEYOU,HELLO>FIRST,BYE<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=SECOND,SEEYOU,HELLO>FIRST,BYE<0.0.19)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -366,8 +367,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.setProperty("SEEYOU", "WAY");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=SECOND,SEEYOU,HELLO>THRID,BYE<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=SECOND,SEEYOU,HELLO>THRID,BYE<0.0.19)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -376,8 +377,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=SECOND,SEEYOU,HELLO>FIRST,BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=SECOND,SEEYOU,HELLO>FIRST,BYE<1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -386,8 +387,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=SECOND,SEEYOU,HELLO>SECOND,BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=SECOND,SEEYOU,HELLO>SECOND,BYE<1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -396,8 +397,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=SECOND,SEEYOU,HELLO>FIRST,BYE<1.0.0)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=SECOND,SEEYOU,HELLO>FIRST,BYE<1.0.0)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -406,8 +407,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=SECOND,SEEYOU,HELLO>SECOND,BYE<1.0.0)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=SECOND,SEEYOU,HELLO>SECOND,BYE<1.0.0)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -416,8 +417,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.setProperty("SEEYOU", "WAY");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=WAY,SEEYOU,HELLO>FIRST,BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=WAY,SEEYOU,HELLO>FIRST,BYE<1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -426,8 +427,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.setProperty("SEEYOU", "WAY");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=WAY,SEEYOU,HELLO>THRID,BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=WAY,SEEYOU,HELLO>THRID,BYE<1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -436,8 +437,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.setProperty("SEEYOU", "WAY");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=WAY,SEEYOU,HELLO>FIRST,BYE<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=WAY,SEEYOU,HELLO>FIRST,BYE<0.0.19)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -446,8 +447,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.setProperty("SEEYOU", "WAY");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=WAY,SEEYOU,HELLO>THRID,BYE<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=WAY,SEEYOU,HELLO>THRID,BYE<0.0.19)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -456,8 +457,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=WAY,SEEYOU,HELLO>FIRST,BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=WAY,SEEYOU,HELLO>FIRST,BYE<1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -466,8 +467,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=WAY,SEEYOU,HELLO>SECOND,BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=WAY,SEEYOU,HELLO>SECOND,BYE<1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -476,8 +477,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=WAY,SEEYOU,HELLO>FIRST,BYE<1.0.0)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=WAY,SEEYOU,HELLO>FIRST,BYE<1.0.0)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -486,96 +487,96 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=WAY,SEEYOU,HELLO>SECOND,BYE<1.0.0)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=WAY,SEEYOU,HELLO>SECOND,BYE<1.0.0)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
     @Test
     public void testTagIterationSkipValue() throws Exception {
         System.setProperty("HELLO","OK");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=OK)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=OK)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
     @Test
     public void testTagIterationSkipValueGreatherThan() throws Exception {
         System.setProperty("HELLO","SECOND");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO>FIRST)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO>FIRST)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
     @Test
     public void testTagIterationSkipValueSmallerThan() throws Exception {
         System.setProperty("HELLO","FIRST");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO<SECOND)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO<SECOND)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
     @Test
     public void testTagIterationSkipValueNotDefined() throws Exception {
         System.clearProperty("HELLO");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=OK)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=OK)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
     @Test
     public void testTagIterationSkipValueGreatherThanNotDefined() throws Exception {
         System.clearProperty("HELLO");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO>OK)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO>OK)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
     @Test
     public void testTagIterationSkipValueSmallerThanNotDefined() throws Exception {
         System.clearProperty("HELLO");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO<OK)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO<OK)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
     @Test
     public void testTagIterationSkipValueNegative() throws Exception {
         System.setProperty("HELLO","OK");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=KO)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=KO)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
     @Test
     public void testTagIterationSkipValueGreatherThanNegative1() throws Exception {
         System.setProperty("HELLO","FIRST");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO>SECOND)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO>SECOND)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
     @Test
     public void testTagIterationSkipValueGreatherThanNegative2() throws Exception {
         System.setProperty("HELLO","SECOND");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO>SECOND)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO>SECOND)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
     @Test
     public void testTagIterationSkipValueSmallerThanNegative1() throws Exception {
         System.setProperty("HELLO","SECOND");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO<FIRST)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO<FIRST)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
     @Test
     public void testTagIterationSkipValueSmallerThanNegative2() throws Exception {
         System.setProperty("HELLO","FIRST");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO<FIRST)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO<FIRST)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -583,8 +584,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationSkipValueArray() throws Exception {
         System.setProperty("HELLO","OK");
         System.setProperty("BYE","KO");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=OK,BYE=KO)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=OK,BYE=KO)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -592,8 +593,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationSkipValueGreatherThanArray() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0-abc");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO>FIRST,BYE>1.0.0)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO>FIRST,BYE>1.0.0)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -601,8 +602,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationSkipValueSmallerThanArray() throws Exception {
         System.setProperty("HELLO","FIRST");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO<SECOND,BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO<SECOND,BYE<1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -610,8 +611,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationSkipValueArrayNegative1() throws Exception {
         System.setProperty("HELLO","OK");
         System.setProperty("BYE","KO");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=OK,BYE=OK)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=OK,BYE=OK)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -619,8 +620,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationSkipValueArrayNegative2() throws Exception {
         System.setProperty("HELLO","OK");
         System.setProperty("BYE","KO");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=KO,BYE=KO)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=KO,BYE=KO)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -628,8 +629,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationSkipValueArrayNegative3() throws Exception {
         System.setProperty("HELLO","OK");
         System.setProperty("BYE","KO");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=KO,BYE=OK)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=KO,BYE=OK)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -637,8 +638,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationSkipValueGreatherThanArrayNegative1() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO>FIRST,BYE>1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO>FIRST,BYE>1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -646,8 +647,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationSkipValueGreatherThanArrayNegative2() throws Exception {
         System.setProperty("HELLO","FIRST");
         System.setProperty("BYE","1.0.0-abc");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO>SECOND,BYE>1.0.0)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO>SECOND,BYE>1.0.0)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -655,8 +656,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationSkipValueGreatherThanArrayNegative3() throws Exception {
         System.setProperty("HELLO","FIRST");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO>SECOND,BYE>1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO>SECOND,BYE>1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -664,8 +665,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationSkipValueSmallerThanArrayNegative1() throws Exception {
         System.setProperty("HELLO","FIRST");
         System.setProperty("BYE","1.0.0-abc");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO<SECOND,BYE<1.0.0)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO<SECOND,BYE<1.0.0)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -673,8 +674,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationSkipValueSmallerThanArrayNegative2() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO<FIRST,BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO<FIRST,BYE<1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -682,8 +683,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationSkipValueSmallerThanArrayNegative3() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0-abc");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO<FIRST,BYE<1.0.0)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO<FIRST,BYE<1.0.0)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -691,8 +692,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationSkypValueArrayMix() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=SECOND,BYE,HELLO>FIRST,BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=SECOND,BYE,HELLO>FIRST,BYE<1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -701,8 +702,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.setProperty("SEEYOU", "WAY");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=SECOND,SEEYOU,HELLO>THRID,BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=SECOND,SEEYOU,HELLO>THRID,BYE<1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -711,8 +712,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.setProperty("SEEYOU", "WAY");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=SECOND,SEEYOU,HELLO>FIRST,BYE<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=SECOND,SEEYOU,HELLO>FIRST,BYE<0.0.19)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -721,8 +722,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.setProperty("SEEYOU", "WAY");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=SECOND,SEEYOU,HELLO>THRID,BYE<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=SECOND,SEEYOU,HELLO>THRID,BYE<0.0.19)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -731,8 +732,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=SECOND,SEEYOU,HELLO>FIRST,BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=SECOND,SEEYOU,HELLO>FIRST,BYE<1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -741,8 +742,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=SECOND,SEEYOU,HELLO>SECOND,BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=SECOND,SEEYOU,HELLO>SECOND,BYE<1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -751,8 +752,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=SECOND,SEEYOU,HELLO>FIRST,BYE<1.0.0)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=SECOND,SEEYOU,HELLO>FIRST,BYE<1.0.0)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -761,8 +762,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=SECOND,SEEYOU,HELLO>SECOND,BYE<1.0.0)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=SECOND,SEEYOU,HELLO>SECOND,BYE<1.0.0)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -771,8 +772,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.setProperty("SEEYOU", "WAY");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=WAY,SEEYOU,HELLO>FIRST,BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=WAY,SEEYOU,HELLO>FIRST,BYE<1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -781,8 +782,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.setProperty("SEEYOU", "WAY");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=WAY,SEEYOU,HELLO>THRID,BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=WAY,SEEYOU,HELLO>THRID,BYE<1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -791,8 +792,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.setProperty("SEEYOU", "WAY");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=WAY,SEEYOU,HELLO>FIRST,BYE<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=WAY,SEEYOU,HELLO>FIRST,BYE<0.0.19)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -801,8 +802,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.setProperty("SEEYOU", "WAY");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=WAY,SEEYOU,HELLO>THRID,BYE<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=WAY,SEEYOU,HELLO>THRID,BYE<0.0.19)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -811,8 +812,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=WAY,SEEYOU,HELLO>FIRST,BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=WAY,SEEYOU,HELLO>FIRST,BYE<1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -821,8 +822,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=WAY,SEEYOU,HELLO>SECOND,BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=WAY,SEEYOU,HELLO>SECOND,BYE<1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -831,8 +832,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=WAY,SEEYOU,HELLO>FIRST,BYE<1.0.0)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=WAY,SEEYOU,HELLO>FIRST,BYE<1.0.0)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -841,8 +842,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=WAY,SEEYOU,HELLO>SECOND,BYE<1.0.0)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=WAY,SEEYOU,HELLO>SECOND,BYE<1.0.0)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -850,8 +851,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagBooleanExpressionRunAndPositive() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=SECOND&&BYE&&HELLO>FIRST&&BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=SECOND&&BYE&&HELLO>FIRST&&BYE<1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -859,8 +860,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagBooleanExpressionRunAndNegative1() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=SECOND&&BYE&&HELLO>THIRD&&BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=SECOND&&BYE&&HELLO>THIRD&&BYE<1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -868,8 +869,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagBooleanExpressionRunAndNegative2() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=SECOND&&BYE&&HELLO>FIRST&&HELLO<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=SECOND&&BYE&&HELLO>FIRST&&HELLO<0.0.19)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -877,8 +878,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagBooleanExpressionRunAndNegative3() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=SECOND&&BYE&&HELLO>THRID&&BYE<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=SECOND&&BYE&&HELLO>THRID&&BYE<0.0.19)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -887,8 +888,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=SECOND&&SEEYOU&&HELLO>FIRST&&BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=SECOND&&SEEYOU&&HELLO>FIRST&&BYE<1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -897,8 +898,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=SECOND&&SEEYOU&&HELLO>SECOND&&BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=SECOND&&SEEYOU&&HELLO>SECOND&&BYE<1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -907,8 +908,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=SECOND&&SEEYOU&&HELLO>FIRST&&BYE<1.0.0)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=SECOND&&SEEYOU&&HELLO>FIRST&&BYE<1.0.0)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -917,8 +918,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=SECOND&&SEEYOU&&HELLO>SECOND&&BYE<1.0.0)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=SECOND&&SEEYOU&&HELLO>SECOND&&BYE<1.0.0)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -926,8 +927,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagBooleanExpressionRunAndNegative8() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=FIRST&&SEEYOU&&HELLO>FIRST&&BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=FIRST&&SEEYOU&&HELLO>FIRST&&BYE<1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -935,8 +936,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagBooleanExpressionRunAndNegative9() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=FIRST&&BYE&&HELLO>THIRD&&BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=FIRST&&BYE&&HELLO>THIRD&&BYE<1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -944,8 +945,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagBooleanExpressionRunAndNegative10() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=FIRST&&BYE&&HELLO>FIRST&&HELLO<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=FIRST&&BYE&&HELLO>FIRST&&HELLO<0.0.19)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -953,8 +954,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagBooleanExpressionRunAndNegative11() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=FIRST&&BYE&&HELLO>THRID&&BYE<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=FIRST&&BYE&&HELLO>THRID&&BYE<0.0.19)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -963,8 +964,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=FIRST&&SEEYOU&&HELLO>FIRST&&BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=FIRST&&SEEYOU&&HELLO>FIRST&&BYE<1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -973,8 +974,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=FIRST&&SEEYOU&&HELLO>SECOND&&BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=FIRST&&SEEYOU&&HELLO>SECOND&&BYE<1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -983,8 +984,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=FIRST&&SEEYOU&&HELLO>FIRST&&BYE<1.0.0)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=FIRST&&SEEYOU&&HELLO>FIRST&&BYE<1.0.0)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -993,8 +994,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=FIRST&&SEEYOU&&HELLO>SECOND&&BYE<1.0.0)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=FIRST&&SEEYOU&&HELLO>SECOND&&BYE<1.0.0)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1002,8 +1003,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagBooleanExpressionRunOrPositive1() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=SECOND||BYE||HELLO>FIRST||BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=SECOND||BYE||HELLO>FIRST||BYE<1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1011,8 +1012,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagBooleanExpressionRunOrPositive2() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=SECOND||BYE||HELLO>THIRD||BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=SECOND||BYE||HELLO>THIRD||BYE<1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1020,8 +1021,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagBooleanExpressionRunOrPositive3() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=SECOND||BYE||HELLO>FIRST||HELLO<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=SECOND||BYE||HELLO>FIRST||HELLO<0.0.19)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1029,8 +1030,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagBooleanExpressionRunOrPositive4() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=SECOND||BYE||HELLO>THRID||BYE<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=SECOND||BYE||HELLO>THRID||BYE<0.0.19)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1039,8 +1040,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=SECOND||SEEYOU||HELLO>FIRST||BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=SECOND||SEEYOU||HELLO>FIRST||BYE<1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1049,8 +1050,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=SECOND||SEEYOU||HELLO>SECOND||BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=SECOND||SEEYOU||HELLO>SECOND||BYE<1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1059,8 +1060,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=SECOND||SEEYOU||HELLO>FIRST||BYE<1.0.0)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=SECOND||SEEYOU||HELLO>FIRST||BYE<1.0.0)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1069,8 +1070,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=SECOND||SEEYOU||HELLO>SECOND||BYE<1.0.0)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=SECOND||SEEYOU||HELLO>SECOND||BYE<1.0.0)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1078,8 +1079,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagBooleanExpressionRunOrPositive9() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=FIRST||SEEYOU||HELLO>FIRST||BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=FIRST||SEEYOU||HELLO>FIRST||BYE<1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1087,8 +1088,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagBooleanExpressionRunOrPositive10() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=FIRST||BYE||HELLO>THIRD||BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=FIRST||BYE||HELLO>THIRD||BYE<1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1096,8 +1097,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagBooleanExpressionRunOrPositive11() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=FIRST||BYE||HELLO>FIRST||HELLO<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=FIRST||BYE||HELLO>FIRST||HELLO<0.0.19)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1105,8 +1106,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagBooleanExpressionRunOrPositive12() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=FIRST||BYE||HELLO>THRID||BYE<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=FIRST||BYE||HELLO>THRID||BYE<0.0.19)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1115,8 +1116,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=FIRST||SEEYOU||HELLO>FIRST||BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=FIRST||SEEYOU||HELLO>FIRST||BYE<1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1125,8 +1126,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=FIRST||SEEYOU||HELLO>SECOND||BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=FIRST||SEEYOU||HELLO>SECOND||BYE<1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1135,18 +1136,18 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=FIRST||SEEYOU||HELLO>FIRST||BYE<1.0.0)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=FIRST||SEEYOU||HELLO>FIRST||BYE<1.0.0)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
-    
+
     @Test
     public void testTagBooleanExpressionRunOrNegative() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=FIRST||SEEYOU||HELLO>SECOND||BYE<1.0.0)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=FIRST||SEEYOU||HELLO>SECOND||BYE<1.0.0)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1155,8 +1156,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.setProperty("SEEYOU","MAYBE");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=SECOND&&SEEYOU||HELLO>FIRST&&BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=SECOND&&SEEYOU||HELLO>FIRST&&BYE<1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1165,8 +1166,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.setProperty("SEEYOU","MAYBE");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=SECOND&&SEEYOU||HELLO>THIRD&&BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=SECOND&&SEEYOU||HELLO>THIRD&&BYE<1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1175,8 +1176,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.setProperty("SEEYOU","MAYBE");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=FIRST&&SEEYOU||HELLO>FIRST&&BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=FIRST&&SEEYOU||HELLO>FIRST&&BYE<1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1185,8 +1186,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=SECOND&&SEEYOU||HELLO>FIRST&&BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=SECOND&&SEEYOU||HELLO>FIRST&&BYE<1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1195,8 +1196,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=FIRST&&SEEYOU||HELLO>FIRST&&BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=FIRST&&SEEYOU||HELLO>FIRST&&BYE<1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1205,8 +1206,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.setProperty("SEEYOU","MAYBE");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=SECOND&&SEEYOU||HELLO>FIRST&&BYE<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=SECOND&&SEEYOU||HELLO>FIRST&&BYE<0.0.19)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1215,8 +1216,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.setProperty("SEEYOU","MAYBE");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=SECOND&&SEEYOU||HELLO>THIRD&&BYE<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=SECOND&&SEEYOU||HELLO>THIRD&&BYE<0.0.19)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1225,8 +1226,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=SECOND&&SEEYOU||HELLO>THIRD&&BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=SECOND&&SEEYOU||HELLO>THIRD&&BYE<1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1235,8 +1236,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=SECOND&&SEEYOU||HELLO>FIRST&&BYE<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=SECOND&&SEEYOU||HELLO>FIRST&&BYE<0.0.19)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1245,8 +1246,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=SECOND&&SEEYOU||HELLO>THIRD&&BYE<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=SECOND&&SEEYOU||HELLO>THIRD&&BYE<0.0.19)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1255,8 +1256,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.setProperty("SEEYOU","MAYBE");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=FIRST&&SEEYOU||HELLO>THIRD&&BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=FIRST&&SEEYOU||HELLO>THIRD&&BYE<1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1265,8 +1266,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.setProperty("SEEYOU","MAYBE");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=FIRST&&SEEYOU||HELLO>FIRST&&BYE<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=FIRST&&SEEYOU||HELLO>FIRST&&BYE<0.0.19)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1275,8 +1276,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.setProperty("SEEYOU","MAYBE");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=FIRST&&SEEYOU||HELLO>THIRD&&BYE<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=FIRST&&SEEYOU||HELLO>THIRD&&BYE<0.0.19)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1285,8 +1286,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=FIRST&&SEEYOU||HELLO>THIRD&&BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=FIRST&&SEEYOU||HELLO>THIRD&&BYE<1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1295,8 +1296,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=FIRST&&SEEYOU||HELLO>FIRST&&BYE<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=FIRST&&SEEYOU||HELLO>FIRST&&BYE<0.0.19)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1305,17 +1306,17 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@runOnEnv(HELLO=FIRST&&SEEYOU||HELLO>THIRD&&BYE<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@runOnEnv(HELLO=FIRST&&SEEYOU||HELLO>THIRD&&BYE<0.0.19)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
-    
+
     @Test
     public void testTagBooleanExpressionSkipAndPositive() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=SECOND&&BYE&&HELLO>FIRST&&BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=SECOND&&BYE&&HELLO>FIRST&&BYE<1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1323,8 +1324,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagBooleanExpressionSkipAndNegative1() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=SECOND&&BYE&&HELLO>THIRD&&BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=SECOND&&BYE&&HELLO>THIRD&&BYE<1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1332,8 +1333,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagBooleanExpressionSkipAndNegative2() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=SECOND&&BYE&&HELLO>FIRST&&HELLO<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=SECOND&&BYE&&HELLO>FIRST&&HELLO<0.0.19)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1341,8 +1342,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagBooleanExpressionSkipAndNegative3() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=SECOND&&BYE&&HELLO>THRID&&BYE<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=SECOND&&BYE&&HELLO>THRID&&BYE<0.0.19)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1351,8 +1352,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=SECOND&&SEEYOU&&HELLO>FIRST&&BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=SECOND&&SEEYOU&&HELLO>FIRST&&BYE<1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1361,8 +1362,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=SECOND&&SEEYOU&&HELLO>SECOND&&BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=SECOND&&SEEYOU&&HELLO>SECOND&&BYE<1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1371,8 +1372,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=SECOND&&SEEYOU&&HELLO>FIRST&&BYE<1.0.0)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=SECOND&&SEEYOU&&HELLO>FIRST&&BYE<1.0.0)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1381,8 +1382,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=SECOND&&SEEYOU&&HELLO>SECOND&&BYE<1.0.0)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=SECOND&&SEEYOU&&HELLO>SECOND&&BYE<1.0.0)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1390,8 +1391,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagBooleanExpressionSkipAndNegative8() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=FIRST&&SEEYOU&&HELLO>FIRST&&BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=FIRST&&SEEYOU&&HELLO>FIRST&&BYE<1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1399,8 +1400,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagBooleanExpressionSkipAndNegative9() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=FIRST&&BYE&&HELLO>THIRD&&BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=FIRST&&BYE&&HELLO>THIRD&&BYE<1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1408,8 +1409,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagBooleanExpressionSkipAndNegative10() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=FIRST&&BYE&&HELLO>FIRST&&HELLO<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=FIRST&&BYE&&HELLO>FIRST&&HELLO<0.0.19)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1417,8 +1418,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagBooleanExpressionSkipAndNegative11() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=FIRST&&BYE&&HELLO>THRID&&BYE<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=FIRST&&BYE&&HELLO>THRID&&BYE<0.0.19)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1427,8 +1428,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=FIRST&&SEEYOU&&HELLO>FIRST&&BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=FIRST&&SEEYOU&&HELLO>FIRST&&BYE<1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1437,8 +1438,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=FIRST&&SEEYOU&&HELLO>SECOND&&BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=FIRST&&SEEYOU&&HELLO>SECOND&&BYE<1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1447,8 +1448,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=FIRST&&SEEYOU&&HELLO>FIRST&&BYE<1.0.0)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=FIRST&&SEEYOU&&HELLO>FIRST&&BYE<1.0.0)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1457,8 +1458,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=FIRST&&SEEYOU&&HELLO>SECOND&&BYE<1.0.0)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=FIRST&&SEEYOU&&HELLO>SECOND&&BYE<1.0.0)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1466,8 +1467,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagBooleanExpressionSkipOrPositive1() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=SECOND||BYE||HELLO>FIRST||BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=SECOND||BYE||HELLO>FIRST||BYE<1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1475,8 +1476,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagBooleanExpressionSkipOrPositive2() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=SECOND||BYE||HELLO>THIRD||BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=SECOND||BYE||HELLO>THIRD||BYE<1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1484,8 +1485,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagBooleanExpressionSkipOrPositive3() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=SECOND||BYE||HELLO>FIRST||HELLO<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=SECOND||BYE||HELLO>FIRST||HELLO<0.0.19)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1493,8 +1494,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagBooleanExpressionSkipOrPositive4() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=SECOND||BYE||HELLO>THRID||BYE<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=SECOND||BYE||HELLO>THRID||BYE<0.0.19)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1503,8 +1504,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=SECOND||SEEYOU||HELLO>FIRST||BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=SECOND||SEEYOU||HELLO>FIRST||BYE<1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1513,8 +1514,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=SECOND||SEEYOU||HELLO>SECOND||BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=SECOND||SEEYOU||HELLO>SECOND||BYE<1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1523,8 +1524,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=SECOND||SEEYOU||HELLO>FIRST||BYE<1.0.0)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=SECOND||SEEYOU||HELLO>FIRST||BYE<1.0.0)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1533,8 +1534,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=SECOND||SEEYOU||HELLO>SECOND||BYE<1.0.0)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=SECOND||SEEYOU||HELLO>SECOND||BYE<1.0.0)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1542,8 +1543,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagBooleanExpressionSkipOrPositive9() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=FIRST||SEEYOU||HELLO>FIRST||BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=FIRST||SEEYOU||HELLO>FIRST||BYE<1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1551,8 +1552,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagBooleanExpressionSkipOrPositive10() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=FIRST||BYE||HELLO>THIRD||BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=FIRST||BYE||HELLO>THIRD||BYE<1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1560,8 +1561,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagBooleanExpressionSkipOrPositive11() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=FIRST||BYE||HELLO>FIRST||HELLO<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=FIRST||BYE||HELLO>FIRST||HELLO<0.0.19)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1569,8 +1570,8 @@ public class RunOnEnvTagAspectTest {
     public void testTagBooleanExpressionSkipOrPositive12() throws Exception {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=FIRST||BYE||HELLO>THRID||BYE<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=FIRST||BYE||HELLO>THRID||BYE<0.0.19)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1579,8 +1580,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=FIRST||SEEYOU||HELLO>FIRST||BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=FIRST||SEEYOU||HELLO>FIRST||BYE<1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1589,8 +1590,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=FIRST||SEEYOU||HELLO>SECOND||BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=FIRST||SEEYOU||HELLO>SECOND||BYE<1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1599,8 +1600,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=FIRST||SEEYOU||HELLO>FIRST||BYE<1.0.0)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=FIRST||SEEYOU||HELLO>FIRST||BYE<1.0.0)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1609,8 +1610,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=FIRST||SEEYOU||HELLO>SECOND||BYE<1.0.0)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=FIRST||SEEYOU||HELLO>SECOND||BYE<1.0.0)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1619,8 +1620,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.setProperty("SEEYOU","MAYBE");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=SECOND&&SEEYOU||HELLO>FIRST&&BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=SECOND&&SEEYOU||HELLO>FIRST&&BYE<1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1629,8 +1630,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.setProperty("SEEYOU","MAYBE");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=SECOND&&SEEYOU||HELLO>THIRD&&BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=SECOND&&SEEYOU||HELLO>THIRD&&BYE<1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1639,8 +1640,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.setProperty("SEEYOU","MAYBE");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=FIRST&&SEEYOU||HELLO>FIRST&&BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=FIRST&&SEEYOU||HELLO>FIRST&&BYE<1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1649,8 +1650,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=SECOND&&SEEYOU||HELLO>FIRST&&BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=SECOND&&SEEYOU||HELLO>FIRST&&BYE<1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1659,8 +1660,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=FIRST&&SEEYOU||HELLO>FIRST&&BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=FIRST&&SEEYOU||HELLO>FIRST&&BYE<1.0.0-abc)"));
         assertThat(true).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1669,8 +1670,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.setProperty("SEEYOU","MAYBE");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=SECOND&&SEEYOU||HELLO>FIRST&&BYE<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=SECOND&&SEEYOU||HELLO>FIRST&&BYE<0.0.19)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1679,8 +1680,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.setProperty("SEEYOU","MAYBE");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=SECOND&&SEEYOU||HELLO>THIRD&&BYE<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=SECOND&&SEEYOU||HELLO>THIRD&&BYE<0.0.19)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1689,8 +1690,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=SECOND&&SEEYOU||HELLO>THIRD&&BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=SECOND&&SEEYOU||HELLO>THIRD&&BYE<1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1699,8 +1700,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=SECOND&&SEEYOU||HELLO>FIRST&&BYE<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=SECOND&&SEEYOU||HELLO>FIRST&&BYE<0.0.19)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1709,8 +1710,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=SECOND&&SEEYOU||HELLO>THIRD&&BYE<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=SECOND&&SEEYOU||HELLO>THIRD&&BYE<0.0.19)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1719,8 +1720,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.setProperty("SEEYOU","MAYBE");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=FIRST&&SEEYOU||HELLO>THIRD&&BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=FIRST&&SEEYOU||HELLO>THIRD&&BYE<1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1729,8 +1730,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.setProperty("SEEYOU","MAYBE");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=FIRST&&SEEYOU||HELLO>FIRST&&BYE<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=FIRST&&SEEYOU||HELLO>FIRST&&BYE<0.0.19)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1739,8 +1740,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.setProperty("SEEYOU","MAYBE");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=FIRST&&SEEYOU||HELLO>THIRD&&BYE<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=FIRST&&SEEYOU||HELLO>THIRD&&BYE<0.0.19)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1749,8 +1750,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=FIRST&&SEEYOU||HELLO>THIRD&&BYE<1.0.0-abc)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=FIRST&&SEEYOU||HELLO>THIRD&&BYE<1.0.0-abc)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1759,8 +1760,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=FIRST&&SEEYOU||HELLO>FIRST&&BYE<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=FIRST&&SEEYOU||HELLO>FIRST&&BYE<0.0.19)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
@@ -1769,8 +1770,8 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","SECOND");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("SEEYOU");
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag("@skipOnEnv(HELLO=FIRST&&SEEYOU||HELLO>THIRD&&BYE<0.0.19)", 1));
+        List<PickleTag> tagList = new ArrayList<>();
+        tagList.add(new PickleTag(new PickleLocation(1,0),"@skipOnEnv(HELLO=FIRST&&SEEYOU||HELLO>THIRD&&BYE<0.0.19)"));
         assertThat(false).isEqualTo(runontag.tagsIteration(tagList,1));
     }
 
