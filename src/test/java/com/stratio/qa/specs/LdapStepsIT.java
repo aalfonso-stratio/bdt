@@ -20,7 +20,7 @@ import com.stratio.qa.utils.BaseTest;
 import cucumber.api.CucumberOptions;
 import org.testng.annotations.Test;
 
-@CucumberOptions(format = "json:target/cucumber.json", features = {"src/test/resources/features/ldapSteps.feature"})
+@CucumberOptions(plugin = "json:target/cucumber.json", features = {"src/test/resources/features/ldapSteps.feature"})
 public class LdapStepsIT extends BaseTest {
 
     @Test

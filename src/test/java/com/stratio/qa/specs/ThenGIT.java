@@ -22,7 +22,7 @@ import org.testng.annotations.Test;
 import org.testng.annotations.Factory;
 import com.stratio.qa.data.BrowsersDataProvider;
 
-@CucumberOptions(format = "json:target/cucumber.json", features ={
+@CucumberOptions(plugin = "json:target/cucumber.json", features ={
         "src/test/resources/features/readWebElementTextToVariable.feature",
         "src/test/resources/features/assertCommandExistsOnTimeOutIT.feature",
         "src/test/resources/features/assertSeleniumNElementExistsIT.feature",
