@@ -155,15 +155,15 @@ public class GivenGSpec extends BaseGSpec {
     public void createTableWithData(String table, String keyspace, DataTable datatable) {
         try {
             commonspec.getCassandraClient().useKeyspace(keyspace);
-            int attrLength = datatable.getGherkinRows().get(0).getCells().size();
+            int attrLength = datatable.getPickleRows().get(0).getCells().size();
             Map<String, String> columns = new HashMap<String, String>();
             ArrayList<String> pk = new ArrayList<String>();
 
             for (int i = 0; i < attrLength; i++) {
-                columns.put(datatable.getGherkinRows().get(0).getCells().get(i),
-                        datatable.getGherkinRows().get(1).getCells().get(i));
-                if ((datatable.getGherkinRows().size() == 3) && datatable.getGherkinRows().get(2).getCells().get(i).equalsIgnoreCase("PK")) {
-                    pk.add(datatable.getGherkinRows().get(0).getCells().get(i));
+                columns.put(datatable.getPickleRows().get(0).getCells().get(i).getValue(),
+                        datatable.getPickleRows().get(1).getCells().get(i).getValue());
+                if ((datatable.getPickleRows().size() == 3) && datatable.getPickleRows().get(2).getCells().get(i).getValue().equalsIgnoreCase("PK")) {
+                    pk.add(datatable.getPickleRows().get(0).getCells().get(i).getValue());
                 }
             }
             if (pk.isEmpty()) {
@@ -188,11 +188,11 @@ public class GivenGSpec extends BaseGSpec {
     public void insertData(String keyspace, String table, DataTable datatable) {
         try {
             commonspec.getCassandraClient().useKeyspace(keyspace);
-            int attrLength = datatable.getGherkinRows().get(0).getCells().size();
+            int attrLength = datatable.getPickleRows().get(0).getCells().size();
             Map<String, Object> fields = new HashMap<String, Object>();
-            for (int e = 1; e < datatable.getGherkinRows().size(); e++) {
+            for (int e = 1; e < datatable.getPickleRows().size(); e++) {
                 for (int i = 0; i < attrLength; i++) {
-                    fields.put(datatable.getGherkinRows().get(0).getCells().get(i), datatable.getGherkinRows().get(e).getCells().get(i));
+                    fields.put(datatable.getPickleRows().get(0).getCells().get(i).getValue(), datatable.getPickleRows().get(e).getCells().get(i).getValue());
 
                 }
                 commonspec.getCassandraClient().insertData(keyspace + "." + table, fields);

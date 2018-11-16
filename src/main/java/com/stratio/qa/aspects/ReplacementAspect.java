@@ -21,10 +21,18 @@ import com.stratio.qa.exceptions.NonReplaceableException;
 import com.stratio.qa.specs.CommonG;
 import com.stratio.qa.utils.ExceptionList;
 import com.stratio.qa.utils.ThreadProperty;
-import gherkin.I18n;
-import gherkin.formatter.Reporter;
-import gherkin.formatter.model.*;
+import cucumber.api.Result.Type;
+import cucumber.api.Scenario;
+import cucumber.runner.PickleTestStep;
+import cucumber.runner.TimeService;
+import cucumber.runtime.*;
+import cucumber.runtime.Runtime;
+import cucumber.runtime.io.ResourceLoader;
+import gherkin.events.PickleEvent;
+import gherkin.pickles.*;
+import gherkin.pickles.Argument;
 import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +42,8 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 
@@ -42,70 +52,41 @@ public class ReplacementAspect {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass().getCanonicalName());
 
+    private Glue glue;
+
     private String lastEchoedStep = "";
 
-
-    @Pointcut("(execution (gherkin.formatter.model.Scenario.new(..)) ||  execution (gherkin.formatter.model.ScenarioOutline.new(..))) && "
-            + "args (comments, tags, keyword, name, description, line, id) ")
-    protected void replacementScenarios(List<Comment> comments, List<Tag> tags, String keyword, String name, String description, Integer line, String id) {
+    @Pointcut("execution (cucumber.runtime.Runtime.new(..)) && "
+            + "args (resourceLoader, classLoader, backends, runtimeOptions, stopWatch, optionalGlue)")
+    protected void runtimeInit(ResourceLoader resourceLoader, ClassLoader classLoader, Collection<? extends Backend> backends, RuntimeOptions runtimeOptions, TimeService stopWatch, Glue optionalGlue) {
     }
 
-    @After(value = "replacementScenarios(comments, tags, keyword, name, description, line, id)")
-    public void aroundScenarios(JoinPoint jp, List<Comment> comments, List<Tag> tags, String keyword, String name, String description, Integer line, String id) throws Throwable {
-
-        BasicStatement scenario = (BasicStatement) jp.getThis();
-        String scenarioName = scenario.getName();
-        String newScenarioName = replacedElement(scenarioName, jp);
-
-        if (!scenarioName.equals(newScenarioName)) {
-            Field field = null;
-            Class current = scenario.getClass();
-            do {
-                try {
-                    field = current.getDeclaredField("name");
-                } catch (Exception e) { }
-            } while ((current = current.getSuperclass()) != null);
-
-            field.setAccessible(true);
-            field.set(scenario, replacedElement(name, jp));
-        }
+    @After(value = "runtimeInit(resourceLoader, classLoader, backends, runtimeOptions, stopWatch, optionalGlue)")
+    public void runtimeInitGlue(JoinPoint jp, ResourceLoader resourceLoader, ClassLoader classLoader, Collection<? extends Backend> backends, RuntimeOptions runtimeOptions, TimeService stopWatch, Glue optionalGlue) throws Throwable {
+        Runtime runtime = (Runtime) jp.getTarget();
+        glue = runtime.getGlue();
     }
 
-    @Pointcut("execution (public void cucumber.runtime.Runtime.runStep(..)) && "
-            + "args (featurePath, step, reporter, i18n)")
-    protected void replacementStar(String featurePath, Step step, Reporter reporter, I18n i18n) {
+
+    @Pointcut("execution (* cucumber.runner.Runner.runPickle(..)) && "
+            + "args (pickle)")
+    protected void replacementScenarios(PickleEvent pickle) {
     }
 
-    @Before(value = "replacementStar(featurePath, step, reporter, i18n)")
-    public void aroundReplacementStar(JoinPoint jp, String featurePath, Step step, Reporter reporter, I18n i18n) throws Throwable {
-        DocString docString = step.getDocString();
-        List<DataTableRow> rows = step.getRows();
-        if (docString != null) {
-            String value = replacedElement(docString.getValue(), jp);
-            Field field = docString.getClass().getField("value");
-            field.set(field, value);
-        }
-        if (rows != null) {
-            for (int r = 0; r < rows.size(); r++) {
-                List<String> cells = rows.get(r).getCells();
-                for (int c = 0; c < cells.size(); c++) {
-                    cells.set(c, replacedElement(cells.get(c), jp));
-                }
-            }
-        }
-
-        String stepName = step.getName();
-        String newName;
+    @Before(value = "replacementScenarios(pickle)")
+    public void aroundScenarios(JoinPoint jp, PickleEvent pickle) throws Throwable {
+        String scenarioName = pickle.pickle.getName();
+        String newScenarioName;
         try {
-            newName = replacedElement(stepName, jp);
+            newScenarioName = replacedElement(scenarioName, jp);
         } catch (Exception e) {
             ExceptionList.INSTANCE.getExceptions().add(e);
-            newName = "Placeholder not replaced -- " + e.toString();
+            newScenarioName = scenarioName + " | Placeholder not replaced -- " + e.toString();
         }
-        if (!stepName.equals(newName)) {
-            //field up to BasicStatement, from Step and ExampleStep
+        if (!newScenarioName.equals(pickle.pickle.getName())) {
+            Pickle pickle1 = pickle.pickle;
             Field field = null;
-            Class current = step.getClass();
+            Class current = pickle1.getClass();
             do {
                 try {
                     field = current.getDeclaredField("name");
@@ -113,11 +94,84 @@ public class ReplacementAspect {
             } while ((current = current.getSuperclass()) != null);
 
             field.setAccessible(true);
-            field.set(step, newName);
+            field.set(pickle1, newScenarioName);
         }
+    }
 
-        lastEchoedStep = step.getName();
-        logger.info("  {}{}", step.getKeyword(), step.getName());
+    @Pointcut("execution (* cucumber.api.TestStep.executeStep(..)) && "
+            + "args (language, scenario, skipSteps)")
+    protected void replacementStar(String language, Scenario scenario, boolean skipSteps) {
+    }
+
+    @Around(value = "replacementStar(language, scenario, skipSteps)")
+    public Type aroundReplacementStar(ProceedingJoinPoint pjp, String language, Scenario scenario, boolean skipSteps) throws Throwable {
+        if (pjp.getTarget() instanceof PickleTestStep) {
+            PickleTestStep pickleTestStep = (PickleTestStep) pjp.getTarget();
+            PickleStep step = pickleTestStep.getPickleStep();
+
+            // Replace elements in datatable
+            List<Argument> argumentList = new ArrayList<>(step.getArgument());
+            for (int a = 0; a < argumentList.size(); a++) {
+                if (argumentList.get(a) instanceof PickleTable) {
+                    PickleTable pickleTable = (PickleTable) argumentList.get(a);
+                    List<PickleRow> pickleRowList = new ArrayList<>(pickleTable.getRows());
+                    for (int r = 0; r < pickleRowList.size(); r++) {
+                        PickleRow pickleRow = pickleRowList.get(r);
+                        List<PickleCell> pickleCellList = new ArrayList<>(pickleRow.getCells());
+                        for (int c = 0; c < pickleCellList.size(); c++) {
+                            PickleCell pickleCell = pickleCellList.get(c);
+                            pickleCellList.set(c, new PickleCell(pickleCell.getLocation(), replacedElement(pickleCell.getValue(), pjp)));
+                        }
+                        pickleRowList.set(r, new PickleRow(pickleCellList));
+                    }
+                    pickleTable = new PickleTable(pickleRowList);
+                    argumentList.set(a, pickleTable);
+                }
+            }
+
+            // Set new datatable in PickleStep object
+            step = new PickleStep(step.getText(), argumentList, step.getLocations());
+
+            // Replace elements in step
+            String uri = pickleTestStep.getStepLocation().split(":")[0];
+            String stepName = step.getText();
+            String newName = replacedElement(stepName, pjp);
+            if (!stepName.equals(newName)) {
+                //field up to BasicStatement, from Step and ExampleStep
+                Field field = null;
+                Class current = step.getClass();
+                do {
+                    try {
+                        field = current.getDeclaredField("text");
+                    } catch (Exception e) { }
+                } while ((current = current.getSuperclass()) != null);
+
+                field.setAccessible(true);
+                field.set(step, newName);
+            }
+
+            lastEchoedStep = pickleTestStep.getStepText();
+            logger.info("  {}", pickleTestStep.getStepText());
+
+            // Run step
+            try {
+                StepDefinitionMatch definitionMatch = glue.stepDefinitionMatch(uri, step);
+                if (definitionMatch != null) {
+                    if (!skipSteps) {
+                        definitionMatch.runStep(language, scenario);
+                        return Type.PASSED;
+                    } else {
+                        definitionMatch.dryRunStep(language, scenario);
+                        return Type.SKIPPED;
+                    }
+                } else {
+                    return Type.UNDEFINED;
+                }
+            } catch (AmbiguousStepDefinitionsException asde) {
+                return (Type) pjp.proceed();
+            }
+        }
+        return (Type) pjp.proceed();
     }
 
     protected String replacedElement(String el, JoinPoint jp) throws NonReplaceableException {

@@ -16,7 +16,7 @@
 
 package com.stratio.qa.cucumber.testng;
 
-import gherkin.formatter.Formatter;
+import cucumber.api.formatter.Formatter;
 
 public interface ICucumberFormatter extends Formatter {
 

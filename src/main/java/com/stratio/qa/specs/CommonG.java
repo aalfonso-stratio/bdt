@@ -1399,11 +1399,11 @@ public class CommonG {
             List<Map<String, Object>> resultsListExpected = new ArrayList<Map<String, Object>>();
             Map<String, Object> resultsCucumber;
 
-            for (int e = 1; e < expectedResults.getGherkinRows().size(); e++) {
+            for (int e = 1; e < expectedResults.getPickleRows().size(); e++) {
                 resultsCucumber = new HashMap<String, Object>();
 
-                for (int i = 0; i < expectedResults.getGherkinRows().get(0).getCells().size(); i++) {
-                    resultsCucumber.put(expectedResults.getGherkinRows().get(0).getCells().get(i), expectedResults.getGherkinRows().get(e).getCells().get(i));
+                for (int i = 0; i < expectedResults.getPickleRows().get(0).getCells().size(); i++) {
+                    resultsCucumber.put(expectedResults.getPickleRows().get(0).getCells().get(i).getValue(), expectedResults.getPickleRows().get(e).getCells().get(i).getValue());
 
                 }
                 resultsListExpected.add(resultsCucumber);
@@ -1490,11 +1490,11 @@ public class CommonG {
             List<Map<String, Object>> resultsListExpected = new ArrayList<Map<String, Object>>();
             Map<String, Object> resultsCucumber;
 
-            for (int e = 1; e < expectedResults.getGherkinRows().size(); e++) {
+            for (int e = 1; e < expectedResults.getPickleRows().size(); e++) {
                 resultsCucumber = new HashMap<String, Object>();
 
-                for (int i = 0; i < expectedResults.getGherkinRows().get(0).getCells().size(); i++) {
-                    resultsCucumber.put(expectedResults.getGherkinRows().get(0).getCells().get(i), expectedResults.getGherkinRows().get(e).getCells().get(i));
+                for (int i = 0; i < expectedResults.getPickleRows().get(0).getCells().size(); i++) {
+                    resultsCucumber.put(expectedResults.getPickleRows().get(0).getCells().get(i).getValue(), expectedResults.getPickleRows().get(e).getCells().get(i).getValue());
 
                 }
                 resultsListExpected.add(resultsCucumber);
@@ -1563,11 +1563,11 @@ public class CommonG {
             List<Map<String, Object>> resultsListExpected = new ArrayList<Map<String, Object>>();
             Map<String, Object> resultsCucumber;
 
-            for (int e = 1; e < expectedResults.getGherkinRows().size(); e++) {
+            for (int e = 1; e < expectedResults.getPickleRows().size(); e++) {
                 resultsCucumber = new HashMap<String, Object>();
 
-                for (int i = 0; i < expectedResults.getGherkinRows().get(0).getCells().size(); i++) {
-                    resultsCucumber.put(expectedResults.getGherkinRows().get(0).getCells().get(i), expectedResults.getGherkinRows().get(e).getCells().get(i));
+                for (int i = 0; i < expectedResults.getPickleRows().get(0).getCells().size(); i++) {
+                    resultsCucumber.put(expectedResults.getPickleRows().get(0).getCells().get(i).getValue(), expectedResults.getPickleRows().get(e).getCells().get(i).getValue());
 
                 }
                 resultsListExpected.add(resultsCucumber);

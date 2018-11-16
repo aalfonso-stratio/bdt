@@ -25,13 +25,12 @@ import com.stratio.qa.utils.PreviousWebElements;
 import com.stratio.qa.utils.ThreadProperty;
 import cucumber.api.DataTable;
 import cucumber.api.java.en.Then;
-import gherkin.formatter.model.DataTableRow;
+import gherkin.pickles.PickleRow;
 import org.apache.zookeeper.KeeperException;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.Fail;
 import org.assertj.core.api.WritableAssertionInfo;
 import org.json.JSONArray;
-import org.ldaptive.LdapAttribute;
 import org.openqa.selenium.Cookie;
 import org.openqa.selenium.WebElement;
 
@@ -664,10 +663,10 @@ public class ThenGSpec extends BaseGSpec {
     public void matchWithExpresion(String envVar, DataTable table) throws Exception {
         String jsonString = ThreadProperty.get(envVar);
 
-        for (DataTableRow row : table.getGherkinRows()) {
-            String expression = row.getCells().get(0);
-            String condition = row.getCells().get(1);
-            String result = row.getCells().get(2);
+        for (PickleRow row : table.getPickleRows()) {
+            String expression = row.getCells().get(0).getValue();
+            String condition = row.getCells().get(1).getValue();
+            String result = row.getCells().get(2).getValue();
 
             String value = commonspec.getJSONPathString(jsonString, expression, null);
             commonspec.evaluateJSONElementOperation(value, condition, result);

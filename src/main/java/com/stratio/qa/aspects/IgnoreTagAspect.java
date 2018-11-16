@@ -16,12 +16,9 @@
 
 package com.stratio.qa.aspects;
 
-import cucumber.runtime.Runtime;
-import cucumber.runtime.model.CucumberScenario;
-import gherkin.formatter.Formatter;
-import gherkin.formatter.Reporter;
-import gherkin.formatter.model.Scenario;
-import gherkin.formatter.model.Tag;
+import cucumber.runner.Runner;
+import gherkin.events.PickleEvent;
+import gherkin.pickles.PickleTag;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -32,63 +29,56 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import static com.stratio.qa.aspects.IgnoreTagAspect.ignoreReasons.*;
 
 @Aspect
 public class IgnoreTagAspect {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass().getCanonicalName());
 
-    @Pointcut("execution (* cucumber.runtime.model.CucumberScenario.run(..)) && "
-            + "args (formatter, reporter, runtime)")
-    protected void addIgnoreTagPointcutScenario(Formatter formatter, Reporter reporter, Runtime runtime) {
+    @Pointcut("execution (* cucumber.runner.Runner.runPickle(..)) && "
+            + "args (pickle)")
+    protected void addIgnoreTagPointcutScenario(PickleEvent pickle) {
     }
 
     /**
      * @param pjp ProceedingJoinPoint
-     * @param formatter formatter
-     * @param reporter reporter
-     * @param runtime runtime
+     * @param pickle pickle
      * @throws Throwable exception
      */
-    @Around(value = "addIgnoreTagPointcutScenario(formatter, reporter, runtime)")
-    public void aroundAddIgnoreTagPointcut(ProceedingJoinPoint pjp, Formatter formatter, Reporter reporter,
-                                           Runtime runtime) throws Throwable {
+    @Around(value = "addIgnoreTagPointcutScenario(pickle)")
+    public void aroundAddIgnoreTagPointcut(ProceedingJoinPoint pjp, PickleEvent pickle) throws Throwable {
+        Runner runner = (Runner) pjp.getThis();
 
-        CucumberScenario scen = (CucumberScenario) pjp.getThis();
-        Scenario scenario = (Scenario) scen.getGherkinModel();
-
-        Class<?> sc = scen.getClass();
-        Method tt = sc.getSuperclass().getDeclaredMethod("tagsAndInheritedTags");
+        Class<?> sc = runner.getClass();
+        Method tt = sc.getDeclaredMethod("buildBackendWorlds");
         tt.setAccessible(true);
-        Set<Tag> tags = (Set<Tag>) tt.invoke(scen);
+        tt.invoke(runner); //this.buildBackendWorlds();
 
+        String scenarioName = pickle.pickle.getName();
+        List<PickleTag> pickleTagList = pickle.pickle.getTags();
         List<String> tagList = new ArrayList<>();
-        String scenarioName = scenario.getName();
-        tagList = tags.stream().map(Tag::getName).collect(Collectors.toList());
-
-        ignoreReasons exitReason = manageTags(tagList, scenarioName);
-        if (exitReason.equals(NOREASON)) {
-            logger.error("Scenario '" + scenario.getName() + "' failed due to wrong use of the @ignore tag. ");
+        for (PickleTag pt:pickleTagList) {
+            tagList.add(pt.getName());
         }
 
-        if ((!(exitReason.equals(NOTIGNORED))) && (!(exitReason.equals(NOREASON)))) {
-            runtime.buildBackendWorlds(reporter, tags, scenario);
-            formatter.startOfScenarioLifeCycle(scenario);
-            formatter.endOfScenarioLifeCycle(scenario);
-            runtime.disposeBackendWorlds(scenarioName+":"+scenario.getKeyword()+":"+scenario.getLine());
+        ignoreReasons exitReason = manageTags(tagList, scenarioName);
+        if (exitReason.equals(ignoreReasons.NOREASON)) {
+            logger.error("Scenario '" + scenarioName + "' failed due to wrong use of the @ignore tag.");
+        }
+
+        if ((!(exitReason.equals(ignoreReasons.NOTIGNORED))) && (!(exitReason.equals(ignoreReasons.NOREASON)))) {
+            tt = sc.getDeclaredMethod("disposeBackendWorlds");
+            tt.setAccessible(true);
+            tt.invoke(runner); //this.disposeBackendWorlds();
         } else {
             pjp.proceed();
         }
     }
 
     public ignoreReasons manageTags(List<String> tagList, String scenarioName) {
-        ignoreReasons exit = NOTIGNORED;
+        ignoreReasons exit = ignoreReasons.NOTIGNORED;
         if (tagList.contains("@ignore")) {
             exit = ignoreReasons.NOREASON;
             for (String tag: tagList) {

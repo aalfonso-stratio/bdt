@@ -21,6 +21,7 @@ import com.ning.http.client.AsyncHttpClientConfig;
 import com.stratio.qa.exceptions.SuppressableException;
 import com.stratio.qa.utils.CukesGHooks;
 import com.stratio.qa.utils.ThreadProperty;
+import cucumber.api.Result;
 import cucumber.api.Scenario;
 import cucumber.api.java.After;
 import cucumber.api.java.Before;
@@ -236,7 +237,7 @@ public class HookGSpec extends BaseGSpec {
 
     @After
     public void afterScenario(Scenario scenario) throws Throwable {
-        if (scenario.getStatus().equalsIgnoreCase("undefined")) {
+        if (scenario.getStatus() == Result.Type.UNDEFINED) {
             if (!commonspec.getExceptions().isEmpty()) {
                 scenario.write(commonspec.getExceptions().get(commonspec.getExceptions().size() - 1).toString());
             }
