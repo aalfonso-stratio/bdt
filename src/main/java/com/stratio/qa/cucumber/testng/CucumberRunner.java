@@ -139,6 +139,8 @@ public class CucumberRunner {
 
         ClassFinder classFinder = new ResourceLoaderClassFinder(resourceLoader, classLoader);
         runtime = new cucumber.runtime.Runtime(resourceLoader, classFinder, classLoader, runtimeOptions);
+
+        reporterTestNG.setEventPublisher(runtime.getEventBus());
     }
 
     /**

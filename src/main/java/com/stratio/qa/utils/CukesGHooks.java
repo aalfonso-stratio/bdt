@@ -20,7 +20,11 @@ import com.stratio.qa.cucumber.testng.ICucumberFormatter;
 import com.stratio.qa.cucumber.testng.ICucumberReporter;
 import com.stratio.qa.specs.BaseGSpec;
 import com.stratio.qa.specs.HookGSpec;
-import gherkin.formatter.model.*;
+import cucumber.api.Result;
+import cucumber.api.Scenario;
+import cucumber.api.event.EventPublisher;
+import cucumber.runtime.Match;
+import gherkin.ast.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,46 +41,36 @@ public class CukesGHooks extends BaseGSpec implements ICucumberReporter, ICucumb
     public CukesGHooks() {
     }
 
-    @Override
     public void syntaxError(String state, String event, List<String> legalEvents, String uri, Integer line) {
     }
 
-    @Override
     public void uri(String uri) {
     }
 
-    @Override
     public void examples(Examples examples) {
     }
 
-    @Override
     public void startOfScenarioLifeCycle(Scenario scenario) {
     }
 
-    @Override
     public void done() {
     }
 
-    @Override
     public void close() {
     }
 
-    @Override
     public void eof() {
     }
 
-    @Override
     public void background(Background background) {
         logger.info("Background: {}", background.getName());
     }
 
-    @Override
     public void feature(Feature feature) {
         this.feature = feature;
         ThreadProperty.set("feature", feature.getName());
     }
 
-    @Override
     public void scenario(Scenario scenario) {
         this.scenario = scenario;
         if (HookGSpec.loggerEnabled) {
@@ -86,43 +80,38 @@ public class CukesGHooks extends BaseGSpec implements ICucumberReporter, ICucumb
         ThreadProperty.set("scenario", scenario.getName());
     }
 
-    @Override
     public void scenarioOutline(ScenarioOutline scenarioOutline) {
     }
 
-    @Override
     public void step(Step step) {
     }
 
-    @Override
     public void endOfScenarioLifeCycle(Scenario scenario) {
         if (HookGSpec.loggerEnabled) {
             logger.info(""); //empty line to split scenarios
         }
     }
 
-    @Override
     public void before(Match match, Result result) {
     }
 
-    @Override
     public void result(Result result) {
     }
 
-    @Override
     public void after(Match match, Result result) {
     }
 
-    @Override
     public void match(Match match) {
     }
 
-    @Override
     public void embedding(String mimeType, byte[] data) {
     }
 
-    @Override
     public void write(String text) {
     }
 
+    @Override
+    public void setEventPublisher(EventPublisher eventPublisher) {
+
+    }
 }

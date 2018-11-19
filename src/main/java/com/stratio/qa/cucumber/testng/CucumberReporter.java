@@ -22,17 +22,21 @@ import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.Response;
 import com.stratio.qa.specs.CommonG;
 import com.stratio.qa.utils.ThreadProperty;
+import cucumber.api.Result;
+import cucumber.api.TestCase;
+import cucumber.api.TestStep;
+import cucumber.api.event.*;
+import cucumber.api.event.EventListener;
+import cucumber.api.formatter.StrictAware;
 import cucumber.runtime.CucumberException;
 import cucumber.runtime.Utils;
 import cucumber.runtime.io.URLOutputStream;
 import cucumber.runtime.io.UTF8OutputStreamWriter;
-import gherkin.formatter.Formatter;
-import gherkin.formatter.Reporter;
-import gherkin.formatter.model.*;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.*;
+import org.w3c.dom.Node;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -44,24 +48,16 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
-public class CucumberReporter implements Formatter, Reporter {
+public class CucumberReporter implements EventListener, StrictAware {
 
     public static final int DURATION_STRING = 1000000;
-
-    public static final int DEFAULT_LENGTH = 11;
-
-    public static final int DEFAULT_MAX_LENGTH = 140;
 
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 
@@ -81,8 +77,6 @@ public class CucumberReporter implements Formatter, Reporter {
 
     private final Element test;
 
-    private String featureName;
-
     private Writer writer;
 
     private Writer  writerJunit;
@@ -95,30 +89,44 @@ public class CucumberReporter implements Formatter, Reporter {
 
     private TestMethod testMethod;
 
-    private Examples tmpExamples;
-
-    private List<Result> tmpHooks = new ArrayList<Result>();
-
-    private List<Step> tmpSteps = new ArrayList<Step>();
-
-    private List<Step> tmpStepsBG = new ArrayList<Step>();
-
-    private Integer iteration = 0;
-
-    private Integer position = 0;
-
-    private String callerClass;
-
-    private Background background;
-
-    private String url;
-
-    private String cClass;
-
-    private String additional;
-
     private final Logger logger = LoggerFactory.getLogger(this.getClass()
             .getCanonicalName());
+
+    private EventHandler<TestSourceRead> testSourceReadHandler = new EventHandler<TestSourceRead>() {
+        @Override
+        public void receive(TestSourceRead event) {
+            handleTestSourceRead(event);
+        }
+    };
+
+    private EventHandler<TestCaseStarted> caseStartedHandler = new EventHandler<TestCaseStarted>() {
+        @Override
+        public void receive(TestCaseStarted event) {
+            handleTestCaseStarted(event);
+        }
+    };
+
+    private EventHandler<TestStepFinished> stepFinishedHandler = new EventHandler<TestStepFinished>() {
+        @Override
+        public void receive(TestStepFinished event) {
+            handleTestStepFinished(event);
+        }
+    };
+
+    private EventHandler<TestCaseFinished> caseFinishedHandler = new EventHandler<TestCaseFinished>() {
+        @Override
+        public void receive(TestCaseFinished event) {
+            handleTestCaseFinished(event);
+        }
+    };
+
+    private EventHandler<TestRunFinished> runFinishedHandler = new EventHandler<TestRunFinished>() {
+        @Override
+        public void receive(TestRunFinished event) {
+            finishReport();
+        }
+    };
+
     /**
      * Constructor of cucumberReporter.
      *
@@ -127,16 +135,30 @@ public class CucumberReporter implements Formatter, Reporter {
      * @throws IOException exception
      */
     public CucumberReporter(String url, String cClass, String additional) throws IOException {
-        this.url = url;
-        this.cClass = cClass;
-        this.additional = additional;
+        URLOutputStream urlOS = null;
+        try {
+            urlOS = new URLOutputStream(Utils.toURL(url + cClass + additional + "TESTNG.xml"));
+            this.writer = new UTF8OutputStreamWriter(urlOS);
+        } catch (Exception e) {
+            logger.error("error writing TESTNG.xml file", e);
+        }
+        try {
+            urlOS = new URLOutputStream(Utils.toURL(url + cClass + additional + "JUNIT.xml"));
+            this.writerJunit = new UTF8OutputStreamWriter(urlOS);
+        } catch (Exception e) {
+            logger.error("error writing JUNIT.xml file", e);
+        }
+        TestMethod.treatSkippedAsFailure = false;
+        TestMethod.currentFeatureFile = null;
+        TestMethod.treatConditionallySkippedAsFailure = false;
+        TestMethod.previousTestCaseName = "";
+        TestMethod.exampleNumber = 1;
 
         try {
             document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
             results = document.createElement("testng-results");
             suite = document.createElement("suite");
             test = document.createElement("test");
-            callerClass = cClass;
             suite.appendChild(test);
             results.appendChild(suite);
             document.appendChild(results);
@@ -151,186 +173,106 @@ public class CucumberReporter implements Formatter, Reporter {
     }
 
     @Override
-    public void syntaxError(String state, String event, List<String> legalEvents, String uri, Integer line) {
+    public void setEventPublisher(EventPublisher publisher) {
+        publisher.registerHandlerFor(TestSourceRead.class, testSourceReadHandler);
+        publisher.registerHandlerFor(TestCaseStarted.class, caseStartedHandler);
+        publisher.registerHandlerFor(TestCaseFinished.class, caseFinishedHandler);
+        publisher.registerHandlerFor(TestStepFinished.class, stepFinishedHandler);
+        publisher.registerHandlerFor(TestRunFinished.class, runFinishedHandler);
     }
 
     @Override
-    public void uri(String uri) {
+    public void setStrict(boolean strict) {
+        TestMethod.treatSkippedAsFailure = strict;
     }
 
-    @Override
-    public void feature(Feature feature) {
-        featureName = feature.getName();
-        clazz = document.createElement("class");
-        clazz.setAttribute("name", callerClass);
-        test.appendChild(clazz);
+    private void handleTestSourceRead(TestSourceRead event) {
+        TestMethod.testSources.addTestSourceReadEvent(event.uri, event);
     }
 
-    @Override
-    public void scenario(Scenario scenario) {
-    }
-
-    @Override
-    public void scenarioOutline(ScenarioOutline scenarioOutline) {
-        iteration = 1;
-    }
-
-    @Override
-    public void examples(Examples examples) {
-        tmpExamples = examples;
-    }
-
-    @Override
-    public void startOfScenarioLifeCycle(Scenario scenario) {
+    private void handleTestCaseStarted(TestCaseStarted event) {
+        if (TestMethod.currentFeatureFile == null || !TestMethod.currentFeatureFile.equals(event.testCase.getUri())) {
+            TestMethod.currentFeatureFile = event.testCase.getUri();
+            TestMethod.previousTestCaseName = "";
+            TestMethod.exampleNumber = 1;
+            clazz = document.createElement("class");
+            clazz.setAttribute("name", TestMethod.testSources.getFeature(event.testCase.getUri()).getName());
+            test.appendChild(clazz);
+        }
+        //TestNG
         root = document.createElement("test-method");
-        jUnitRoot = jUnitDocument.createElement("testcase");
-        jUnitSuite.appendChild(jUnitRoot);
         clazz.appendChild(root);
-        testMethod = new TestMethod(featureName, scenario);
-        testMethod.hooks = tmpHooks;
-        tmpStepsBG.clear();
-        if (tmpExamples == null) {
-            testMethod.steps = tmpSteps;
-            testMethod.stepsbg = null;
+        testMethod = new TestMethod(event.testCase);
+        testMethod.start(root);
+        //JUnit
+        jUnitRoot = testMethod.createElement(jUnitDocument);
+        testMethod.writeElement(jUnitDocument, jUnitRoot);
+        jUnitSuite.appendChild(jUnitRoot);
+        increaseAttributeValue(jUnitSuite, "tests");
+    }
+
+    private void handleTestStepFinished(TestStepFinished event) {
+        if (!event.testStep.isHook()) {
+            testMethod.steps.add(event.testStep);
+            testMethod.results.add(event.result);
         } else {
-            testMethod.steps = new ArrayList<Step>();
-            testMethod.stepsbg = tmpStepsBG;
+            testMethod.hooks.add(event.result);
         }
-        testMethod.examplesData = tmpExamples;
-        testMethod.start(root, iteration, jUnitRoot);
-        iteration++;
     }
 
-    @Override
-    public void background(Background background) {
-        this.background = background;
-    }
-
-    @Override
-    public void step(Step step) {
-        boolean bgstep = false;
-        if (background != null && (background.getLineRange().getLast() <= step.getLine())
-                && (step.getLine() >= background.getLineRange().getFirst())) {
-            tmpStepsBG.add(step);
-            bgstep = true;
-        }
-
-        if (step.getClass().toString().contains("ExampleStep") && !bgstep) {
-            testMethod.steps.add(step);
+    private void handleTestCaseFinished(TestCaseFinished event) {
+        testMethod.finish(document, root, jUnitDocument, jUnitRoot, event.result); //TODO Revisar
+        if (testMethod.steps.isEmpty()) {
+            testMethod.handleEmptyTestCase(jUnitDocument, jUnitRoot, event.result);
         } else {
-            tmpSteps.add(step);
+            testMethod.addTestCaseElement(jUnitDocument, jUnitRoot, event.result);
         }
     }
 
-    @Override
-    public void endOfScenarioLifeCycle(Scenario scenario) {
-
+    private void finishReport() {
         try {
-            testMethod.finish(document, root, this.position, scenario.getTags(), jUnitDocument, jUnitRoot);
-        } catch (ExecutionException  | InterruptedException  | IOException e) {
-            e.printStackTrace();
-        }
-
-        this.position++;
-        if ((tmpExamples != null) && (iteration >= tmpExamples.getRows().size())) {
-            tmpExamples = null;
-        }
-        tmpHooks.clear();
-        tmpSteps.clear();
-        tmpStepsBG.clear();
-        testMethod = null;
-        jUnitRoot.setAttribute("classname", callerClass);
-    }
-
-    @Override
-    public void eof() {
-    }
-
-    @Override
-    public void done() {
-        try {
-            results.setAttribute("total", String.valueOf(getElementsCountByAttribute(suite, STATUS, ".*")));
-            results.setAttribute("passed", String.valueOf(getElementsCountByAttribute(suite, STATUS, "PASS")));
-            results.setAttribute("failed", String.valueOf(getElementsCountByAttribute(suite, STATUS, "FAIL")));
-            results.setAttribute("skipped", String.valueOf(getElementsCountByAttribute(suite, STATUS, "SKIP")));
+            // TestNG
+            results.setAttribute("total", String.valueOf(getElementsCountByAttribute(suite, "status", ".*")));
+            results.setAttribute("passed", String.valueOf(getElementsCountByAttribute(suite, "status", "PASS")));
+            results.setAttribute("failed", String.valueOf(getElementsCountByAttribute(suite, "status", "FAIL")));
+            results.setAttribute("skipped", String.valueOf(getElementsCountByAttribute(suite, "status", "SKIP")));
             suite.setAttribute("name", CucumberReporter.class.getName());
-            suite.setAttribute("duration-ms",
-                    String.valueOf(getTotalDuration(suite.getElementsByTagName("test-method"))));
+            suite.setAttribute("duration-ms", String.valueOf(getTotalDuration(suite.getElementsByTagName("test-method"))));
             test.setAttribute("name", CucumberReporter.class.getName());
-            test.setAttribute("duration-ms",
-                    String.valueOf(getTotalDuration(suite.getElementsByTagName("test-method"))));
+            test.setAttribute("duration-ms", String.valueOf(getTotalDuration(suite.getElementsByTagName("test-method"))));
+
             Transformer transformer = TransformerFactory.newInstance().newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-
-            URLOutputStream urlOS = null;
-            try {
-                urlOS = new URLOutputStream(Utils.toURL(url + cClass + additional + "TESTNG.xml"));
-                this.writer = new UTF8OutputStreamWriter(urlOS);
-            } catch (Exception e) {
-                logger.error("error writing TESTNG.xml file", e);
-            }
-
             StreamResult streamResult = new StreamResult(writer);
             DOMSource domSource = new DOMSource(document);
             transformer.transform(domSource, streamResult);
-            jUnitSuite.setAttribute("name", callerClass + "." + featureName);
-            jUnitSuite.setAttribute("tests", String.valueOf(getElementsCountByAttribute(suite, STATUS, ".*")));
-            jUnitSuite.setAttribute("failures", String.valueOf(getElementsCountByAttribute(suite, STATUS, "FAIL")));
-            jUnitSuite.setAttribute("errors", String.valueOf(getElementsCountByAttribute(suite, STATUS, "FAIL")));
-            jUnitSuite.setAttribute("skipped", String.valueOf(getElementsCountByAttribute(suite, STATUS, "SKIP")));
-            jUnitSuite.setAttribute("timestamp", new java.util.Date().toString());
+            closeQuietly(writer);
+
+            // JUnit
+            // set up a transformer
+            jUnitSuite.setAttribute("name", CucumberReporter.class.getName());
+            jUnitSuite.setAttribute("failures", String.valueOf(jUnitSuite.getElementsByTagName("failure").getLength()));
+            jUnitSuite.setAttribute("skipped", String.valueOf(jUnitSuite.getElementsByTagName("skipped").getLength()));
+            jUnitSuite.setAttribute("time", sumTimes(jUnitSuite.getElementsByTagName("testcase")));
+            jUnitSuite.setAttribute("tests", String.valueOf(getElementsCountByAttribute(suite, STATUS, ".*"))); //TODO: Revisar
+            jUnitSuite.setAttribute("errors", String.valueOf(getElementsCountByAttribute(suite, STATUS, "FAIL"))); //TODO: Revisar
+            jUnitSuite.setAttribute("timestamp", new java.util.Date().toString()); //TODO: Revisar
             jUnitSuite.setAttribute("time",
-                      String.valueOf(BigDecimal.valueOf(getTotalDurationMs(suite.getElementsByTagName("test-method"))).setScale(3, BigDecimal.ROUND_HALF_UP).floatValue()));
+                    String.valueOf(BigDecimal.valueOf(getTotalDurationMs(suite.getElementsByTagName("test-method"))).setScale(3, BigDecimal.ROUND_HALF_UP).floatValue())); //TODO: Revisar
 
-            Transformer transformerJunit = TransformerFactory.newInstance().newTransformer();
-            transformerJunit.setOutputProperty(OutputKeys.INDENT, "yes");
-
-            try {
-                urlOS = new URLOutputStream(Utils.toURL(url + cClass + additional + "JUNIT.xml"));
-                this.writerJunit = new UTF8OutputStreamWriter(urlOS);
-            } catch (Exception e) {
-                logger.error("error writing TESTNG.xml file", e);
+            if (jUnitSuite.getElementsByTagName("testcase").getLength() == 0) {
+                addDummyTestCase(); // to avoid failed Jenkins jobs
             }
-
-            StreamResult streamResultJunit = new StreamResult(writerJunit);
-            DOMSource domSourceJunit = new DOMSource(jUnitDocument);
-            transformerJunit.transform(domSourceJunit, streamResultJunit);
-
+            TransformerFactory transfac = TransformerFactory.newInstance();
+            Transformer trans = transfac.newTransformer();
+            trans.setOutputProperty(OutputKeys.INDENT, "yes");
+            StreamResult result = new StreamResult(writerJunit);
+            DOMSource source = new DOMSource(jUnitDocument);
+            trans.transform(source, result);
+            closeQuietly(writerJunit);
         } catch (TransformerException e) {
             throw new CucumberException("Error transforming report.", e);
         }
-    }
-
-    @Override
-    public void close() {
-    }
-
-    // Reporter methods
-    @Override
-    public void before(Match match, Result result) {
-        tmpHooks.add(result);
-    }
-
-    @Override
-    public void match(Match match) {
-    }
-
-    @Override
-    public void result(Result result) {
-        testMethod.results.add(result);
-    }
-
-    @Override
-    public void embedding(String mimeType, byte[] data) {
-    }
-
-    @Override
-    public void write(String text) {
-    }
-
-    @Override
-    public void after(Match match, Result result) {
-        testMethod.hooks.add(result);
     }
 
     private int getElementsCountByAttribute(Node node, String attributeName, String attributeValue) {
@@ -371,54 +313,85 @@ public class CucumberReporter implements Formatter, Reporter {
         return getTotalDuration(testCaseNodes) / 1000;
     }
 
-    public final class TestMethod {
+    private void increaseAttributeValue(Element element, String attribute) {
+        int value = 0;
+        if (element.hasAttribute(attribute)) {
+            value = Integer.parseInt(element.getAttribute(attribute));
+        }
+        element.setAttribute(attribute, String.valueOf(++value));
+    }
 
-        private boolean treatSkippedAsFailure = false;
+    private void addDummyTestCase() {
+        Element dummy = jUnitDocument.createElement("testcase");
+        dummy.setAttribute("classname", "dummy");
+        dummy.setAttribute("name", "dummy");
+        jUnitSuite.appendChild(dummy);
+        Element skipped = jUnitDocument.createElement("skipped");
+        skipped.setAttribute("message", "No features found");
+        dummy.appendChild(skipped);
+    }
+
+    private String sumTimes(NodeList testCaseNodes) {
+        double totalDurationSecondsForAllTimes = 0.0d;
+        for (int i = 0; i < testCaseNodes.getLength(); i++) {
+            try {
+                double testCaseTime =
+                        Double.parseDouble(testCaseNodes.item(i).getAttributes().getNamedItem("time").getNodeValue());
+                totalDurationSecondsForAllTimes += testCaseTime;
+            } catch (NumberFormatException e) {
+                throw new CucumberException(e);
+            } catch (NullPointerException e) {
+                throw new CucumberException(e);
+            }
+        }
+        DecimalFormat nfmt = (DecimalFormat) NumberFormat.getNumberInstance(Locale.US);
+        nfmt.applyPattern("0.######");
+        return nfmt.format(totalDurationSecondsForAllTimes);
+    }
+
+    private static void closeQuietly(Closeable out) {
+        try {
+            out.close();
+        } catch (IOException ignored) {
+            // go gentle into that good night
+        }
+    }
+
+    public static class TestMethod {
+
+        static String currentFeatureFile;
+
+        static String previousTestCaseName;
+
+        static int exampleNumber;
+
+        static final TestSourcesModel testSources = new TestSourcesModel();
+
+        static boolean treatSkippedAsFailure = false;
+
+        static boolean treatConditionallySkippedAsFailure = false;
 
         private final List<Result> results = new ArrayList<Result>();
 
-        private Scenario scenario = null;
+        private TestCase scenario = null;
 
-        private String featureName;
+        private List<TestStep> steps = new ArrayList<TestStep>();
 
-        private Examples examplesData;
+        private List<Result> hooks = new ArrayList<Result>();
 
-        private List<Step> steps;
+        private static final DecimalFormat NUMBER_FORMAT = (DecimalFormat) NumberFormat.getNumberInstance(Locale.US);
 
-        private List<Step> stepsbg;
+        static {
+            NUMBER_FORMAT.applyPattern("0.######");
+        }
 
-        private List<Result> hooks;
-
-        private Integer iteration = 1;
-
-        public TestMethod(String feature, Scenario scenario) {
-            this.featureName = feature;
+        public TestMethod(TestCase scenario) {
             this.scenario = scenario;
         }
 
-        private void start(Element element, Integer iteration, Element JunitElement) {
-            this.iteration = iteration;
-            String testSuffix = System.getProperty("TESTSUFFIX");
-            String name = scenario.getName();
-            if (testSuffix != null) {
-                name = name + " [" + testSuffix + "]";
-            }
-            if ((examplesData == null) || (this.iteration >= examplesData.getRows().size())) {
-                element.setAttribute("name", name);
-                JunitElement.setAttribute("name", name);
-                ThreadProperty.set("dataSet", "");
-            } else {
-                String data = obtainOutlineScenariosExamples(examplesData.getRows().get(iteration).getCells().toString());
-                element.setAttribute("name", name + " " + data);
-                JunitElement.setAttribute("name", name + " " + data);
-                ThreadProperty.set("dataSet", data);
-            }
+        private void start(Element element) {
+            element.setAttribute("name", calculateElementName(scenario));
             element.setAttribute("started-at", DATE_FORMAT.format(new Date()));
-        }
-
-        public String obtainOutlineScenariosExamples(String examplesData) {
-            String data = examplesData.replaceAll("\"", "¨");
-            return data;
         }
 
         /**
@@ -474,181 +447,56 @@ public class CucumberReporter implements Formatter, Reporter {
          *
          * @param doc report document
          * @param element scenario execution result
-         * @param position position of element in document
-         * @param tags tags that performs conditional inclusion of element
          * @param docJunit docJunit report document
          * @param Junit Junit scenario execution result
          * @throws ExecutionException exception
          * @throws InterruptedException exception
          * @throws IOException exception
          */
-        public void finish(Document doc, Element element, Integer position, List<Tag> tags, Document docJunit,
-                           Element Junit) throws ExecutionException, InterruptedException, IOException {
-
-            Junit.setAttribute("time", String.valueOf(calculateTotalDurationString() / 1000));
-
+        public void finish(Document doc, Element element, Document docJunit, Element Junit, Result eventResult) {
+            if (steps.isEmpty()) {
+                handleEmptyTestCase(docJunit, Junit, eventResult);
+            } else {
+                addTestCaseElement(docJunit, Junit, eventResult);
+            }
             element.setAttribute("duration-ms", String.valueOf(calculateTotalDurationString()));
             element.setAttribute("finished-at", DATE_FORMAT.format(new Date()));
 
             StringBuilder stringBuilder = new StringBuilder();
-
-            List<Step> mergedsteps = new ArrayList<Step>();
-            if (stepsbg != null) {
-                mergedsteps.addAll(stepsbg);
-                mergedsteps.addAll(steps);
-            } else {
-                mergedsteps.addAll(steps);
-            }
-            addStepAndResultListing(stringBuilder, mergedsteps);
+            addStepAndResultListing(stringBuilder);
             Result skipped = null;
             Result failed = null;
-            Boolean ignored = false;
-            Boolean ignoreReason = false;
-            String exceptionmsg = "Failed";
-            String ticket = "";
-            Boolean isJiraTicketDone = false;
-            Boolean isWrongTicket = false;
-            Boolean ignoreRun = false;
-
-            List<String> tagList = new ArrayList<>();
-            tagList = tags.stream().map(Tag::getName).collect(Collectors.toList());
-
-            if (tagList.contains("@ignore")) {
-                ignored = true;
-                for (String tag: tagList) {
-                    Pattern pattern = Pattern.compile("@tillfixed\\((.*?)\\)");
-                    Matcher matcher = pattern.matcher(tag);
-                    if (matcher.find()) {
-                        ticket = matcher.group(1);
-//                        if (isValidJiraTicket(ticket)) {
-                        if (true) {
-                            exceptionmsg = "This scenario was skipped because of a pending Jira ticket: " + ticket;
-                            ignoreReason = true;
-                        }
-                        break;
-                    }
+            for (Result result : results) {
+                if (result.is(Result.Type.FAILED) || result.is(Result.Type.AMBIGUOUS)) {
+                    failed = result;
                 }
-
-                if (tagList.contains("@unimplemented")) {
-                    exceptionmsg = "This scenario was skipped because of it is not yet implemented";
-                    ignoreReason = true;
-                }
-
-                if (tagList.contains("@manual")) {
-                    ignoreReason = true;
-                    exceptionmsg = "This scenario was skipped because it is marked as manual.";
-                }
-
-                if (tagList.contains("@toocomplex")) {
-                    exceptionmsg = "This scenario was skipped because of being too complex to test";
-                    ignoreReason = true;
-                }
-
-                if (tagList.contains("@envCondition")) {
-                    ignoreRun = true;
+                if (result.is(Result.Type.UNDEFINED) || result.is(Result.Type.PENDING)) {
+                    skipped = result;
                 }
             }
-
-            String msg1 = "";
-            String msg2 = "";
-
-            if (ignoreRun) {
-                docJunit.getDocumentElement().getLastChild().removeChild(docJunit.getDocumentElement().getLastChild().getLastChild());
-                return;
-            } else if (ignored && (!ignoreReason || (ignoreReason && isJiraTicketDone) || (ignoreReason && isWrongTicket))) {
-                element.setAttribute(STATUS, "FAIL");
-                if (isJiraTicketDone) {
-                    msg1 = "The scenario was ignored due an already done (or in progress) ticket. " + "https://stratio.atlassian.net/browse/" + ticket;
-                } else if (isWrongTicket) {
-                    msg1 = "The scenario was ignored due to unexistant ticket " + ticket;
-                } else {
-                    msg1 = "The scenario has no valid reason for being ignored. \n Valid values: @tillfixed(ISSUE-007) @unimplemented @manual @toocomplex";
+            for (Result result : hooks) {
+                if (failed == null && result.is(Result.Type.FAILED)) {
+                    failed = result;
                 }
-
-                Element exception = createException(doc, msg1, msg1, msg2);
+            }
+            if (failed != null) {
+                element.setAttribute("status", "FAIL");
+                StringWriter stringWriter = new StringWriter();
+                failed.getError().printStackTrace(new PrintWriter(stringWriter));
+                Element exception = createException(doc, failed.getError().getClass().getName(), stringBuilder.toString(), stringWriter.toString());
                 element.appendChild(exception);
-                Element systemOut = createExceptionJunit(docJunit, msg1, msg1, msg2);
-                Junit.appendChild(systemOut);
-
-            } else if (ignored && ignoreReason) {
-                element.setAttribute(STATUS, "SKIP");
-                Element exception = createException(doc, "skipped",
-                        exceptionmsg, " ");
-                element.appendChild(exception);
-                Element skippedElementJunit = docJunit.createElement("skipped");
-                Junit.appendChild(skippedElementJunit);
-                Element systemOut = systemOutPrintJunit(docJunit, exceptionmsg);
-                Junit.appendChild(systemOut);
-
-            } else if ((stringBuilder.toString().contains("${")) || (stringBuilder.toString().contains("!{")) || (stringBuilder.toString().contains("@{"))) {
-                element.setAttribute(STATUS, "FAIL");
-                Element exception = createException(doc, "The scenario has unreplaced variables.",
-                        "The scenario has unreplaced variables.", " ");
-                element.appendChild(exception);
-                Element exceptionJunit = createExceptionJunit(docJunit, "The scenario has unreplaced variables.",
-                        "The scenario has unreplaced variables.", " ");
-                Junit.appendChild(exceptionJunit);
-                Element systemOut = systemOutPrintJunit(docJunit, stringBuilder.toString());
-                Junit.appendChild(systemOut);
-            } else {
-                for (Result result : results) {
-                    if ("failed".equals(result.getStatus())) {
-                        failed = result;
-                    } else if ("undefined".equals(result.getStatus()) || "pending".equals(result.getStatus())) {
-                        skipped = result;
-                    }
-                }
-                for (Result result : hooks) {
-                    if (failed == null && "failed".equals(result.getStatus())) {
-                        failed = result;
-                    }
-                }
-                if (failed != null) {
-                    element.setAttribute(STATUS, "FAIL");
-                    StringWriter stringWriter = new StringWriter();
-                    if (failed.getErrorMessage().contains("An important scenario has failed!")) {
-                        element.setAttribute(STATUS, "SKIP");
-                        Element skippedElementJunit = docJunit.createElement("skipped");
-                        Junit.appendChild(skippedElementJunit);
-                        Element systemOut = systemOutPrintJunit(docJunit, stringBuilder.toString());
-                        Junit.appendChild(systemOut);
-                    } else {
-                        failed.getError().printStackTrace(new PrintWriter(stringWriter));
-                        Element exception = createException(doc, failed.getError().getClass().getName(),
-                                stringBuilder.toString(), stringWriter.toString());
-                        element.appendChild(exception);
-                        Element exceptionJunit = createExceptionJunit(docJunit, failed.getError().getClass().getName(),
-                                stringBuilder.toString(), stringWriter.toString());
-                        Junit.appendChild(exceptionJunit);
-                    }
-                } else if (skipped != null) {
-                    if (treatSkippedAsFailure) {
-                        element.setAttribute(STATUS, "FAIL");
-                        Element exception = createException(doc, "The scenario has pending or undefined step(s)",
-                                stringBuilder.toString(), "The scenario has pending or undefined step(s)");
-                        element.appendChild(exception);
-                        Element exceptionJunit = createExceptionJunit(docJunit,
-                                "The scenario has pending or undefined step(s)", stringBuilder.toString(),
-                                "The scenario has pending or undefined step(s)");
-                        Junit.appendChild(exceptionJunit);
-                    } else {
-                        element.setAttribute(STATUS, "SKIP");
-                        Element skippedElementJunit = docJunit.createElement("skipped");
-                        Junit.appendChild(skippedElementJunit);
-                        Element systemOut = systemOutPrintJunit(docJunit, stringBuilder.toString());
-                        Junit.appendChild(systemOut);
-                    }
-
-                } else {
-                    element.setAttribute(STATUS, "PASS");
-                    Element exception = createException(doc, "NonRealException", stringBuilder.toString(), " ");
+            } else if (skipped != null) {
+                if (treatSkippedAsFailure) {
+                    element.setAttribute("status", "FAIL");
+                    Element exception = createException(doc, "The scenario has pending or undefined step(s)", stringBuilder.toString(), "The scenario has pending or undefined step(s)");
                     element.appendChild(exception);
-                    Element systemOut = systemOutPrintJunit(docJunit, stringBuilder.toString());
-                    Junit.appendChild(systemOut);
+                } else {
+                    element.setAttribute("status", "SKIP");
                 }
+            } else {
+                element.setAttribute("status", "PASS");
             }
         }
-
 
         private double calculateTotalDurationString() {
             double totalDurationNanos = 0;
@@ -661,48 +509,31 @@ public class CucumberReporter implements Formatter, Reporter {
             return totalDurationNanos / DURATION_STRING;
         }
 
-        public void addStepAndResultListing(StringBuilder sb, List<Step> mergedsteps) {
+        private String calculateTotalDurationString(Result result) {
+            return NUMBER_FORMAT.format(((double) result.getDuration()) / 1000000000);
+        }
 
-            for (int i = 0; i < mergedsteps.size(); i++) {
+        public void addStepAndResultListing(StringBuilder sb) {
+            for (int i = 0; i < steps.size(); i++) {
+                int length = sb.length();
                 String resultStatus = "not executed";
-                String resultStatusWarn = "*";
                 if (i < results.size()) {
-                    resultStatus = results.get(i).getStatus();
-                    resultStatusWarn = ((results.get(i).getError() != null) && (results.get(i).getStatus()
-                            .equals("passed"))) ? "(W)" : "";
+                    resultStatus = results.get(i).getStatus().lowerCaseName();
                 }
-                sb.append(mergedsteps.get(i).getKeyword());
-                sb.append(mergedsteps.get(i).getName());
-                int len = 0;
-                len = mergedsteps.get(i).getKeyword().length() + mergedsteps.get(i).getName().length();
-                if (mergedsteps.get(i).getRows() != null) {
-                    for (DataTableRow row : mergedsteps.get(i).getRows()) {
-                        StringBuilder strrowBuilder = new StringBuilder();
-                        strrowBuilder.append("| ");
-                        for (String cell : row.getCells()) {
-                            strrowBuilder.append(cell).append(" | ");
-                        }
-                        String strrow = strrowBuilder.toString();
-                        len = strrow.length() + DEFAULT_LENGTH;
-                        sb.append("\n           ");
-                        sb.append(strrow);
-                    }
-                }
-                for (int j = 0; j + len < DEFAULT_MAX_LENGTH; j++) {
+                sb.append(testSources.getKeywordFromSource(currentFeatureFile, steps.get(i).getStepLine()) + steps.get(i).getStepText());
+                do {
                     sb.append(".");
-                }
-
+                } while (sb.length() - length < 76);
                 sb.append(resultStatus);
-                sb.append(resultStatusWarn);
                 sb.append("\n");
             }
-            String cap = "";
-            if (!("".equals(cap = hasCapture(featureName, scenario.getName())))) {
+            String cap;
+            if (!("".equals(cap = hasCapture(scenario.getName())))) {
                 sb.append("evidence @ " + System.getProperty("BUILD_URL", "") + "/artifact/testsAT/" + cap.replaceAll("", ""));
             }
         }
 
-        private String hasCapture(String feat, String scen) {
+        private String hasCapture(String scen) {
             String testSuffix = System.getProperty("TESTSUFFIX");
             File dir;
             if (testSuffix != null) {
@@ -714,7 +545,7 @@ public class CucumberReporter implements Formatter, Reporter {
             Collection<File> files = FileUtils.listFiles(dir, imgext, true);
 
             for (File file : files) {
-                if (file.getPath().contains(featureName.replaceAll(" ", "_") + "." + scenario.getName().replaceAll(" ", "_")) &&
+                if (file.getPath().contains(scen.replaceAll(" ", "_")) &&
                         file.getName().contains("assert")) {
                     return file.toString();
                 }
@@ -739,19 +570,84 @@ public class CucumberReporter implements Formatter, Reporter {
             return exceptionElement;
         }
 
-        private Element createExceptionJunit(Document doc, String clazz, String message, String stacktrace) {
-            Element exceptionElement = doc.createElement("failure");
-            if (message != null) {
-                exceptionElement.setAttribute("message", "\r\n" + message + "\r\n");
-            }
-            exceptionElement.appendChild(doc.createCDATASection(stacktrace));
-            return exceptionElement;
+        private Element createElement(Document doc) {
+            return doc.createElement("testcase");
         }
 
-        private Element systemOutPrintJunit(Document doc, String message) {
-            Element systemOut = doc.createElement("system-out");
-            systemOut.appendChild(doc.createCDATASection("\r\n" + message + "\r\n"));
-            return systemOut;
+        private void writeElement(Document doc, Element tc) {
+            tc.setAttribute("classname", testSources.getFeatureName(currentFeatureFile));
+            tc.setAttribute("name", calculateElementName(scenario));
+        }
+
+        private String calculateElementName(cucumber.api.TestCase testCase) {
+            String testCaseName = testCase.getName();
+            if (testCaseName.equals(previousTestCaseName)) {
+                return Utils.getUniqueTestNameForScenarioExample(testCaseName, ++exampleNumber);
+            } else {
+                previousTestCaseName = testCase.getName();
+                exampleNumber = 1;
+                return testCaseName;
+            }
+        }
+
+        public void addTestCaseElement(Document doc, Element tc, Result result) {
+            tc.setAttribute("time", calculateTotalDurationString(result));
+
+            StringBuilder sb = new StringBuilder();
+            addStepAndResultListing(sb);
+            Element child;
+            if (result.is(Result.Type.FAILED)) {
+                addStackTrace(sb, result);
+                child = createElementWithMessage(doc, sb, "failure", result.getErrorMessage());
+            } else if (result.is(Result.Type.AMBIGUOUS)) {
+                addStackTrace(sb, result);
+                child = createElementWithMessage(doc, sb, "failure", result.getErrorMessage());
+            } else if (result.is(Result.Type.PENDING) || result.is(Result.Type.UNDEFINED)) {
+                if (treatConditionallySkippedAsFailure) {
+                    child = createElementWithMessage(doc, sb, "failure", "The scenario has pending or undefined step(s)");
+                } else {
+                    child = createElement(doc, sb, "skipped");
+                }
+            } else if (result.is(Result.Type.SKIPPED) && result.getError() != null) {
+                addStackTrace(sb, result);
+                child = createElementWithMessage(doc, sb, "skipped", result.getErrorMessage());
+            } else {
+                child = createElement(doc, sb, "system-out");
+            }
+
+            tc.appendChild(child);
+        }
+
+        public void handleEmptyTestCase(Document doc, Element tc, Result result) {
+            tc.setAttribute("time", calculateTotalDurationString(result));
+
+            String resultType = treatConditionallySkippedAsFailure ? "failure" : "skipped";
+            Element child = createElementWithMessage(doc, new StringBuilder(), resultType, "The scenario has no steps");
+
+            tc.appendChild(child);
+        }
+
+        private void addStackTrace(StringBuilder sb, Result failed) {
+            sb.append("\nStackTrace:\n");
+            StringWriter sw = new StringWriter();
+            failed.getError().printStackTrace(new PrintWriter(sw));
+            sb.append(sw.toString());
+        }
+
+        private Element createElementWithMessage(Document doc, StringBuilder sb, String elementType, String message) {
+            Element child = createElement(doc, sb, elementType);
+            child.setAttribute("message", message);
+            return child;
+        }
+
+        private Element createElement(Document doc, StringBuilder sb, String elementType) {
+            Element child = doc.createElement(elementType);
+            // the createCDATASection method seems to convert "\n" to "\r\n" on Windows, in case
+            // data originally contains "\r\n" line separators the result becomes "\r\r\n", which
+            // are displayed as double line breaks.
+            String systemLineSeperator = System.getProperty("line.separator");
+            child.appendChild(doc.createCDATASection(sb.toString().replace(systemLineSeperator, "\n")));
+            return child;
         }
     }
 }
