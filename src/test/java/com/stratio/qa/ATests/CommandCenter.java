@@ -24,7 +24,7 @@ import org.testng.annotations.Test;
 @CucumberOptions(format = "json:target/cucumber.json", features = {
         "src/test/resources/features/commandCenter.feature"
 })
-public class CommandCenterIT extends BaseGTest {
+public class CommandCenter extends BaseGTest {
 
     @Test
     public void commandCenterTest() throws Exception {
