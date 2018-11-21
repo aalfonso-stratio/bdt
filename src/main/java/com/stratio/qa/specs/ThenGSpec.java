@@ -135,7 +135,6 @@ public class ThenGSpec extends BaseGSpec {
         assertThat(commonspec.getCassandraClient().getTables(keyspace)).as("The table " + tableName + "exists on cassandra").doesNotContain(tableName);
     }
 
-
     /**
      * Checks the number of rows in a cassandra table.
      *
