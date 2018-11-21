@@ -35,6 +35,8 @@ import org.apache.kafka.common.requests.MetadataResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -234,5 +236,35 @@ public class KafkaUtils {
             }
         }
         return result;
+    }
+
+    public void resultsToFile(String topic, String fileName, String header) {
+        List<String> result = readTopicFromBeginning(topic);
+        FileWriter writer = null;
+        try {
+            writer = new FileWriter(fileName);
+            writer.write(header);
+            for (String str: result) {
+                writer.write("\n");
+                writer.append(str);
+            }
+            writer.close();
+        } catch (IOException e) {
+            logger.error("Messages not saved in file " + fileName, e.getMessage());
+        }
+    }
+
+    public boolean checkMessageContent(String topic, String message) {
+        List<String> messages = readTopicFromBeginning(topic);
+        for (String record : messages) {
+            if (record.contains(message)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public int checkTopicMessagesLenght(String topic) {
+        return readTopicFromBeginning(topic).size();
     }
 }

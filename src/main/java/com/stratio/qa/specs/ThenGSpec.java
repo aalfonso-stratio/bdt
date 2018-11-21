@@ -615,6 +615,43 @@ public class ThenGSpec extends BaseGSpec {
         }
     }
 
+    /**
+     * Get dcos-auth-cookie
+     **/
+    @Then("^I save selenium cookie '(.+?)' in variable '(.+?)'$")
+    public void getDcosAcsAuthCookie(String cookieName, String envVar) throws Exception {
+        if (commonspec.getSeleniumCookies() != null && commonspec.getSeleniumCookies().size() != 0) {
+            for (Cookie cookie: commonspec.getSeleniumCookies()) {
+                if (cookie.getName().contains(cookieName)) {
+                    //It's this cookie where we have to extract the value
+                    ThreadProperty.set(envVar, cookie.getValue());
+                    break;
+                }
+            }
+        } else {
+            ThreadProperty.set(envVar, null);
+        }
+    }
+
+    /**
+     * Check if a cookie exists
+     *
+     * @param cookieName string with the name of the cookie
+     */
+    @Then("^The cookie '(.+?)' exists in the saved cookies$")
+    public void checkIfCookieExists(String cookieName) {
+        Assertions.assertThat(commonspec.cookieExists(cookieName)).isEqualTo(true);
+
+    }
+    /**
+     * Check if the length of the cookie set match with the number of cookies thas must be saved
+     *
+     * @param numberOfCookies number of cookies that must be saved
+     */
+    @Then("^I have '(.+?)' selenium cookies saved$")
+    public void getSeleniumCookiesSize(int numberOfCookies) throws Exception {
+        Assertions.assertThat(commonspec.getSeleniumCookies().size()).isEqualTo(numberOfCookies);
+    }
 
     /**
      * Check if expression defined by JSOPath (http://goessner.net/articles/JsonPath/index.html)
@@ -831,6 +868,16 @@ public class ThenGSpec extends BaseGSpec {
     @Then("^The kafka topic '(.*?)' has a message containing '(.*?)'$")
     public void checkMessages(String topic, String content) {
         assert commonspec.getKafkaUtils().readTopicFromBeginning(topic).contains(content) : "Topic does not exist or the content does not match";
+    }
+
+    @Then("^The kafka topic '(.*?)' has a message that contains '(.*?)'$")
+    public void checkMessagesContent(String topic, String content) {
+        assert commonspec.getKafkaUtils().checkMessageContent(topic, content) : "Topic does not exist or the content does not match";
+    }
+
+    @Then("^The kafka topic '(.*?)' has '(.+?)' messages$")
+    public void checkMessageOfTopicLentgh(String topic, int numberOfMessages) {
+        Assertions.assertThat(commonspec.getKafkaUtils().checkTopicMessagesLenght(topic)).isEqualTo(numberOfMessages);
     }
 
     /**

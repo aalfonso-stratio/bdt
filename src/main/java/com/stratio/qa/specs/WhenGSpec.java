@@ -124,6 +124,28 @@ public class WhenGSpec extends BaseGSpec {
     }
 
     /**
+     * Double Click on an numbered {@code url} previously found element.
+     *
+     * @param index
+     * @throws InterruptedException
+     */
+    @When("^I double click on the element on index '(\\d+?)'$")
+    public void seleniumDoubleClick(Integer index) throws InterruptedException {
+        Actions action = new Actions(commonspec.getDriver());
+        try {
+            assertThat(this.commonspec, commonspec.getPreviousWebElements()).as("There are less found elements than required")
+                    .hasAtLeast(index);
+            action.doubleClick(commonspec.getPreviousWebElements().getPreviousWebElements().get(index)).perform();
+
+        } catch (AssertionError e) {
+            Thread.sleep(1000);
+            assertThat(this.commonspec, commonspec.getPreviousWebElements()).as("There are less found elements than required")
+                    .hasAtLeast(index);
+            action.doubleClick(commonspec.getPreviousWebElements().getPreviousWebElements().get(index)).perform();
+        }
+    }
+
+    /**
      * Clear the text on a numbered {@code index} previously found element.
      *
      * @param index
@@ -723,7 +745,18 @@ public class WhenGSpec extends BaseGSpec {
         commonspec.getKafkaUtils().deleteTopic(topic_name);
     }
 
-
+    /**
+     * Copy Kafka Topic content to file
+     *
+     * @param topic_name
+     * @param filename
+     * @param header
+     * @throws Exception
+     */
+    @When("^I copy the kafka topic '(.*?)' to file '(.*?)' with headers '(.*?)'$")
+    public void topicToFile(String topic_name, String filename, String header) throws Exception {
+        commonspec.getKafkaUtils().resultsToFile(topic_name, filename, header);
+    }
     /**
      * Delete zPath, it should be empty
      *

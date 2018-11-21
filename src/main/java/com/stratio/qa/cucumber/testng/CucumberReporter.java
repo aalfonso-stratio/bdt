@@ -43,6 +43,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -275,10 +276,12 @@ public class CucumberReporter implements Formatter, Reporter {
             jUnitSuite.setAttribute("name", callerClass + "." + featureName);
             jUnitSuite.setAttribute("tests", String.valueOf(getElementsCountByAttribute(suite, STATUS, ".*")));
             jUnitSuite.setAttribute("failures", String.valueOf(getElementsCountByAttribute(suite, STATUS, "FAIL")));
+            jUnitSuite.setAttribute("errors", String.valueOf(getElementsCountByAttribute(suite, STATUS, "FAIL")));
             jUnitSuite.setAttribute("skipped", String.valueOf(getElementsCountByAttribute(suite, STATUS, "SKIP")));
             jUnitSuite.setAttribute("timestamp", new java.util.Date().toString());
             jUnitSuite.setAttribute("time",
-                    String.valueOf(getTotalDurationMs(suite.getElementsByTagName("test-method"))));
+                      String.valueOf(BigDecimal.valueOf(getTotalDurationMs(suite.getElementsByTagName("test-method"))).setScale(3, BigDecimal.ROUND_HALF_UP).floatValue()));
+
             Transformer transformerJunit = TransformerFactory.newInstance().newTransformer();
             transformerJunit.setOutputProperty(OutputKeys.INDENT, "yes");
 

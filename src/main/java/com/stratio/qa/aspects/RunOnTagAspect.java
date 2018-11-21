@@ -123,7 +123,7 @@ public class RunOnTagAspect {
         // Only valid operators: AND -> &&; OR -> ||
         // Valid variables names and values can only contain: characters, numbers, underscores, hyphens, dots and equal
         if (s.contains("&&") || s.contains("||")) {
-            ops = s.substring((s.lastIndexOf("(") + 1), (s.length()) - 1).split("[a-zA-Z._\\-0-9=]+");
+            ops = s.substring((s.lastIndexOf("(") + 1), (s.length()) - 1).split("[a-zA-Z._\\-0-9=<>]+");
             if (ops.length > 0) {
                 ops = Arrays.copyOfRange(ops, 1, ops.length);
             }
@@ -166,6 +166,28 @@ public class RunOnTagAspect {
                     if (!System.getProperty(param).equals(value)) {
                         return false;
                     }
+                } else if (params[0][i].contains(">")) {
+                    String param = params[0][i].split(">")[0];
+                    String value = params[0][i].split(">")[1];
+
+                    if (System.getProperty(param, "").isEmpty()) {
+                        return false;
+                    }
+
+                    if (!(System.getProperty(param).compareTo(value) > 0)) {
+                        return false;
+                    }
+                } else if (params[0][i].contains("<")) {
+                    String param = params[0][i].split("<")[0];
+                    String value = params[0][i].split("<")[1];
+
+                    if (System.getProperty(param, "").isEmpty()) {
+                        return false;
+                    }
+
+                    if (!(System.getProperty(param).compareTo(value) < 0)) {
+                        return false;
+                    }
                 } else {
                     if (System.getProperty(params[0][i], "").isEmpty()) {
                         return false;
@@ -186,6 +208,27 @@ public class RunOnTagAspect {
                 if (!value.equals(System.getProperty(param))) {
                     result = false;
                 }
+            } else if (params[0][0].contains(">")) {
+                String param = params[0][0].split(">")[0];
+                String value = params[0][0].split(">")[1];
+                if (System.getProperty(param, "").isEmpty()) {
+                    result =  false;
+                }
+
+                if (!(value.compareTo(System.getProperty(param)) < 0)) {
+                    result = false;
+                }
+            } else if (params[0][0].contains("<")) {
+                String param = params[0][0].split("<")[0];
+                String value = params[0][0].split("<")[1];
+
+                if (System.getProperty(param, "").isEmpty()) {
+                    result = false;
+                }
+
+                if (!(value.compareTo(System.getProperty(param)) > 0)) {
+                    result = false;
+                }
             } else {
                 if (System.getProperty(params[0][0], "").isEmpty()) {
                     result = false;
@@ -204,6 +247,50 @@ public class RunOnTagAspect {
                             result = result || false;
                         }
                     } else if (!System.getProperty(param).equals(value)) {
+                        if ("&&".equals(params[1][j - 1])) {
+                            result = result && false;
+                        } else {
+                            result = result || false;
+                        }
+                    } else {
+                        if ("&&".equals(params[1][j - 1])) {
+                            result = result && true;
+                        } else {
+                            result = result || true;
+                        }
+                    }
+                } else if (params[0][j].contains(">")) {
+                    String param = params[0][j].split(">")[0];
+                    String value = params[0][j].split(">")[1];
+                    if (System.getProperty(param, "").isEmpty()) {
+                        if ("&&".equals(params[1][j - 1])) {
+                            result = result && false;
+                        } else {
+                            result = result || false;
+                        }
+                    } else if (!(System.getProperty(param).compareTo(value) > 0)) {
+                        if ("&&".equals(params[1][j - 1])) {
+                            result = result && false;
+                        } else {
+                            result = result || false;
+                        }
+                    } else {
+                        if ("&&".equals(params[1][j - 1])) {
+                            result = result && true;
+                        } else {
+                            result = result || true;
+                        }
+                    }
+                } else if (params[0][j].contains("<")) {
+                    String param = params[0][j].split("<")[0];
+                    String value = params[0][j].split("<")[1];
+                    if (System.getProperty(param, "").isEmpty()) {
+                        if ("&&".equals(params[1][j - 1])) {
+                            result = result && false;
+                        } else {
+                            result = result || false;
+                        }
+                    } else if (!(System.getProperty(param).compareTo(value) < 0)) {
                         if ("&&".equals(params[1][j - 1])) {
                             result = result && false;
                         } else {
@@ -246,6 +333,50 @@ public class RunOnTagAspect {
                             result = result || false;
                         }
                     } else if (!value.equals(System.getProperty(param))) {
+                        if ("&&".equals(params[1][params[1].length - 1])) {
+                            result = result && false;
+                        } else {
+                            result = result || false;
+                        }
+                    } else {
+                        if ("&&".equals(params[1][params[1].length - 1])) {
+                            result = result && true;
+                        } else {
+                            result = result || true;
+                        }
+                    }
+                } else if (params[0][params[0].length - 1].contains(">")) {
+                    String param = params[0][params[0].length - 1].split(">")[0];
+                    String value = params[0][params[0].length - 1].split(">")[1];
+                    if (System.getProperty(param, "").isEmpty()) {
+                        if ("&&".equals(params[1][params[1].length - 1])) {
+                            result = result && false;
+                        } else {
+                            result = result || false;
+                        }
+                    } else if (!(value.compareTo(System.getProperty(param)) < 0)) {
+                        if ("&&".equals(params[1][params[1].length - 1])) {
+                            result = result && false;
+                        } else {
+                            result = result || false;
+                        }
+                    } else {
+                        if ("&&".equals(params[1][params[1].length - 1])) {
+                            result = result && true;
+                        } else {
+                            result = result || true;
+                        }
+                    }
+                } else if (params[0][params[0].length - 1].contains("<")) {
+                    String param = params[0][params[0].length - 1].split("<")[0];
+                    String value = params[0][params[0].length - 1].split("<")[1];
+                    if (System.getProperty(param, "").isEmpty()) {
+                        if ("&&".equals(params[1][params[1].length - 1])) {
+                            result = result && false;
+                        } else {
+                            result = result || false;
+                        }
+                    } else if (!(value.compareTo(System.getProperty(param)) > 0)) {
                         if ("&&".equals(params[1][params[1].length - 1])) {
                             result = result && false;
                         } else {

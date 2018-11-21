@@ -19,6 +19,7 @@ package com.stratio.qa.aspects;
 import com.stratio.qa.cucumber.testng.CucumberReporter;
 import com.stratio.qa.exceptions.NonReplaceableException;
 import com.stratio.qa.specs.CommonG;
+import com.stratio.qa.utils.ExceptionList;
 import com.stratio.qa.utils.ThreadProperty;
 import gherkin.I18n;
 import gherkin.formatter.Reporter;
@@ -94,7 +95,13 @@ public class ReplacementAspect {
         }
 
         String stepName = step.getName();
-        String newName = replacedElement(stepName, jp);
+        String newName;
+        try {
+            newName = replacedElement(stepName, jp);
+        } catch (Exception e) {
+            ExceptionList.INSTANCE.getExceptions().add(e);
+            newName = "Placeholder not replaced -- " + e.toString();
+        }
         if (!stepName.equals(newName)) {
             //field up to BasicStatement, from Step and ExampleStep
             Field field = null;

@@ -3,7 +3,8 @@
 Only listing significant user-visible, not internal code cleanups and minor bug fixes.
 
 ## 0.8.0 (upcoming)
-
+* [LDG-96] New kafka steps
+* [QASAI-33] New step to check if a cookie has been saved correctly
 * [QATM-967] Updated Selenium version to 3.9.1
 * [PIT-68] Updated commons-lang3 version to 3.7
 

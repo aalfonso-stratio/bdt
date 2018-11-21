@@ -24,12 +24,8 @@ Feature: Selenium run test
     Then in less than '20' seconds, checking each '2' seconds, '1' elements exists with 'id:side-panel'
     When '1' elements exists with 'xpath://*[@id="header"]/div[2]/a/b'
     And I click on the element on index '0'
-    When '1' elements exists with 'id:main-panel'
-    Then the element on index '0' has 'id' as 'main-panel'
-    And the element on index '0' has 'User:' as text
+    Then I wait '1' seconds
+    When '1' elements exists with 'id:loginIntroDefault'
     Then '1' elements exists with 'id:j_username'
     And I clear the content on text input at index '0'
     When '1' elements exists with 'id:remember_me'
-    And the element on index '0' IS NOT selected
-    Then I click on the element on index '0'
-    And this text exists 'Jenkins'

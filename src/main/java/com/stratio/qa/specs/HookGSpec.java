@@ -234,6 +234,15 @@ public class HookGSpec extends BaseGSpec {
     public void teardown() {
     }
 
+    @After
+    public void afterScenario(Scenario scenario) throws Throwable {
+        if (scenario.getStatus().equalsIgnoreCase("undefined")) {
+            if (!commonspec.getExceptions().isEmpty()) {
+                scenario.write(commonspec.getExceptions().get(commonspec.getExceptions().size() - 1).toString());
+            }
+        }
+    }
+
     @Before(order = 10, value = "@rest")
     public void restClientSetup() throws Exception {
         commonspec.getLogger().debug("Starting a REST client");

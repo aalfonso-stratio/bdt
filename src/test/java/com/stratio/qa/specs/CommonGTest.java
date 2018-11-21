@@ -24,6 +24,7 @@ import org.hjson.JsonValue;
 import org.hjson.ParseException;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.openqa.selenium.Cookie;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -31,7 +32,9 @@ import org.testng.annotations.Test;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
@@ -1333,4 +1336,43 @@ public class CommonGTest {
         }
     }
 
+    @Test
+    public void testCookieExistsTrue() throws Exception{
+        String cookieName = "cookieTest";
+        org.openqa.selenium.Cookie cookie = new org.openqa.selenium.Cookie("cookieTest", "cookiePath", "cookieValue");
+        CommonG commong = new CommonG();
+        Set<Cookie> setCookies = new HashSet<Cookie>();
+        setCookies.add(cookie);
+        commong.setSeleniumCookies(setCookies);
+        assertThat(true).isEqualTo(commong.cookieExists(cookieName));
+    }
+
+    @Test
+    public void testCookieExistsFalse() throws Exception{
+        String cookieName = "cookieFalse";
+        org.openqa.selenium.Cookie cookie = new org.openqa.selenium.Cookie("cookieTest", "cookiePath", "cookieValue");
+        CommonG commong = new CommonG();
+        Set<Cookie> setCookies = new HashSet<Cookie>();
+        setCookies.add(cookie);
+        commong.setSeleniumCookies(setCookies);
+        assertThat(false).isEqualTo(commong.cookieExists(cookieName));
+    }
+
+    @Test
+    public void testCookieExistsSizeZero() throws Exception{
+        String cookieName = "cookieFalse";
+        org.openqa.selenium.Cookie cookie = new org.openqa.selenium.Cookie("cookieTest", "cookiePath", "cookieValue");
+        Set<Cookie> setCookies = new HashSet<Cookie>();
+        CommonG commong = new CommonG();
+        commong.setSeleniumCookies(setCookies);
+        assertThat(false).isEqualTo(commong.cookieExists(cookieName));
+    }
+
+    @Test
+    public void testCookieExistsNull() throws Exception{
+        String cookieName = "cookieFalse";
+        org.openqa.selenium.Cookie cookie = new org.openqa.selenium.Cookie("cookieTest", "cookiePath", "cookieValue");
+        CommonG commong = new CommonG();
+        assertThat(false).isEqualTo(commong.cookieExists(cookieName));
+    }
 }
