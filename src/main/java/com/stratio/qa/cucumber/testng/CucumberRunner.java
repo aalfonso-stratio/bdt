@@ -87,6 +87,7 @@ public class CucumberRunner {
         }
 
         List<String> uniqueGlue = new ArrayList<String>();
+        uniqueGlue.add("classpath:com/stratio/cct/testsAT/specs");
         uniqueGlue.add("classpath:com/stratio/qa/specs");
         uniqueGlue.add("classpath:com/stratio/sparta/testsAT/specs");
         uniqueGlue.add("classpath:com/stratio/gosecsso/testsAT/specs");

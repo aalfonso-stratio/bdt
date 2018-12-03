@@ -2092,7 +2092,8 @@ public class CommonG {
     /**
      * Generate deployment json from schema
      *
-     * @param schema schema obtained from deploy-api
+     * @param schema        schema obtained from deploy-api
+     * @return JSONObject   deployment json
      */
     public JSONObject parseJSONSchema(JSONObject schema) throws Exception {
         JSONObject json = new JSONObject();
@@ -2150,6 +2151,7 @@ public class CommonG {
      *
      * @param schema schema obtained from deploy-api
      * @param json json to be checked
+     * @return boolean whether the json matches the schema or not
      */
     public boolean matchJsonToSchema(JSONObject schema, JSONObject json) throws Exception {
         SchemaLoader.builder()
@@ -2160,6 +2162,95 @@ public class CommonG {
                  .build()
                  .validate(json);
         return true;
+    }
+
+    /**
+     * Get service status
+     *
+     * @param service   name of the service to be checked
+     * @param cluster   URI of the cluster
+     * @return String   normalized service status
+     * @throws Exception exception     *
+     */
+    public String retrieveServiceStatus(String service, String cluster) throws Exception {
+        String status = "";
+        String endPoint = "/service/deploy-api/deploy/status/service?service=" + service;
+        String element = "$.status";
+        Future response;
+
+        this.setRestProtocol("https://");
+        this.setRestHost(cluster);
+        this.setRestPort(":443");
+
+        response = this.generateRequest("GET", true, null, null, endPoint, null, "json");
+        this.setResponse("GET", (Response) response.get());
+        assertThat(this.getResponse().getStatusCode()).as("It hasn't been possible to obtain status for service: " + service).isEqualTo(200);
+
+        String json = this.getResponse().getResponse();
+
+        String value = this.getJSONPathString(json, element, null);
+
+        switch (value) {
+            case "0":
+                status = "deploying";
+                break;
+            case "1":
+                status = "suspended";
+                break;
+            case "2":
+                status = "running";
+                break;
+            case "3":
+                status = "delayed";
+                break;
+            default:
+                throw new Exception("Unknown service status code");
+        }
+
+        return status;
+    }
+
+    /**
+     * Get service health status
+     *
+     * @param service   name of the service to be checked
+     * @param cluster   URI of the cluster
+     * @return String   normalized service health status
+     * @throws Exception exception     *
+     */
+    public String retrieveHealthServiceStatus(String service, String cluster) throws Exception {
+        String health = "";
+        String endPoint = "/service/deploy-api/deploy/status/service?service=" + service;
+        String element = "$.healthy";
+        Future response;
+
+        this.setRestProtocol("https://");
+        this.setRestHost(cluster);
+        this.setRestPort(":443");
+
+        response = this.generateRequest("GET", true, null, null, endPoint, null, "json");
+        this.setResponse("GET", (Response) response.get());
+        assertThat(this.getResponse().getStatusCode()).as("It hasn't been possible to obtain health status for service: " + service).isEqualTo(200);
+
+        String json = this.getResponse().getResponse();
+
+        String value = this.getJSONPathString(json, element, null);
+
+        switch (value) {
+            case "0":
+                health = "unhealthy";
+                break;
+            case "1":
+                health = "healthy";
+                break;
+            case "2":
+                health = "unknown";
+                break;
+            default:
+                throw new Exception("Unknown service health status code");
+        }
+
+        return health;
     }
 
 }

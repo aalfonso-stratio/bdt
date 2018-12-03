@@ -1091,4 +1091,56 @@ public class GivenGSpec extends BaseGSpec {
         commonspec.matchJsonToSchema(jsonschema, jsondeploy);
     }
 
+    /**
+     * Get service status
+     *
+     * @param service   name of the service to be checked
+     * @param cluster   URI of the cluster
+     * @param envVar    environment variable where to store result
+     * @throws Exception exception     *
+     */
+    @Given("^I get service '(.+?)' status in cluster '(.+?)' and save it in variable '(.+?)'")
+    public void getServiceStatus(String service, String cluster, String envVar) throws Exception {
+        String status = commonspec.retrieveServiceStatus(service, cluster);
+
+        ThreadProperty.set(envVar, status);
+    }
+
+    /**
+     * Get service health status
+     *
+     * @param service   name of the service to be checked
+     * @param cluster   URI of the cluster
+     * @param envVar    environment variable where to store result
+     * @throws Exception exception     *
+     */
+    @Given("^I get service '(.+?)' health status in cluster '(.+?)' and save it in variable '(.+?)'")
+    public void getServiceHealthStatus(String service, String cluster, String envVar) throws Exception {
+        String health = commonspec.retrieveHealthServiceStatus(service, cluster);
+
+        ThreadProperty.set(envVar, health);
+    }
+
+    /**
+     * Destroy specified service
+     *
+     * @param service   name of the service to be destroyed
+     * @param cluster   URI of the cluster
+     * @throws Exception exception     *
+     */
+    @Given("^I destroy service '(.+?)' in cluster '(.+?)'")
+    public void destroyService(String service, String cluster) throws Exception {
+        String endPoint = "/service/deploy-api/deploy/uninstall?app=" + service;
+        Future response;
+
+        this.commonspec.setRestProtocol("https://");
+        this.commonspec.setRestHost(cluster);
+        this.commonspec.setRestPort(":443");
+
+        response = this.commonspec.generateRequest("DELETE", true, null, null, endPoint, null, "json");
+
+        this.commonspec.setResponse("DELETE", (Response) response.get());
+        assertThat(this.commonspec.getResponse().getStatusCode()).as("It hasn't been possible to destroy service: " + service).isIn(Arrays.asList(200, 202));
+    }
+
 }
