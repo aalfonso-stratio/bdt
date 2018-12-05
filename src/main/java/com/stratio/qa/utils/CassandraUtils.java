@@ -20,15 +20,14 @@ import com.datastax.driver.core.*;
 import com.stratio.qa.exceptions.DBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+
 
 /**
  * Generic utilities for operations over Cassandra.
@@ -52,9 +51,8 @@ public class CassandraUtils {
      * Generic contructor of CassandraUtils.
      */
     public CassandraUtils() {
-        this.host = System.getProperty("CASSANDRA_HOST", "127.0.0.1");
+        this.host = System.getProperty("CASSANDRA_HOST", "node-0-server.cassandrastratio.mesos");
     }
-
 
     /**
      * Set Cassandra host
@@ -66,8 +64,9 @@ public class CassandraUtils {
     /**
      * Connect to Cassandra host.
      */
-    public void connect() {
-        buildCluster();
+
+    public void connect(String secured) {
+        buildCluster(secured);
         this.cassandraqueryUtils = new CassandraQueryUtils();
         this.metadata = this.cluster.getMetadata();
         LOGGER.debug("Connected to cluster (" + host + "): "
@@ -141,10 +140,19 @@ public class CassandraUtils {
     /**
      * Build a Cassandra cluster.
      */
-    public void buildCluster() {
-        this.cluster = Cluster.builder().addContactPoint(this.host).build();
-        this.cluster.getConfiguration().getQueryOptions()
-                .setConsistencyLevel(ConsistencyLevel.ONE);
+
+    public void buildCluster(String secured) {
+        if (secured == null) {
+            this.cluster = Cluster.builder().addContactPoint(this.host).build();
+            this.cluster.getConfiguration().getQueryOptions()
+                    .setConsistencyLevel(ConsistencyLevel.ONE);
+        } else {
+            try {
+                this.cluster = Cluster.builder().addContactPoint(this.host).withCredentials("user", "pass").withSSL().build();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**

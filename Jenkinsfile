@@ -27,7 +27,7 @@ hose {
            'image': 'elasticsearch:2.0.2',
            'env': [
                  'ES_JAVA_OPTS="-Des.cluster.name=%%JUID -Des.network.host=%%OWNHOSTNAME"'],
-           'sleep': 10,
+           'sleep': 40,
            'healthcheck': 9300]],
         ['CASSANDRA': [
            'image': 'stratio/cassandra-lucene-index:3.0.7.3',
