@@ -32,6 +32,10 @@ import cucumber.runtime.CucumberException;
 import cucumber.runtime.Utils;
 import cucumber.runtime.io.URLOutputStream;
 import cucumber.runtime.io.UTF8OutputStreamWriter;
+import gherkin.pickles.Argument;
+import gherkin.pickles.PickleCell;
+import gherkin.pickles.PickleRow;
+import gherkin.pickles.PickleTable;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +62,8 @@ import java.util.concurrent.Future;
 public class CucumberReporter implements EventListener, StrictAware {
 
     public static final int DURATION_STRING = 1000000;
+    
+    public static final int DEFAULT_MAX_LENGTH = 140;
 
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 
@@ -88,6 +94,8 @@ public class CucumberReporter implements EventListener, StrictAware {
     private Element jUnitRoot;
 
     private TestMethod testMethod;
+
+    private static String callerClass;
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass()
             .getCanonicalName());
@@ -153,6 +161,7 @@ public class CucumberReporter implements EventListener, StrictAware {
         TestMethod.treatConditionallySkippedAsFailure = false;
         TestMethod.previousTestCaseName = "";
         TestMethod.exampleNumber = 1;
+        callerClass = cClass;
 
         try {
             document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
@@ -196,7 +205,7 @@ public class CucumberReporter implements EventListener, StrictAware {
             TestMethod.previousTestCaseName = "";
             TestMethod.exampleNumber = 1;
             clazz = document.createElement("class");
-            clazz.setAttribute("name", TestMethod.testSources.getFeature(event.testCase.getUri()).getName());
+            clazz.setAttribute("name", callerClass);
             test.appendChild(clazz);
         }
         //TestNG
@@ -221,12 +230,7 @@ public class CucumberReporter implements EventListener, StrictAware {
     }
 
     private void handleTestCaseFinished(TestCaseFinished event) {
-        testMethod.finish(document, root, jUnitDocument, jUnitRoot, event.result); //TODO Revisar
-        if (testMethod.steps.isEmpty()) {
-            testMethod.handleEmptyTestCase(jUnitDocument, jUnitRoot, event.result);
-        } else {
-            testMethod.addTestCaseElement(jUnitDocument, jUnitRoot, event.result);
-        }
+        testMethod.finish(document, root, jUnitDocument, jUnitRoot, event.result);
     }
 
     private void finishReport() {
@@ -250,7 +254,7 @@ public class CucumberReporter implements EventListener, StrictAware {
 
             // JUnit
             // set up a transformer
-            jUnitSuite.setAttribute("name", CucumberReporter.class.getName());
+            jUnitSuite.setAttribute("name", callerClass + "." + TestMethod.testSources.getFeatureName(TestMethod.currentFeatureFile));
             jUnitSuite.setAttribute("failures", String.valueOf(jUnitSuite.getElementsByTagName("failure").getLength()));
             jUnitSuite.setAttribute("skipped", String.valueOf(jUnitSuite.getElementsByTagName("skipped").getLength()));
             jUnitSuite.setAttribute("time", sumTimes(jUnitSuite.getElementsByTagName("testcase")));
@@ -454,11 +458,14 @@ public class CucumberReporter implements EventListener, StrictAware {
          * @throws IOException exception
          */
         public void finish(Document doc, Element element, Document docJunit, Element Junit, Result eventResult) {
+            //JUnit
             if (steps.isEmpty()) {
                 handleEmptyTestCase(docJunit, Junit, eventResult);
             } else {
                 addTestCaseElement(docJunit, Junit, eventResult);
             }
+
+            //TestNG
             element.setAttribute("duration-ms", String.valueOf(calculateTotalDurationString()));
             element.setAttribute("finished-at", DATE_FORMAT.format(new Date()));
 
@@ -482,9 +489,13 @@ public class CucumberReporter implements EventListener, StrictAware {
             if (failed != null) {
                 element.setAttribute("status", "FAIL");
                 StringWriter stringWriter = new StringWriter();
-                failed.getError().printStackTrace(new PrintWriter(stringWriter));
-                Element exception = createException(doc, failed.getError().getClass().getName(), stringBuilder.toString(), stringWriter.toString());
-                element.appendChild(exception);
+                if (failed.getErrorMessage().contains("An important scenario has failed!")) {
+                    element.setAttribute(STATUS, "SKIP");
+                } else {
+                    failed.getError().printStackTrace(new PrintWriter(stringWriter));
+                    Element exception = createException(doc, failed.getError().getClass().getName(), stringBuilder.toString(), stringWriter.toString());
+                    element.appendChild(exception);
+                }
             } else if (skipped != null) {
                 if (treatSkippedAsFailure) {
                     element.setAttribute("status", "FAIL");
@@ -495,6 +506,8 @@ public class CucumberReporter implements EventListener, StrictAware {
                 }
             } else {
                 element.setAttribute("status", "PASS");
+                Element exception = createException(doc, "NonRealException", stringBuilder.toString(), " ");
+                element.appendChild(exception);
             }
         }
 
@@ -521,9 +534,24 @@ public class CucumberReporter implements EventListener, StrictAware {
                     resultStatus = results.get(i).getStatus().lowerCaseName();
                 }
                 sb.append(testSources.getKeywordFromSource(currentFeatureFile, steps.get(i).getStepLine()) + steps.get(i).getStepText());
+                if (!steps.get(i).getStepArgument().isEmpty()) {
+                    Argument argument = steps.get(i).getStepArgument().get(0);
+                    if (argument instanceof PickleTable) {
+                        for (PickleRow row : ((PickleTable) argument).getRows()) {
+                            StringBuilder strrowBuilder = new StringBuilder();
+                            strrowBuilder.append("| ");
+                            for (PickleCell cell : row.getCells()) {
+                                strrowBuilder.append(cell.getValue()).append(" | ");
+                            }
+                            String strrow = strrowBuilder.toString();
+                            sb.append("\n           ");
+                            sb.append(strrow);
+                        }
+                    }
+                }
                 do {
                     sb.append(".");
-                } while (sb.length() - length < 76);
+                } while (sb.length() - length < DEFAULT_MAX_LENGTH);
                 sb.append(resultStatus);
                 sb.append("\n");
             }
@@ -575,8 +603,8 @@ public class CucumberReporter implements EventListener, StrictAware {
         }
 
         private void writeElement(Document doc, Element tc) {
-            tc.setAttribute("classname", testSources.getFeatureName(currentFeatureFile));
-            tc.setAttribute("name", calculateElementName(scenario));
+            tc.setAttribute("classname", callerClass);
+            tc.setAttribute("name", scenario.getName());
         }
 
         private String calculateElementName(cucumber.api.TestCase testCase) {
@@ -646,7 +674,7 @@ public class CucumberReporter implements EventListener, StrictAware {
             // data originally contains "\r\n" line separators the result becomes "\r\r\n", which
             // are displayed as double line breaks.
             String systemLineSeperator = System.getProperty("line.separator");
-            child.appendChild(doc.createCDATASection(sb.toString().replace(systemLineSeperator, "\n")));
+            child.appendChild(doc.createCDATASection("\r\n" + sb.toString().replace(systemLineSeperator, "\n") + "\r\n"));
             return child;
         }
     }
