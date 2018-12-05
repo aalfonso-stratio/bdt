@@ -19,7 +19,6 @@ package com.stratio.qa.specs;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClientConfig;
 import com.stratio.qa.exceptions.SuppressableException;
-import com.stratio.qa.utils.CukesGHooks;
 import com.stratio.qa.utils.ThreadProperty;
 import cucumber.api.Result;
 import cucumber.api.Scenario;
@@ -89,22 +88,24 @@ public class HookGSpec extends BaseGSpec {
 
     @After
     public void watch_this_tagged_scenario(Scenario scenario) throws Exception {
+        loggerEnabled = true;
         if (quietasdefault.equals("false")) {
             if (!isTaggedAsNotImportant(scenario)) {
                 boolean isFailed = scenario.isFailed();
                 if (isFailed) {
                     prevScenarioFailed = isFailed;
-                    loggerEnabled = false;
                 }
             }
         } else {
             if (isTagged(scenario)) {
                 boolean isFailed = scenario.isFailed();
                 if (isFailed) {
-                    loggerEnabled = false;
                     prevScenarioFailed = isFailed;
                 }
             }
+        }
+        if (prevScenarioFailed) {
+            loggerEnabled = false;
         }
     }
 

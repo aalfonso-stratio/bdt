@@ -62,7 +62,7 @@ import java.util.concurrent.Future;
 public class CucumberReporter implements EventListener, StrictAware {
 
     public static final int DURATION_STRING = 1000000;
-    
+
     public static final int DEFAULT_MAX_LENGTH = 140;
 
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");

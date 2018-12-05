@@ -19,6 +19,7 @@ package com.stratio.qa.aspects;
 import com.stratio.qa.cucumber.testng.CucumberReporter;
 import com.stratio.qa.exceptions.NonReplaceableException;
 import com.stratio.qa.specs.CommonG;
+import com.stratio.qa.specs.HookGSpec;
 import com.stratio.qa.utils.ExceptionList;
 import com.stratio.qa.utils.ThreadProperty;
 import cucumber.api.Result.Type;
@@ -151,7 +152,9 @@ public class ReplacementAspect {
             }
 
             lastEchoedStep = pickleTestStep.getStepText();
-            logger.info("  {}", newName);
+            if (HookGSpec.loggerEnabled) {
+                logger.info("  {}", newName);
+            }
 
             // Run step
             try {

@@ -93,22 +93,24 @@ public class CukesGHooks extends BaseGSpec implements EventListener, StrictAware
             ThreadProperty.set("feature", testSources.getFeatureName(currentFeatureFile));
             ThreadProperty.set("scenario", tc.getName());
         }
-        HookGSpec.loggerEnabled = true;
+
     }
 
     private void handleTestStepStarted(TestStepStarted event) {
-        if (!event.testStep.isHook()) {
-            TestSourcesModel.AstNode astNode = testSources.getAstNode(currentFeatureFile, event.testStep.getStepLine());
-            if (TestSourcesModel.isBackgroundStep(astNode)) {
-                if (!isLastStepBackground) {
-                    logger.info(" Background:");
+        if (HookGSpec.loggerEnabled) {
+            if (!event.testStep.isHook()) {
+                TestSourcesModel.AstNode astNode = testSources.getAstNode(currentFeatureFile, event.testStep.getStepLine());
+                if (TestSourcesModel.isBackgroundStep(astNode)) {
+                    if (!isLastStepBackground) {
+                        logger.info(" Background:");
+                    }
+                    isLastStepBackground = true;
+                } else {
+                    if (isLastStepBackground) {
+                        logger.info(" Steps:");
+                    }
+                    isLastStepBackground = false;
                 }
-                isLastStepBackground = true;
-            } else {
-                if (isLastStepBackground) {
-                    logger.info(" Steps:");
-                }
-                isLastStepBackground = false;
             }
         }
     }

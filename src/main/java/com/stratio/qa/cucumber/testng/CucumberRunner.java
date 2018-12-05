@@ -167,7 +167,7 @@ public class CucumberRunner {
             Iterator<Throwable> iterator = runtime.getErrors().iterator();
             while (iterator.hasNext()) {
                 Throwable value = iterator.next();
-                if (value.getMessage().contains("TESTS EXECUTION ABORTED!")) {
+                if (value.getMessage() != null && value.getMessage().contains("TESTS EXECUTION ABORTED!")) {
                     iterator.remove();
                 }
             }
