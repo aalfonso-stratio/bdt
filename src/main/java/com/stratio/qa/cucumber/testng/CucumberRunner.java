@@ -16,7 +16,8 @@
 
 package com.stratio.qa.cucumber.testng;
 
-import cucumber.api.CucumberOptions;
+import cucumber.api.event.EventListener;
+import cucumber.api.formatter.StrictAware;
 import cucumber.runtime.ClassFinder;
 import cucumber.runtime.CucumberException;
 import cucumber.runtime.RuntimeOptions;
@@ -129,19 +130,25 @@ public class CucumberRunner {
         runtimeOptions.getGlue().addAll(uniqueGlue);
 
         runtimeOptions.addPlugin(reporterTestNG);
-        Set<Class<? extends ICucumberFormatter>> implementers = new Reflections("com.stratio.qa.utils")
-                .getSubTypesOf(ICucumberFormatter.class);
+        Set<Class<? extends StrictAware>> implementers = new Reflections("com.stratio.qa.utils")
+                .getSubTypesOf(StrictAware.class);
+        List<Object> additionalPlugins = new ArrayList<Object>();
 
-        for (Class<? extends ICucumberFormatter> implementerClazz : implementers) {
+        for (Class<? extends StrictAware> implementerClazz : implementers) {
             Constructor<?> ctor = implementerClazz.getConstructor();
             ctor.setAccessible(true);
-            runtimeOptions.addPlugin((ICucumberFormatter) ctor.newInstance());
+            Object newPlugin = ctor.newInstance();
+            additionalPlugins.add(newPlugin);
+            runtimeOptions.addPlugin((StrictAware) newPlugin);
         }
 
         ClassFinder classFinder = new ResourceLoaderClassFinder(resourceLoader, classLoader);
         runtime = new cucumber.runtime.Runtime(resourceLoader, classFinder, classLoader, runtimeOptions);
 
         reporterTestNG.setEventPublisher(runtime.getEventBus());
+        for (Object plugin : additionalPlugins) {
+            ((EventListener) plugin).setEventPublisher(runtime.getEventBus());
+        }
     }
 
     /**

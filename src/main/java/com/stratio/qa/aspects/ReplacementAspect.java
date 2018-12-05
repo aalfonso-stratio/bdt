@@ -151,7 +151,7 @@ public class ReplacementAspect {
             }
 
             lastEchoedStep = pickleTestStep.getStepText();
-            logger.info("  {}", pickleTestStep.getStepText());
+            logger.info("  {}", newName);
 
             // Run step
             try {

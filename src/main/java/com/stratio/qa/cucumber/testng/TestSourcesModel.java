@@ -15,7 +15,7 @@ public class TestSourcesModel {
 
     private final Map<String, Map<Integer, TestSourcesModel.AstNode>> pathToNodeMap = new HashMap();
 
-    TestSourcesModel() {
+    public TestSourcesModel() {
     }
 
     static Feature getFeatureForTestCase(TestSourcesModel.AstNode astNode) {
@@ -40,7 +40,7 @@ public class TestSourcesModel {
         return !(astNode.node instanceof ScenarioDefinition);
     }
 
-    static boolean isBackgroundStep(TestSourcesModel.AstNode astNode) {
+    public static boolean isBackgroundStep(TestSourcesModel.AstNode astNode) {
         return astNode.parent.node instanceof Background;
     }
 
@@ -63,7 +63,7 @@ public class TestSourcesModel {
         return name.replaceAll("[\\s'_,!]", "-").toLowerCase();
     }
 
-    void addTestSourceReadEvent(String path, TestSourceRead event) {
+    public void addTestSourceReadEvent(String path, TestSourceRead event) {
         this.pathToReadEventMap.put(path, event);
     }
 
@@ -79,7 +79,7 @@ public class TestSourcesModel {
         return getScenarioDefinition(this.getAstNode(path, line));
     }
 
-    TestSourcesModel.AstNode getAstNode(String path, int line) {
+    public TestSourcesModel.AstNode getAstNode(String path, int line) {
         if (!this.pathToNodeMap.containsKey(path)) {
             this.parseGherkinSource(path);
         }
@@ -87,7 +87,7 @@ public class TestSourcesModel {
         return this.pathToNodeMap.containsKey(path) ? (TestSourcesModel.AstNode) ((Map) this.pathToNodeMap.get(path)).get(line) : null;
     }
 
-    boolean hasBackground(String path, int line) {
+    public boolean hasBackground(String path, int line) {
         if (!this.pathToNodeMap.containsKey(path)) {
             this.parseGherkinSource(path);
         }
@@ -123,7 +123,7 @@ public class TestSourcesModel {
         return this.pathToReadEventMap.containsKey(uri) ? (TestSourceRead) this.pathToReadEventMap.get(uri) : null;
     }
 
-    String getFeatureName(String uri) {
+    public String getFeatureName(String uri) {
         Feature feature = this.getFeature(uri);
         return feature != null ? feature.getName() : "";
     }
@@ -189,7 +189,7 @@ public class TestSourcesModel {
 
     }
 
-    class AstNode {
+    public class AstNode {
         final Node node;
 
         final TestSourcesModel.AstNode parent;

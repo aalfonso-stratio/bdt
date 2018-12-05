@@ -54,7 +54,7 @@ public class IgnoreTagAspect {
         Class<?> sc = runner.getClass();
         Method tt = sc.getDeclaredMethod("buildBackendWorlds");
         tt.setAccessible(true);
-        tt.invoke(runner); //this.buildBackendWorlds();
+        tt.invoke(runner);
 
         String scenarioName = pickle.pickle.getName();
         List<PickleTag> pickleTagList = pickle.pickle.getTags();
@@ -71,7 +71,7 @@ public class IgnoreTagAspect {
         if ((!(exitReason.equals(ignoreReasons.NOTIGNORED))) && (!(exitReason.equals(ignoreReasons.NOREASON)))) {
             tt = sc.getDeclaredMethod("disposeBackendWorlds");
             tt.setAccessible(true);
-            tt.invoke(runner); //this.disposeBackendWorlds();
+            tt.invoke(runner);
         } else {
             pjp.proceed();
         }
@@ -86,7 +86,7 @@ public class IgnoreTagAspect {
                 Matcher matcher = pattern.matcher(tag);
                 if (matcher.find()) {
                     String ticket = matcher.group(1);
-                    logger.warn("Scenario '" + scenarioName + "' ignored because of ticket: " + ticket);
+                    logger.warn("Scenario '" + scenarioName + "' ignored because of ticket: " + ticket + "\n");
                     exit = ignoreReasons.JIRATICKET;
                 }
             }
@@ -94,15 +94,15 @@ public class IgnoreTagAspect {
                 exit = ignoreReasons.ENVCONDITION;
             }
             if (tagList.contains("@unimplemented")) {
-                logger.warn("Scenario '" + scenarioName + "' ignored because it is not yet implemented.");
+                logger.warn("Scenario '" + scenarioName + "' ignored because it is not yet implemented.\n");
                 exit = ignoreReasons.UNIMPLEMENTED;
             }
             if (tagList.contains("@manual")) {
-                logger.warn("Scenario '" + scenarioName + "' ignored because it is marked as manual test.");
+                logger.warn("Scenario '" + scenarioName + "' ignored because it is marked as manual test.\n");
                 exit = ignoreReasons.MANUAL;
             }
             if (tagList.contains("@toocomplex")) {
-                logger.warn("Scenario '" + scenarioName + "' ignored because the test is too complex.");
+                logger.warn("Scenario '" + scenarioName + "' ignored because the test is too complex.\n");
                 exit = ignoreReasons.TOOCOMPLEX;
             }
         }
