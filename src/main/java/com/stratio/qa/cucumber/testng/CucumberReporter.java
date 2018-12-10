@@ -458,13 +458,11 @@ public class CucumberReporter implements EventListener, StrictAware {
          * @throws IOException exception
          */
         public void finish(Document doc, Element element, Document docJunit, Element Junit, Result eventResult) {
-            //JUnit
             if (steps.isEmpty()) {
-                handleEmptyTestCase(docJunit, Junit, eventResult);
-            } else {
-                addTestCaseElement(docJunit, Junit, eventResult);
+                createExceptionJunit(docJunit, "The scenario has no steps", "");
             }
-
+            //JUnit
+            Junit.setAttribute("time", calculateTotalDurationString(eventResult));
             //TestNG
             element.setAttribute("duration-ms", String.valueOf(calculateTotalDurationString()));
             element.setAttribute("finished-at", DATE_FORMAT.format(new Date()));
@@ -490,24 +488,51 @@ public class CucumberReporter implements EventListener, StrictAware {
                 element.setAttribute("status", "FAIL");
                 StringWriter stringWriter = new StringWriter();
                 if (failed.getErrorMessage().contains("An important scenario has failed!")) {
+                    String message = "This scenario was skipped because an important scenario has failed.";
                     element.setAttribute(STATUS, "SKIP");
+                    Element exception = createException(doc, "NonRealException", message, " ");
+                    element.appendChild(exception);
+                    Element skippedElementJunit = docJunit.createElement("skipped");
+                    Junit.appendChild(skippedElementJunit);
+                    Element systemOut = systemOutPrintJunit(docJunit, message);
+                    Junit.appendChild(systemOut);
+                } else if (failed.getErrorMessage().contains("NonReplaceableException")) {
+                    Element exception = createException(doc, "The scenario has unreplaced variables.",
+                            "The scenario has unreplaced variables.", " ");
+                    element.appendChild(exception);
+                    Element exceptionJunit = createExceptionJunit(docJunit, "The scenario has unreplaced variables.", " ");
+                    Junit.appendChild(exceptionJunit);
+                    Element systemOut = systemOutPrintJunit(docJunit, stringBuilder.toString());
+                    Junit.appendChild(systemOut);
                 } else {
                     failed.getError().printStackTrace(new PrintWriter(stringWriter));
                     Element exception = createException(doc, failed.getError().getClass().getName(), stringBuilder.toString(), stringWriter.toString());
                     element.appendChild(exception);
+                    Element exceptionJunit = createExceptionJunit(docJunit, stringBuilder.toString(), stringWriter.toString());
+                    Junit.appendChild(exceptionJunit);
                 }
             } else if (skipped != null) {
                 if (treatSkippedAsFailure) {
                     element.setAttribute("status", "FAIL");
                     Element exception = createException(doc, "The scenario has pending or undefined step(s)", stringBuilder.toString(), "The scenario has pending or undefined step(s)");
                     element.appendChild(exception);
+                    Element exceptionJunit = createExceptionJunit(docJunit, stringBuilder.toString(), "The scenario has pending or undefined step(s)");
+                    Junit.appendChild(exceptionJunit);
                 } else {
                     element.setAttribute("status", "SKIP");
+                    Element exception = createException(doc, "NonRealException", stringBuilder.toString(), " ");
+                    element.appendChild(exception);
+                    Element skippedElementJunit = docJunit.createElement("skipped");
+                    Junit.appendChild(skippedElementJunit);
+                    Element systemOut = systemOutPrintJunit(docJunit, stringBuilder.toString());
+                    Junit.appendChild(systemOut);
                 }
             } else {
                 element.setAttribute("status", "PASS");
                 Element exception = createException(doc, "NonRealException", stringBuilder.toString(), " ");
                 element.appendChild(exception);
+                Element systemOut = systemOutPrintJunit(docJunit, stringBuilder.toString());
+                Junit.appendChild(systemOut);
             }
         }
 
@@ -618,64 +643,19 @@ public class CucumberReporter implements EventListener, StrictAware {
             }
         }
 
-        public void addTestCaseElement(Document doc, Element tc, Result result) {
-            tc.setAttribute("time", calculateTotalDurationString(result));
-
-            StringBuilder sb = new StringBuilder();
-            addStepAndResultListing(sb);
-            Element child;
-            if (result.is(Result.Type.FAILED)) {
-                addStackTrace(sb, result);
-                child = createElementWithMessage(doc, sb, "failure", result.getErrorMessage());
-            } else if (result.is(Result.Type.AMBIGUOUS)) {
-                addStackTrace(sb, result);
-                child = createElementWithMessage(doc, sb, "failure", result.getErrorMessage());
-            } else if (result.is(Result.Type.PENDING) || result.is(Result.Type.UNDEFINED)) {
-                if (treatConditionallySkippedAsFailure) {
-                    child = createElementWithMessage(doc, sb, "failure", "The scenario has pending or undefined step(s)");
-                } else {
-                    child = createElement(doc, sb, "skipped");
-                }
-            } else if (result.is(Result.Type.SKIPPED) && result.getError() != null) {
-                addStackTrace(sb, result);
-                child = createElementWithMessage(doc, sb, "skipped", result.getErrorMessage());
-            } else {
-                child = createElement(doc, sb, "system-out");
+        private Element createExceptionJunit(Document doc, String message, String stacktrace) {
+            Element exceptionElement = doc.createElement("failure");
+            if (message != null) {
+                exceptionElement.setAttribute("message", "\r\n" + message + "\r\n");
             }
-
-            tc.appendChild(child);
+            exceptionElement.appendChild(doc.createCDATASection(stacktrace));
+            return exceptionElement;
         }
 
-        public void handleEmptyTestCase(Document doc, Element tc, Result result) {
-            tc.setAttribute("time", calculateTotalDurationString(result));
-
-            String resultType = treatConditionallySkippedAsFailure ? "failure" : "skipped";
-            Element child = createElementWithMessage(doc, new StringBuilder(), resultType, "The scenario has no steps");
-
-            tc.appendChild(child);
-        }
-
-        private void addStackTrace(StringBuilder sb, Result failed) {
-            sb.append("\nStackTrace:\n");
-            StringWriter sw = new StringWriter();
-            failed.getError().printStackTrace(new PrintWriter(sw));
-            sb.append(sw.toString());
-        }
-
-        private Element createElementWithMessage(Document doc, StringBuilder sb, String elementType, String message) {
-            Element child = createElement(doc, sb, elementType);
-            child.setAttribute("message", message);
-            return child;
-        }
-
-        private Element createElement(Document doc, StringBuilder sb, String elementType) {
-            Element child = doc.createElement(elementType);
-            // the createCDATASection method seems to convert "\n" to "\r\n" on Windows, in case
-            // data originally contains "\r\n" line separators the result becomes "\r\r\n", which
-            // are displayed as double line breaks.
-            String systemLineSeperator = System.getProperty("line.separator");
-            child.appendChild(doc.createCDATASection("\r\n" + sb.toString().replace(systemLineSeperator, "\n") + "\r\n"));
-            return child;
+        private Element systemOutPrintJunit(Document doc, String message) {
+            Element systemOut = doc.createElement("system-out");
+            systemOut.appendChild(doc.createCDATASection("\r\n" + message + "\r\n"));
+            return systemOut;
         }
     }
 }
