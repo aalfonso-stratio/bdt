@@ -2124,7 +2124,7 @@ public class CommonG {
                 } else {
                     switch (element.getString("type")) {
                         case "string":
-                            json.append(key, "");
+                            json.put(key, "");
                             break;
                         case "boolean":
                             json.put(key, false);
