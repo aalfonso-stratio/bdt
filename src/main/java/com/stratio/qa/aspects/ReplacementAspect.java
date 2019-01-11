@@ -48,6 +48,20 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.After;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+import org.aspectj.lang.annotation.Pointcut;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.stratio.qa.cucumber.testng.CucumberReporter;
+import com.stratio.qa.exceptions.NonReplaceableException;
+import com.stratio.qa.specs.CommonG;
+import com.stratio.qa.utils.ExceptionList;
+import com.stratio.qa.utils.ThreadProperty;
+
 @Aspect
 public class ReplacementAspect {
 
@@ -365,6 +379,10 @@ public class ReplacementAspect {
             newVal = newVal.replace(placeholder, prop);
         }
 
+        // Allow setting empty string as default value
+        if (newVal.equalsIgnoreCase("\"\"")) {
+            newVal = "";
+        }
         return newVal;
     }
 }

@@ -2124,13 +2124,13 @@ public class CommonG {
                 } else {
                     switch (element.getString("type")) {
                         case "string":
-                            json.append(key, "");
+                            json.put(key, "");
                             break;
                         case "boolean":
-                            json.append(key, true);
+                            json.put(key, false);
                             break;
-                        case "number":
-                            json.append(key, 0);
+                        case "number": case "integer":
+                            json.put(key, 0);
                             break;
                         default:
                             Assertions.fail("type not expected");
