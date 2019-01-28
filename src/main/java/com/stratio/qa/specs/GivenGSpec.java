@@ -574,6 +574,7 @@ public class GivenGSpec extends BaseGSpec {
         List<Cookie> cookieList = new ArrayList<Cookie>();
         cookieList.add(cookie);
         commonspec.setCookies(cookieList);
+        ThreadProperty.set("dcosAuthCookie", jwt);
     }
 
     /**
