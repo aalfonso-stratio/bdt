@@ -16,6 +16,7 @@
 
 package com.stratio.qa.aspects;
 
+import com.stratio.qa.utils.ThreadProperty;
 import gherkin.events.PickleEvent;
 import gherkin.pickles.PickleLocation;
 import gherkin.pickles.PickleTag;
@@ -74,10 +75,9 @@ public class RunOnTagAspect {
             line = pickleEvent.pickle.getLocations().get(0).getLine();
         }
         Boolean exit = tagsIteration(pickleEvent.pickle.getTags(), line);
-        //TODO: Es necesaria esa variable de entorno?
-        //if (exit) {
-        //    ThreadProperty.set("skippedOnParams" + pjp.getArgs()[3].toString() + linescn.getLine(), "true");
-        //}
+        if (exit) {
+            ThreadProperty.set("skippedOnParams" + pickleEvent.pickle.getName() + line, "true");
+        }
         return (Boolean) pjp.proceed();
     }
 

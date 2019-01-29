@@ -97,13 +97,6 @@ public class CucumberReporter implements EventListener, StrictAware {
     private final Logger logger = LoggerFactory.getLogger(this.getClass()
             .getCanonicalName());
 
-    private EventHandler<TestSourceRead> testSourceReadHandler = new EventHandler<TestSourceRead>() {
-        @Override
-        public void receive(TestSourceRead event) {
-            handleTestSourceRead(event);
-        }
-    };
-
     private EventHandler<TestCaseStarted> caseStartedHandler = new EventHandler<TestCaseStarted>() {
         @Override
         public void receive(TestCaseStarted event) {
@@ -180,7 +173,6 @@ public class CucumberReporter implements EventListener, StrictAware {
 
     @Override
     public void setEventPublisher(EventPublisher publisher) {
-        publisher.registerHandlerFor(TestSourceRead.class, testSourceReadHandler);
         publisher.registerHandlerFor(TestCaseStarted.class, caseStartedHandler);
         publisher.registerHandlerFor(TestCaseFinished.class, caseFinishedHandler);
         publisher.registerHandlerFor(TestStepFinished.class, stepFinishedHandler);
@@ -190,10 +182,6 @@ public class CucumberReporter implements EventListener, StrictAware {
     @Override
     public void setStrict(boolean strict) {
         TestMethod.treatSkippedAsFailure = strict;
-    }
-
-    private void handleTestSourceRead(TestSourceRead event) {
-        //TestSourcesModelUtil.INSTANCE.getTestSourcesModel().addTestSourceReadEvent(event.uri, event); //TODO: Remove, it's already added in CukesGHooks
     }
 
     private void handleTestCaseStarted(TestCaseStarted event) {
@@ -255,11 +243,11 @@ public class CucumberReporter implements EventListener, StrictAware {
             jUnitSuite.setAttribute("failures", String.valueOf(jUnitSuite.getElementsByTagName("failure").getLength()));
             jUnitSuite.setAttribute("skipped", String.valueOf(jUnitSuite.getElementsByTagName("skipped").getLength()));
             jUnitSuite.setAttribute("time", sumTimes(jUnitSuite.getElementsByTagName("testcase")));
-            jUnitSuite.setAttribute("tests", String.valueOf(getElementsCountByAttribute(suite, STATUS, ".*"))); //TODO: Revisar
-            jUnitSuite.setAttribute("errors", String.valueOf(getElementsCountByAttribute(suite, STATUS, "FAIL"))); //TODO: Revisar
-            jUnitSuite.setAttribute("timestamp", new java.util.Date().toString()); //TODO: Revisar
+            jUnitSuite.setAttribute("tests", String.valueOf(getElementsCountByAttribute(suite, STATUS, ".*")));
+            jUnitSuite.setAttribute("errors", String.valueOf(getElementsCountByAttribute(suite, STATUS, "FAIL")));
+            jUnitSuite.setAttribute("timestamp", new java.util.Date().toString());
             jUnitSuite.setAttribute("time",
-                    String.valueOf(BigDecimal.valueOf(getTotalDurationMs(suite.getElementsByTagName("test-method"))).setScale(3, BigDecimal.ROUND_HALF_UP).floatValue())); //TODO: Revisar
+                    String.valueOf(BigDecimal.valueOf(getTotalDurationMs(suite.getElementsByTagName("test-method"))).setScale(3, BigDecimal.ROUND_HALF_UP).floatValue()));
 
             if (jUnitSuite.getElementsByTagName("testcase").getLength() == 0) {
                 addDummyTestCase(); // to avoid failed Jenkins jobs
@@ -556,6 +544,7 @@ public class CucumberReporter implements EventListener, StrictAware {
                 PickleStep replacedStep = TestSourcesModelUtil.INSTANCE.getTestSourcesModel().getReplacedStep(currentFeatureFile, steps.get(i).getStepLine());
                 sb.append(TestSourcesModelUtil.INSTANCE.getTestSourcesModel().getKeywordFromSource(currentFeatureFile, steps.get(i).getStepLine()));
                 sb.append(replacedStep != null ? replacedStep.getText() : steps.get(i).getStepText());
+                int len = sb.length() - length;
                 if (!steps.get(i).getStepArgument().isEmpty()) {
                     Argument argument = replacedStep != null ? replacedStep.getArgument().get(0) : steps.get(i).getStepArgument().get(0);
                     if (argument instanceof PickleTable) {
@@ -566,6 +555,7 @@ public class CucumberReporter implements EventListener, StrictAware {
                                 strrowBuilder.append(cell.getValue()).append(" | ");
                             }
                             String strrow = strrowBuilder.toString();
+                            len = strrow.length() + 11;
                             sb.append("\n           ");
                             sb.append(strrow);
                         }
@@ -573,7 +563,8 @@ public class CucumberReporter implements EventListener, StrictAware {
                 }
                 do {
                     sb.append(".");
-                } while (sb.length() - length < DEFAULT_MAX_LENGTH);
+                    len++;
+                } while (len < DEFAULT_MAX_LENGTH);
                 sb.append(resultStatus);
                 sb.append("\n");
             }
