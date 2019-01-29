@@ -32,10 +32,7 @@ import cucumber.runtime.CucumberException;
 import cucumber.runtime.Utils;
 import cucumber.runtime.io.URLOutputStream;
 import cucumber.runtime.io.UTF8OutputStreamWriter;
-import gherkin.pickles.Argument;
-import gherkin.pickles.PickleCell;
-import gherkin.pickles.PickleRow;
-import gherkin.pickles.PickleTable;
+import gherkin.pickles.*;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -196,7 +193,7 @@ public class CucumberReporter implements EventListener, StrictAware {
     }
 
     private void handleTestSourceRead(TestSourceRead event) {
-        TestMethod.testSources.addTestSourceReadEvent(event.uri, event);
+        //TestSourcesModelUtil.INSTANCE.getTestSourcesModel().addTestSourceReadEvent(event.uri, event); //TODO: Remove, it's already added in CukesGHooks
     }
 
     private void handleTestCaseStarted(TestCaseStarted event) {
@@ -254,7 +251,7 @@ public class CucumberReporter implements EventListener, StrictAware {
 
             // JUnit
             // set up a transformer
-            jUnitSuite.setAttribute("name", callerClass + "." + TestMethod.testSources.getFeatureName(TestMethod.currentFeatureFile));
+            jUnitSuite.setAttribute("name", callerClass + "." + TestSourcesModelUtil.INSTANCE.getTestSourcesModel().getFeatureName(TestMethod.currentFeatureFile));
             jUnitSuite.setAttribute("failures", String.valueOf(jUnitSuite.getElementsByTagName("failure").getLength()));
             jUnitSuite.setAttribute("skipped", String.valueOf(jUnitSuite.getElementsByTagName("skipped").getLength()));
             jUnitSuite.setAttribute("time", sumTimes(jUnitSuite.getElementsByTagName("testcase")));
@@ -368,8 +365,6 @@ public class CucumberReporter implements EventListener, StrictAware {
         static String previousTestCaseName;
 
         static int exampleNumber;
-
-        static final TestSourcesModel testSources = new TestSourcesModel();
 
         static boolean treatSkippedAsFailure = false;
 
@@ -558,9 +553,11 @@ public class CucumberReporter implements EventListener, StrictAware {
                 if (i < results.size()) {
                     resultStatus = results.get(i).getStatus().lowerCaseName();
                 }
-                sb.append(testSources.getKeywordFromSource(currentFeatureFile, steps.get(i).getStepLine()) + steps.get(i).getStepText());
+                PickleStep replacedStep = TestSourcesModelUtil.INSTANCE.getTestSourcesModel().getReplacedStep(currentFeatureFile, steps.get(i).getStepLine());
+                sb.append(TestSourcesModelUtil.INSTANCE.getTestSourcesModel().getKeywordFromSource(currentFeatureFile, steps.get(i).getStepLine()));
+                sb.append(replacedStep != null ? replacedStep.getText() : steps.get(i).getStepText());
                 if (!steps.get(i).getStepArgument().isEmpty()) {
-                    Argument argument = steps.get(i).getStepArgument().get(0);
+                    Argument argument = replacedStep != null ? replacedStep.getArgument().get(0) : steps.get(i).getStepArgument().get(0);
                     if (argument instanceof PickleTable) {
                         for (PickleRow row : ((PickleTable) argument).getRows()) {
                             StringBuilder strrowBuilder = new StringBuilder();

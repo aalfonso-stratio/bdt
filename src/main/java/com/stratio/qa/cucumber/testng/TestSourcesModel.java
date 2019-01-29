@@ -3,6 +3,7 @@ package com.stratio.qa.cucumber.testng;
 import cucumber.api.event.TestSourceRead;
 import gherkin.*;
 import gherkin.ast.*;
+import gherkin.pickles.PickleStep;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -14,6 +15,8 @@ public class TestSourcesModel {
     private final Map<String, GherkinDocument> pathToAstMap = new HashMap();
 
     private final Map<String, Map<Integer, TestSourcesModel.AstNode>> pathToNodeMap = new HashMap();
+
+    private final Map<String, Map<Integer, PickleStep>> replacedStepsMap = new HashMap();
 
     public TestSourcesModel() {
     }
@@ -100,7 +103,7 @@ public class TestSourcesModel {
         }
     }
 
-    String getKeywordFromSource(String uri, int stepLine) {
+    public String getKeywordFromSource(String uri, int stepLine) {
         Feature feature = this.getFeature(uri);
         if (feature != null) {
             TestSourceRead event = this.getTestSourceReadEvent(uri);
@@ -186,7 +189,16 @@ public class TestSourcesModel {
                 nodeMap.put(examplesRow.getLocation().getLine(), expandedScenarioNode);
             }
         }
+    }
 
+    public void addReplacedStep(String feature, int stepLine, PickleStep replacedStep) {
+        Map<Integer, PickleStep> featureMap = replacedStepsMap.get(feature) != null ? replacedStepsMap.get(feature) : new HashMap<>();
+        featureMap.put(stepLine, replacedStep);
+        replacedStepsMap.put(feature, featureMap);
+    }
+
+    public PickleStep getReplacedStep(String feature, int stepLine) {
+        return replacedStepsMap.get(feature) != null ? replacedStepsMap.get(feature).get(stepLine) : null;
     }
 
     public class AstNode {

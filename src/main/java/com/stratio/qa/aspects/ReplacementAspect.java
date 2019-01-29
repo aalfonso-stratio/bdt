@@ -17,6 +17,7 @@
 package com.stratio.qa.aspects;
 
 import com.stratio.qa.cucumber.testng.CucumberReporter;
+import com.stratio.qa.cucumber.testng.TestSourcesModelUtil;
 import com.stratio.qa.exceptions.NonReplaceableException;
 import com.stratio.qa.specs.CommonG;
 import com.stratio.qa.specs.HookGSpec;
@@ -142,6 +143,7 @@ public class ReplacementAspect {
             String uri = pickleTestStep.getStepLocation().split(":")[0];
             String stepName = step.getText();
             String newName = replacedElement(stepName, pjp);
+            String keyword = TestSourcesModelUtil.INSTANCE.getTestSourcesModel().getKeywordFromSource(scenario.getUri(), pickleTestStep.getStepLine());
             if (!stepName.equals(newName)) {
                 //field up to BasicStatement, from Step and ExampleStep
                 Field field = null;
@@ -154,11 +156,14 @@ public class ReplacementAspect {
 
                 field.setAccessible(true);
                 field.set(step, newName);
+                scenario.write(newName);
             }
+            step = new PickleStep(step.getText(), argumentList, step.getLocations());
 
+            TestSourcesModelUtil.INSTANCE.getTestSourcesModel().addReplacedStep(scenario.getUri(), pickleTestStep.getStepLine(), step);
             lastEchoedStep = pickleTestStep.getStepText();
             if (HookGSpec.loggerEnabled) {
-                logger.info("  {}", newName);
+                logger.info("  {}{}", keyword, newName);
             }
 
             // Run step

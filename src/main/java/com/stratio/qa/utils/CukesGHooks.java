@@ -17,6 +17,7 @@
 package com.stratio.qa.utils;
 
 import com.stratio.qa.cucumber.testng.TestSourcesModel;
+import com.stratio.qa.cucumber.testng.TestSourcesModelUtil;
 import com.stratio.qa.specs.BaseGSpec;
 import com.stratio.qa.specs.HookGSpec;
 import cucumber.api.TestCase;
@@ -29,8 +30,6 @@ import org.slf4j.LoggerFactory;
 public class CukesGHooks extends BaseGSpec implements EventListener, StrictAware {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass().getCanonicalName());
-
-    static final TestSourcesModel testSources = new TestSourcesModel();
 
     private String currentFeatureFile = null;
 
@@ -80,7 +79,7 @@ public class CukesGHooks extends BaseGSpec implements EventListener, StrictAware
     }
 
     private void handleTestSourceRead(TestSourceRead event) {
-        testSources.addTestSourceReadEvent(event.uri, event);
+        TestSourcesModelUtil.INSTANCE.getTestSourcesModel().addTestSourceReadEvent(event.uri, event);
     }
 
     private void handleTestCaseStarted(TestCaseStarted event) {
@@ -89,8 +88,8 @@ public class CukesGHooks extends BaseGSpec implements EventListener, StrictAware
         }
         TestCase tc = event.testCase;
         if (HookGSpec.loggerEnabled) {
-            logger.info("Feature/Scenario: {}/{} ", testSources.getFeatureName(currentFeatureFile), tc.getName());
-            ThreadProperty.set("feature", testSources.getFeatureName(currentFeatureFile));
+            logger.info("Feature/Scenario: {}/{} ", TestSourcesModelUtil.INSTANCE.getTestSourcesModel().getFeatureName(currentFeatureFile), tc.getName());
+            ThreadProperty.set("feature", TestSourcesModelUtil.INSTANCE.getTestSourcesModel().getFeatureName(currentFeatureFile));
             ThreadProperty.set("scenario", tc.getName());
         }
 
@@ -99,7 +98,7 @@ public class CukesGHooks extends BaseGSpec implements EventListener, StrictAware
     private void handleTestStepStarted(TestStepStarted event) {
         if (HookGSpec.loggerEnabled) {
             if (!event.testStep.isHook()) {
-                TestSourcesModel.AstNode astNode = testSources.getAstNode(currentFeatureFile, event.testStep.getStepLine());
+                TestSourcesModel.AstNode astNode = TestSourcesModelUtil.INSTANCE.getTestSourcesModel().getAstNode(currentFeatureFile, event.testStep.getStepLine());
                 if (TestSourcesModel.isBackgroundStep(astNode)) {
                     if (!isLastStepBackground) {
                         logger.info(" Background:");
