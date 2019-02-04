@@ -1033,7 +1033,7 @@ public class WhenGSpec extends BaseGSpec {
             for (int i = 1; i <= count; i++) {
                 sqlTable.add(resultSetMetaData.getColumnName(i).toString());
             }
-            //takes column names and culumn count
+            //takes column names and column count
             while (rs.next()) {
                 for (int i = 1; i <= count; i++) {
                     //aux list without column names
@@ -1046,6 +1046,7 @@ public class WhenGSpec extends BaseGSpec {
             for (int i = 0; i < sqlTable.size(); i++) {
                 ThreadProperty.set("queryresponse" + i, sqlTable.get(i));
             }
+            ThreadProperty.remove("queryresponse" + sqlTable.size());
             rs.close();
             myStatement.close();
         } catch (Exception e) {
