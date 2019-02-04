@@ -511,7 +511,12 @@ public class ThenGSpec extends BaseGSpec {
                 });
             }
         } else {
-            assertThat(commonspec.getResponse().getStatusCode()).isEqualTo(expectedStatus);
+            try {
+                assertThat(commonspec.getResponse().getStatusCode()).isEqualTo(expectedStatus);
+            } catch (AssertionError e) {
+                commonspec.getLogger().warn("Response: {}", commonspec.getResponse().getResponse());
+                throw e;
+            }
         }
     }
 
