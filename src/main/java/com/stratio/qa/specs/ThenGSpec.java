@@ -1275,5 +1275,26 @@ public class ThenGSpec extends BaseGSpec {
         assertThat(status).as("Expected status: " + status + " doesn't match obtained one: " + response).matches(response);
     }
 
+    @Then("^I save metabase selenium cookies in context$")
+    public void saveMetabaseSeleniumCookies() throws Exception {
+        boolean found = false;
+        int i = 0;
+
+        while (!found && i < 3) {
+            if (this.commonspec.getDriver().manage().getCookies().toString().contains("metabase")) {
+                this.commonspec.setSeleniumCookies(this.commonspec.getDriver().manage().getCookies());
+                found = true;
+            } else {
+                Thread.sleep(2000);
+            }
+            i = i + 1;
+        }
+
+        if (!found) {
+            seleniumSnapshot();
+            throw new Exception ("It has not been possible to save Metabase cookies");
+        }
+    }
+
 }
 
