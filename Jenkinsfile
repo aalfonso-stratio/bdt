@@ -25,7 +25,7 @@ hose {
         ['MONGODB': [
            'image': 'stratio/mongo:3.0.4']],
         ['ELASTICSEARCH': [
-           'image': 'elasticsearch:2.0.2',
+           'image': 'elasticsearch:6.1.0',
            'env': [
                  'ES_JAVA_OPTS="-Des.cluster.name=%%JUID -Des.network.host=%%OWNHOSTNAME"'],
            'sleep': 40,
