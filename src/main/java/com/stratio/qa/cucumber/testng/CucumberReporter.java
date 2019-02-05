@@ -193,14 +193,17 @@ public class CucumberReporter implements EventListener, StrictAware {
             clazz.setAttribute("name", callerClass);
             test.appendChild(clazz);
         }
+        testMethod = new TestMethod(event.testCase);
+        String scenarioName = testMethod.calculateElementName(event.testCase);
         //TestNG
         root = document.createElement("test-method");
         clazz.appendChild(root);
-        testMethod = new TestMethod(event.testCase);
-        testMethod.start(root);
+        root.setAttribute("name", scenarioName);
+        root.setAttribute("started-at", DATE_FORMAT.format(new Date()));
         //JUnit
         jUnitRoot = testMethod.createElement(jUnitDocument);
-        testMethod.writeElement(jUnitDocument, jUnitRoot);
+        jUnitRoot.setAttribute("classname", callerClass);
+        jUnitRoot.setAttribute("name", scenarioName);
         jUnitSuite.appendChild(jUnitRoot);
         increaseAttributeValue(jUnitSuite, "tests");
     }
@@ -374,11 +377,6 @@ public class CucumberReporter implements EventListener, StrictAware {
 
         public TestMethod(TestCase scenario) {
             this.scenario = scenario;
-        }
-
-        private void start(Element element) {
-            element.setAttribute("name", calculateElementName(scenario));
-            element.setAttribute("started-at", DATE_FORMAT.format(new Date()));
         }
 
         /**
@@ -615,16 +613,14 @@ public class CucumberReporter implements EventListener, StrictAware {
             return doc.createElement("testcase");
         }
 
-        private void writeElement(Document doc, Element tc) {
-            tc.setAttribute("classname", callerClass);
-            tc.setAttribute("name", scenario.getName());
-        }
-
-        private String calculateElementName(cucumber.api.TestCase testCase) {
+        public String calculateElementName(cucumber.api.TestCase testCase) {
             String testCaseName = testCase.getName();
             if (testCaseName.equals(previousTestCaseName)) {
-                return Utils.getUniqueTestNameForScenarioExample(testCaseName, ++exampleNumber);
+                exampleNumber++;
+                ThreadProperty.set("dataSet", String.valueOf(exampleNumber));
+                return Utils.getUniqueTestNameForScenarioExample(testCaseName, exampleNumber);
             } else {
+                ThreadProperty.set("dataSet", "");
                 previousTestCaseName = testCase.getName();
                 exampleNumber = 1;
                 return testCaseName;
