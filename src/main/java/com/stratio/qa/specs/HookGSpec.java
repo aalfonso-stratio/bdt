@@ -121,7 +121,7 @@ public class HookGSpec extends BaseGSpec {
      *
      * @throws MalformedURLException
      */
-    @Before(order = ORDER_10, value = {"@mobile,@web"})
+    @Before(order = ORDER_10, value = {"@mobile or @web"})
     public void seleniumSetup() throws MalformedURLException {
         String grid = System.getProperty("SELENIUM_GRID");
         if (grid == null) {
@@ -220,7 +220,7 @@ public class HookGSpec extends BaseGSpec {
     /**
      * Close selenium web driver.
      */
-    @After(order = ORDER_20, value = {"@mobile,@web"})
+    @After(order = ORDER_20, value = {"@mobile or @web"})
     public void seleniumTeardown() {
         if (commonspec.getDriver() != null) {
             commonspec.getLogger().debug("Shutdown Selenium client");
