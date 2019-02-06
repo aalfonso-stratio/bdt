@@ -146,7 +146,6 @@ public class CucumberReporter implements EventListener, StrictAware {
         } catch (Exception e) {
             logger.error("error writing JUNIT.xml file", e);
         }
-        TestMethod.treatSkippedAsFailure = false;
         TestMethod.currentFeatureFile = null;
         TestMethod.treatConditionallySkippedAsFailure = false;
         TestMethod.previousTestCaseName = "";
@@ -181,7 +180,6 @@ public class CucumberReporter implements EventListener, StrictAware {
 
     @Override
     public void setStrict(boolean strict) {
-        TestMethod.treatSkippedAsFailure = strict;
     }
 
     private void handleTestCaseStarted(TestCaseStarted event) {
@@ -357,8 +355,6 @@ public class CucumberReporter implements EventListener, StrictAware {
 
         static int exampleNumber;
 
-        static boolean treatSkippedAsFailure = false;
-
         static boolean treatConditionallySkippedAsFailure = false;
 
         private final List<Result> results = new ArrayList<Result>();
@@ -379,52 +375,52 @@ public class CucumberReporter implements EventListener, StrictAware {
             this.scenario = scenario;
         }
 
-        /**
-         * Checks the passed by ticket parameter validity against a Attlasian Jira account
-         *
-         * @param ticket Jira ticket
-         */
-        private boolean isValidJiraTicket (String ticket) {
-            String userJira = System.getProperty("usernamejira");
-            String passJira = System.getProperty("passwordjira");
-            Boolean validTicket = false;
-
-            if ((userJira != null) || (passJira != null)  || "".equals(ticket)) {
-                CommonG comm = new CommonG();
-                AsyncHttpClient client = new AsyncHttpClient();
-                Future<Response> response = null;
-                Logger logger = LoggerFactory.getLogger(ThreadProperty.get("class"));
-
-                comm.setRestProtocol("https://");
-                comm.setRestHost("stratio.atlassian.net");
-                comm.setRestPort("");
-                comm.setClient(client);
-                String endpoint = "/rest/api/2/issue/" + ticket;
-                try {
-                    response = comm.generateRequest("GET", true, userJira, passJira, endpoint, "", "json");
-                    comm.setResponse(endpoint, response.get());
-                } catch (Exception e) {
-                    logger.error("Rest API Jira connection error " + String.valueOf(comm.getResponse().getStatusCode()));
-                    return false;
-                }
-
-                String json = comm.getResponse().getResponse();
-                String value = "";
-                try {
-                    value = JsonPath.read(json, "$.fields.status.name");
-                    value = value.toLowerCase();
-                } catch (PathNotFoundException pe) {
-                    logger.error("Json Path $.fields.status.name not found\r");
-                    logger.error(json);
-                    return false;
-                }
-
-                if (!"done".equals(value) || !"finalizado".equals(value) || !"qa".equals(value)) {
-                    validTicket = true;
-                }
-            }
-            return validTicket;
-        }
+//        /**
+//         * Checks the passed by ticket parameter validity against a Attlasian Jira account
+//         *
+//         * @param ticket Jira ticket
+//         */
+//        private boolean isValidJiraTicket (String ticket) {
+//            String userJira = System.getProperty("usernamejira");
+//            String passJira = System.getProperty("passwordjira");
+//            Boolean validTicket = false;
+//
+//            if ((userJira != null) || (passJira != null)  || "".equals(ticket)) {
+//                CommonG comm = new CommonG();
+//                AsyncHttpClient client = new AsyncHttpClient();
+//                Future<Response> response = null;
+//                Logger logger = LoggerFactory.getLogger(ThreadProperty.get("class"));
+//
+//                comm.setRestProtocol("https://");
+//                comm.setRestHost("stratio.atlassian.net");
+//                comm.setRestPort("");
+//                comm.setClient(client);
+//                String endpoint = "/rest/api/2/issue/" + ticket;
+//                try {
+//                    response = comm.generateRequest("GET", true, userJira, passJira, endpoint, "", "json");
+//                    comm.setResponse(endpoint, response.get());
+//                } catch (Exception e) {
+//                    logger.error("Rest API Jira connection error " + String.valueOf(comm.getResponse().getStatusCode()));
+//                    return false;
+//                }
+//
+//                String json = comm.getResponse().getResponse();
+//                String value = "";
+//                try {
+//                    value = JsonPath.read(json, "$.fields.status.name");
+//                    value = value.toLowerCase();
+//                } catch (PathNotFoundException pe) {
+//                    logger.error("Json Path $.fields.status.name not found\r");
+//                    logger.error(json);
+//                    return false;
+//                }
+//
+//                if (!"done".equals(value) || !"finalizado".equals(value) || !"qa".equals(value)) {
+//                    validTicket = true;
+//                }
+//            }
+//            return validTicket;
+//        }
 
         /**
          * Builds a test result xml document, builds exception messages on non valid ignore causes such as
@@ -493,21 +489,13 @@ public class CucumberReporter implements EventListener, StrictAware {
                     Junit.appendChild(exceptionJunit);
                 }
             } else if (skipped != null) {
-                if (treatSkippedAsFailure) {
-                    element.setAttribute("status", "FAIL");
-                    Element exception = createException(doc, "The scenario has pending or undefined step(s)", stringBuilder.toString(), "The scenario has pending or undefined step(s)");
-                    element.appendChild(exception);
-                    Element exceptionJunit = createExceptionJunit(docJunit, stringBuilder.toString(), "The scenario has pending or undefined step(s)");
-                    Junit.appendChild(exceptionJunit);
-                } else {
-                    element.setAttribute("status", "SKIP");
-                    Element exception = createException(doc, "NonRealException", stringBuilder.toString(), " ");
-                    element.appendChild(exception);
-                    Element skippedElementJunit = docJunit.createElement("skipped");
-                    Junit.appendChild(skippedElementJunit);
-                    Element systemOut = systemOutPrintJunit(docJunit, stringBuilder.toString());
-                    Junit.appendChild(systemOut);
-                }
+                element.setAttribute("status", "SKIP");
+                Element exception = createException(doc, "NonRealException", stringBuilder.toString(), " ");
+                element.appendChild(exception);
+                Element skippedElementJunit = docJunit.createElement("skipped");
+                Junit.appendChild(skippedElementJunit);
+                Element systemOut = systemOutPrintJunit(docJunit, stringBuilder.toString());
+                Junit.appendChild(systemOut);
             } else {
                 element.setAttribute("status", "PASS");
                 Element exception = createException(doc, "NonRealException", stringBuilder.toString(), " ");
