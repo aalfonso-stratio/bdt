@@ -1791,21 +1791,21 @@ public class RunOnEnvTagAspectTest {
     public void testTagIterationFirstElementNotExist() throws Exception {
         System.setProperty("HELLO","OK");
         System.clearProperty("NOTEXIST");
-        assertThat(false).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(NOTEXIST=TEST&&HELLO=OK)")));
+        assertThat(false).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(NOTEXIST=1.0.0&&HELLO=OK)")));
     }
 
     @Test
     public void testTagIterationFirstElementNotExistGreatherThan() throws Exception {
         System.setProperty("HELLO","OK");
         System.clearProperty("NOTEXIST");
-        assertThat(false).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(NOTEXIST>TEST&&HELLO=OK)")));
+        assertThat(false).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(NOTEXIST>1.0.0&&HELLO=OK)")));
     }
 
     @Test
     public void testTagIterationFirstElementNotExistLowerThan() throws Exception {
         System.setProperty("HELLO","OK");
         System.clearProperty("NOTEXIST");
-        assertThat(false).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(NOTEXIST<TEST&&HELLO=OK)")));
+        assertThat(false).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(NOTEXIST<1.0.0&&HELLO=OK)")));
     }
 
     @Test
@@ -1813,7 +1813,7 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","OK");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("NOTEXIST");
-        assertThat(false).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(BYE=1.0.0&&NOTEXIST=TEST&&HELLO=OK)")));
+        assertThat(false).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(BYE=1.0.0&&NOTEXIST=1.0.0&&HELLO=OK)")));
     }
 
     @Test
@@ -1821,23 +1821,23 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","OK");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("NOTEXIST");
-        assertThat(true).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(BYE=1.0.0||NOTEXIST=TEST&&HELLO=OK)")));
+        assertThat(true).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(BYE=1.0.0||NOTEXIST=1.0.0&&HELLO=OK)")));
     }
 
     @Test
     public void testTagIterationIntermediateElementExistsNotEqual() throws Exception {
         System.setProperty("HELLO","OK");
         System.setProperty("BYE","1.0.0");
-        System.setProperty("NOTEXIST","NOTEXIST");
-        assertThat(false).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(BYE=1.0.0&&NOTEXIST=TEST&&HELLO=OK)")));
+        System.setProperty("NOTEXIST","1.0.0");
+        assertThat(true).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(BYE=1.0.0&&NOTEXIST=1.0.0&&HELLO=OK)")));
     }
 
     @Test
     public void testTagIterationIntermediateElementExistsNotEqualOrOperator() throws Exception {
         System.setProperty("HELLO","OK");
         System.setProperty("BYE","1.0.0");
-        System.setProperty("NOTEXIST","NOTEXIST");
-        assertThat(true).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(BYE=1.0.0||NOTEXIST=TEST&&HELLO=OK)")));
+        System.setProperty("NOTEXIST","1.0.0");
+        assertThat(true).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(BYE=1.0.0||NOTEXIST=1.0.0&&HELLO=OK)")));
     }
 
     @Test
@@ -1845,7 +1845,7 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","OK");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("NOTEXIST");
-        assertThat(false).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(BYE=1.0.0&&NOTEXIST>TEST&&HELLO=OK)")));
+        assertThat(false).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(BYE=1.0.0&&NOTEXIST>1.0.0&&HELLO=OK)")));
     }
 
     @Test
@@ -1853,7 +1853,7 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","OK");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("NOTEXIST");
-        assertThat(true).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(BYE=1.0.0||NOTEXIST>TEST&&HELLO=OK)")));
+        assertThat(true).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(BYE=1.0.0||NOTEXIST>1.0.0&&HELLO=OK)")));
     }
 
     @Test
@@ -1861,7 +1861,7 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","OK");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("NOTEXIST");
-        assertThat(false).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(BYE=1.0.0&&NOTEXIST<TEST&&HELLO=OK)")));
+        assertThat(false).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(BYE=1.0.0&&NOTEXIST<1.0.0&&HELLO=OK)")));
     }
 
     @Test
@@ -1869,6 +1869,168 @@ public class RunOnEnvTagAspectTest {
         System.setProperty("HELLO","OK");
         System.setProperty("BYE","1.0.0");
         System.clearProperty("NOTEXIST");
-        assertThat(true).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(BYE=1.0.0||NOTEXIST<TEST&&HELLO=OK)")));
+        assertThat(true).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(BYE=1.0.0||NOTEXIST<1.0.0&&HELLO=OK)")));
+    }
+
+    @Test
+    public void testTagIterationIntermediateElementExistsLowerThan() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","1.0.0");
+        System.setProperty("NOTEXIST","1.0.0");
+        assertThat(false).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(BYE=1.0.0&&NOTEXIST<1.0.0&&HELLO=OK)")));
+    }
+
+    @Test
+    public void testTagIterationIntermediateElementExistsLowerThanOrOperator() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","1.0.0");
+        System.setProperty("NOTEXIST","1.0.0");
+        assertThat(true).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(BYE=1.0.0||NOTEXIST<1.0.0&&HELLO=OK)")));
+    }
+
+    @Test
+    public void testTagIterationLastElementNotExist() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.clearProperty("NOTEXIST");
+        assertThat(false).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(HELLO=OK&&NOTEXIST=1.0.0)")));
+    }
+
+    @Test
+    public void testTagIterationLastElementNotExistOrOperator() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.clearProperty("NOTEXIST");
+        assertThat(true).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(HELLO=OK||NOTEXIST=1.0.0)")));
+    }
+
+    @Test
+    public void testTagIterationLastElementExists() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("NOTEXIST","1.0.0");
+        assertThat(true).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(HELLO=OK&&NOTEXIST=1.0.0)")));
+    }
+
+    @Test
+    public void testTagIterationLastElementExistsOrOperator() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("NOTEXIST","1.0.0");
+        assertThat(true).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(HELLO=OK||NOTEXIST=1.0.0)")));
+    }
+
+    @Test
+    public void testTagIterationLastElementNotExistGreatherThan() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.clearProperty("NOTEXIST");
+        assertThat(false).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(HELLO=OK&&NOTEXIST>1.0.0)")));
+    }
+
+    @Test
+    public void testTagIterationLastElementNotExistGreatherThanOrOperator() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.clearProperty("NOTEXIST");
+        assertThat(true).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(HELLO=OK||NOTEXIST>1.0.0)")));
+    }
+
+    @Test
+    public void testTagIterationLastElementExistsGreatherThan() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("NOTEXIST","1.0.0");
+        assertThat(false).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(HELLO=OK&&NOTEXIST>1.0.0)")));
+    }
+
+    @Test
+    public void testTagIterationLastElementExistsGreatherThanOrOperator() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("NOTEXIST","1.0.0");
+        assertThat(false).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(HELLO=KO||NOTEXIST>1.0.0)")));
+    }
+
+    @Test
+    public void testTagIterationLastElementNotExistLowerThan() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.clearProperty("NOTEXIST");
+        assertThat(false).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(HELLO=OK&&NOTEXIST<1.0.0)")));
+    }
+
+    @Test
+    public void testTagIterationLastElementNotExistLowerThanOrOperator() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.clearProperty("NOTEXIST");
+        assertThat(true).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(HELLO=OK||NOTEXIST<1.0.0)")));
+    }
+
+    @Test
+    public void testTagIterationFirstElementNotExistWithoutValue() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.clearProperty("NOTEXIST");
+        assertThat(false).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(NOTEXIST&&HELLO=OK)")));
+    }
+
+    @Test
+    public void testTagIterationFirstElementNotExistWithoutValueOrOperator() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.clearProperty("NOTEXIST");
+        assertThat(true).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(NOTEXIST||HELLO=OK)")));
+    }
+
+    @Test
+    public void testTagIterationLastElementNotExistWithoutValue() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.clearProperty("NOTEXIST");
+        assertThat(false).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(HELLO=OK&&NOTEXIST)")));
+    }
+
+    @Test
+    public void testTagIterationLastElementNotExistWithoutValueOrOperator() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.clearProperty("NOTEXIST");
+        assertThat(true).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(HELLO=OK||NOTEXIST)")));
+    }
+
+    @Test
+    public void testTagIterationIntermediateElementExistsWithDifferentValue() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","1.0.0");
+        System.setProperty("NOTEXIST","1.0.0");
+        assertThat(false).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(BYE=1.0.0&&NOTEXIST=2.0.0&&HELLO=OK)")));
+    }
+
+    @Test
+    public void testTagIterationIntermediateElementExistsWithDifferentValueOrOperator() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","1.0.0");
+        System.setProperty("NOTEXIST","1.0.0");
+        assertThat(true).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(BYE=1.0.0||NOTEXIST=2.0.0&&HELLO=OK)")));
+    }
+
+    @Test
+    public void testTagIterationIntermediateElementExistsWithValueLowerThan() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","1.0.0");
+        System.setProperty("NOTEXIST","1.0.0");
+        assertThat(false).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(BYE=1.0.0&&NOTEXIST>2.0.0&&HELLO=OK)")));
+    }
+
+    @Test
+    public void testTagIterationIntermediateElementExistsWithValueLowerThanOrOperator() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","1.0.0");
+        System.setProperty("NOTEXIST","1.0.0");
+        assertThat(true).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(BYE=1.0.0||NOTEXIST>2.0.0&&HELLO=OK)")));
+    }
+
+    @Test
+    public void testTagIterationIntermediateElementExistsWithValueGreaterThan() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","1.0.0");
+        System.setProperty("NOTEXIST","1.0.0");
+        assertThat(true).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(BYE=1.0.0&&NOTEXIST<2.0.0&&HELLO=OK)")));
+    }
+
+    @Test
+    public void testTagIterationIntermediateElementExistsWithValueGreaterThanOrOperator() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","1.0.0");
+        System.setProperty("NOTEXIST","1.0.0");
+        assertThat(true).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(BYE=1.0.1||NOTEXIST<2.0.0&&HELLO=OK)")));
     }
 }
