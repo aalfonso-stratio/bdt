@@ -91,6 +91,55 @@ public class WhenGTest {
     }
 
     @Test
+    public void testSortJSONElementsOrderedByDefault() throws Exception {
+        ThreadProperty.set("class", this.getClass().getCanonicalName());
+
+        String ascendingFile = "indicesJSONAscending.conf";
+        String envVar = "envVar";
+
+        String jsonStringAscending = new String(Files.readAllBytes(
+                Paths.get(getClass().getClassLoader().getResource(ascendingFile).getFile())));
+
+        CommonG commong = new CommonG();
+        WhenGSpec wheng = new WhenGSpec(commong);
+
+        ThreadProperty.set(envVar, jsonStringAscending);
+
+        try {
+            wheng.sortElements(envVar, "alphabetical", "ascending");
+        } catch (Exception e) {
+            fail("Error parsing JSON String");
+        }
+
+        String value = ThreadProperty.get(envVar);
+
+        assertThat(value).as("Not correctly ordered").isEqualTo(jsonStringAscending);
+    }
+
+    @Test
+    public void testSortJSONElementsNoCriteria() throws Exception {
+        ThreadProperty.set("class", this.getClass().getCanonicalName());
+
+        String baseData = "indicesJSON.conf";
+        String envVar = "envVar";
+
+        String jsonString = new String(Files.readAllBytes(
+                Paths.get(getClass().getClassLoader().getResource(baseData).getFile())));
+
+        CommonG commong = new CommonG();
+        WhenGSpec wheng = new WhenGSpec(commong);
+
+        ThreadProperty.set(envVar, jsonString);
+
+        try {
+            wheng.sortElements(envVar, "nocriteria", "ascending");
+            fail("No exception returned ordering without criteria");
+        } catch (Exception e) {
+
+        }
+    }
+
+    @Test
     public void testReadFileToVariableJSON() throws Exception {
         ThreadProperty.set("class", this.getClass().getCanonicalName());
 
@@ -128,6 +177,25 @@ public class WhenGTest {
 
         String envVarResult = ThreadProperty.get(envVar);
         String expectedResult = "bar = bar";
+
+        assertThat(envVarResult).as("Not as expected").isEqualTo(expectedResult);
+    }
+
+    @Test
+    public void testReadFileToVariableNoDataTableString() throws Exception {
+        ThreadProperty.set("class", this.getClass().getCanonicalName());
+
+        String baseData = "schemas/krb5.conf";
+        String type = "string";
+        String envVar = "mystring";
+
+        CommonG commong = new CommonG();
+        WhenGSpec wheng = new WhenGSpec(commong);
+
+        wheng.readFileToVariableNoDataTable(baseData, type, envVar);
+
+        String envVarResult = ThreadProperty.get(envVar);
+        String expectedResult = "foo = bar";
 
         assertThat(envVarResult).as("Not as expected").isEqualTo(expectedResult);
     }

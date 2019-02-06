@@ -42,6 +42,11 @@ public class IncludeTagAspectTest {
     }
 
     @Test
+    public void testGetScenarioParams() {
+        assertThat("To copy").as("Test scenario name is extracted correctly").isEqualTo(inctag.getScenName("@include(feature: test.feature,scenario: To copy,params:param1=1)"));
+    }
+
+    @Test
     public void testGetParams() {
         assertThat(4).as("Test that the number of keys and values are correctly calculated for params").isEqualTo(inctag.getParams("@include(feature: test.feature,scenario: To copy,params: [time1:9, time2:9])").length);
     }
@@ -51,6 +56,13 @@ public class IncludeTagAspectTest {
         String keysNotReplaced = "Given that <time1> is not equal to <time2> into a step";
         String[] keys = {"<time1>", "9", "<time2>", "8"};
         assertThat("Given that 9 is not equal to 8 into a step").as("Test that keys are correctly replaced at scenario outlines").isEqualTo(inctag.doReplaceKeys(keysNotReplaced, keys));
+    }
+
+    @Test
+    public void testDoReplaceKeysException() {
+        String keysNotReplaced = "Given that <time1> is not equal to <time3> into a step";
+        String[] keys = {"<time1>", "9", "<time2>", "8"};
+        assertThatExceptionOfType(IncludeException.class).isThrownBy(() -> inctag.doReplaceKeys(keysNotReplaced, keys));
     }
 
     @Test
