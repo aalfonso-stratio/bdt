@@ -42,6 +42,8 @@ import java.sql.Statement;
 import java.util.*;
 import java.util.regex.Pattern;
 
+import com.jayway.jsonpath.JsonPath;
+
 import static com.stratio.qa.assertions.Assertions.assertThat;
 import static org.testng.AssertJUnit.fail;
 
@@ -1275,26 +1277,19 @@ public class ThenGSpec extends BaseGSpec {
         assertThat(status).as("Expected status: " + status + " doesn't match obtained one: " + response).matches(response);
     }
 
-    @Then("^I save metabase selenium cookies in context$")
-    public void saveMetabaseSeleniumCookies() throws Exception {
-        boolean found = false;
-        int i = 0;
+    @Then("^I obtain metabase id for user '(.+?)' and password '(.+?)' in endpoint '(.+?)' and save in context cookies$")
+    public void saveMetabaseCookie(String user, String password, String url) throws Exception {
+        String command = "curl -X POST -k -H \"Content-Type: application/json\" -d '{\"username\": \"" + user + "\", \"password\": \"" + password + "\"}' " + url;
+        commonspec.runLocalCommand(command);
+        commonspec.runCommandLoggerAndEnvVar(0, null, Boolean.TRUE);
 
-        while (!found && i < 3) {
-            if (this.commonspec.getDriver().manage().getCookies().toString().contains("metabase")) {
-                this.commonspec.setSeleniumCookies(this.commonspec.getDriver().manage().getCookies());
-                found = true;
-            } else {
-                Thread.sleep(2000);
-            }
-            i = i + 1;
-        }
+        Assertions.assertThat(commonspec.getCommandExitStatus()).isEqualTo(0);
+        String result = JsonPath.parse(commonspec.getCommandResult().trim()).read("$.id");
 
-        if (!found) {
-            seleniumSnapshot();
-            throw new Exception ("It has not been possible to save Metabase cookies");
-        }
+        com.ning.http.client.cookie.Cookie cookie = new com.ning.http.client.cookie.Cookie("metabase.SESSION_ID", result, false, "", "", 99999L, false, false);
+        ArrayList cookieList = new ArrayList();
+        cookieList.add(cookie);
+        this.commonspec.setCookies(cookieList);
     }
-
 }
 
