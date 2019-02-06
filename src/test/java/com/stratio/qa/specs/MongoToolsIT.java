@@ -26,14 +26,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 public class MongoToolsIT extends BaseGSpec {
-    GivenGSpec commonspecG;
+    DatabaseSpec commonspecG;
     String doc;
     String db = "mongoITDB";
     String collection = "testCollection";
     public MongoToolsIT() {
         ThreadProperty.set("class", this.getClass().getCanonicalName());
         this.commonspec = new CommonG();
-        commonspecG = new GivenGSpec(this.commonspec);
+        commonspecG = new DatabaseSpec(this.commonspec);
     }
 
     @BeforeClass
