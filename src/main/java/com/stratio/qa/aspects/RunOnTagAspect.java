@@ -203,22 +203,13 @@ public class RunOnTagAspect {
             } else if (params[0][0].contains(">")) {
                 String param = params[0][0].split(">")[0];
                 String value = params[0][0].split(">")[1];
-                if (System.getProperty(param, "").isEmpty()) {
+                if (System.getProperty(param, "").isEmpty() || !(value.compareTo(System.getProperty(param)) < 0)) {
                     result =  false;
-                }
-
-                if (!(value.compareTo(System.getProperty(param)) < 0)) {
-                    result = false;
                 }
             } else if (params[0][0].contains("<")) {
                 String param = params[0][0].split("<")[0];
                 String value = params[0][0].split("<")[1];
-
-                if (System.getProperty(param, "").isEmpty()) {
-                    result = false;
-                }
-
-                if (!(value.compareTo(System.getProperty(param)) > 0)) {
+                if (System.getProperty(param, "").isEmpty() || !(value.compareTo(System.getProperty(param)) > 0)) {
                     result = false;
                 }
             } else {

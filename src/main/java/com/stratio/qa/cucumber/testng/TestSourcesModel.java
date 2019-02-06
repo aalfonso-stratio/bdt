@@ -37,49 +37,8 @@ public class TestSourcesModel {
     public TestSourcesModel() {
     }
 
-    static Feature getFeatureForTestCase(TestSourcesModel.AstNode astNode) {
-        while (astNode.parent != null) {
-            astNode = astNode.parent;
-        }
-
-        return (Feature) astNode.node;
-    }
-
-    static Background getBackgroundForTestCase(TestSourcesModel.AstNode astNode) {
-        Feature feature = getFeatureForTestCase(astNode);
-        ScenarioDefinition backgound = (ScenarioDefinition) feature.getChildren().get(0);
-        return backgound instanceof Background ? (Background) backgound : null;
-    }
-
-    static ScenarioDefinition getScenarioDefinition(TestSourcesModel.AstNode astNode) {
-        return astNode.node instanceof ScenarioDefinition ? (ScenarioDefinition) astNode.node : (ScenarioDefinition) astNode.parent.parent.node;
-    }
-
-    static boolean isScenarioOutlineScenario(TestSourcesModel.AstNode astNode) {
-        return !(astNode.node instanceof ScenarioDefinition);
-    }
-
     public static boolean isBackgroundStep(TestSourcesModel.AstNode astNode) {
         return astNode.parent.node instanceof Background;
-    }
-
-    static String calculateId(TestSourcesModel.AstNode astNode) {
-        Node node = astNode.node;
-        if (node instanceof ScenarioDefinition) {
-            return calculateId(astNode.parent) + ";" + convertToId(((ScenarioDefinition) node).getName());
-        } else if (node instanceof TestSourcesModel.ExamplesRowWrapperNode) {
-            return calculateId(astNode.parent) + ";" + Integer.toString(((TestSourcesModel.ExamplesRowWrapperNode) node).bodyRowIndex + 2);
-        } else if (node instanceof TableRow) {
-            return calculateId(astNode.parent) + ";" + Integer.toString(1);
-        } else if (node instanceof Examples) {
-            return calculateId(astNode.parent) + ";" + convertToId(((Examples) node).getName());
-        } else {
-            return node instanceof Feature ? convertToId(((Feature) node).getName()) : "";
-        }
-    }
-
-    static String convertToId(String name) {
-        return name.replaceAll("[\\s'_,!]", "-").toLowerCase();
     }
 
     public void addTestSourceReadEvent(String path, TestSourceRead event) {
@@ -94,29 +53,12 @@ public class TestSourcesModel {
         return this.pathToAstMap.containsKey(path) ? ((GherkinDocument) this.pathToAstMap.get(path)).getFeature() : null;
     }
 
-    ScenarioDefinition getScenarioDefinition(String path, int line) {
-        return getScenarioDefinition(this.getAstNode(path, line));
-    }
-
     public TestSourcesModel.AstNode getAstNode(String path, int line) {
         if (!this.pathToNodeMap.containsKey(path)) {
             this.parseGherkinSource(path);
         }
 
         return this.pathToNodeMap.containsKey(path) ? (TestSourcesModel.AstNode) ((Map) this.pathToNodeMap.get(path)).get(line) : null;
-    }
-
-    public boolean hasBackground(String path, int line) {
-        if (!this.pathToNodeMap.containsKey(path)) {
-            this.parseGherkinSource(path);
-        }
-
-        if (this.pathToNodeMap.containsKey(path)) {
-            TestSourcesModel.AstNode astNode = (TestSourcesModel.AstNode) ((Map) this.pathToNodeMap.get(path)).get(line);
-            return getBackgroundForTestCase(astNode) != null;
-        } else {
-            return false;
-        }
     }
 
     public String getKeywordFromSource(String uri, int stepLine) {

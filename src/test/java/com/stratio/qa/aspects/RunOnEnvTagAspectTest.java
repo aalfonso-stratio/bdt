@@ -1786,4 +1786,89 @@ public class RunOnEnvTagAspectTest {
         assertThatExceptionOfType(Exception.class).isThrownBy(() -> runontag.checkParams(runontag.getParams("@skipOnEnv(HELLO=OK&&BYE,KK)")))
                 .withMessage("Error in conditional operators. Operators should be && or ||.");
     }
+
+    @Test
+    public void testTagIterationFirstElementNotExist() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.clearProperty("NOTEXIST");
+        assertThat(false).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(NOTEXIST=TEST&&HELLO=OK)")));
+    }
+
+    @Test
+    public void testTagIterationFirstElementNotExistGreatherThan() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.clearProperty("NOTEXIST");
+        assertThat(false).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(NOTEXIST>TEST&&HELLO=OK)")));
+    }
+
+    @Test
+    public void testTagIterationFirstElementNotExistLowerThan() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.clearProperty("NOTEXIST");
+        assertThat(false).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(NOTEXIST<TEST&&HELLO=OK)")));
+    }
+
+    @Test
+    public void testTagIterationIntermediateElementNotExist() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","1.0.0");
+        System.clearProperty("NOTEXIST");
+        assertThat(false).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(BYE=1.0.0&&NOTEXIST=TEST&&HELLO=OK)")));
+    }
+
+    @Test
+    public void testTagIterationIntermediateElementNotExistOrOperator() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","1.0.0");
+        System.clearProperty("NOTEXIST");
+        assertThat(true).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(BYE=1.0.0||NOTEXIST=TEST&&HELLO=OK)")));
+    }
+
+    @Test
+    public void testTagIterationIntermediateElementExistsNotEqual() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","1.0.0");
+        System.setProperty("NOTEXIST","NOTEXIST");
+        assertThat(false).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(BYE=1.0.0&&NOTEXIST=TEST&&HELLO=OK)")));
+    }
+
+    @Test
+    public void testTagIterationIntermediateElementExistsNotEqualOrOperator() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","1.0.0");
+        System.setProperty("NOTEXIST","NOTEXIST");
+        assertThat(true).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(BYE=1.0.0||NOTEXIST=TEST&&HELLO=OK)")));
+    }
+
+    @Test
+    public void testTagIterationIntermediateElementNotExistGreatherThan() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","1.0.0");
+        System.clearProperty("NOTEXIST");
+        assertThat(false).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(BYE=1.0.0&&NOTEXIST>TEST&&HELLO=OK)")));
+    }
+
+    @Test
+    public void testTagIterationIntermediateElementNotExistGreatherThanOrOperator() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","1.0.0");
+        System.clearProperty("NOTEXIST");
+        assertThat(true).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(BYE=1.0.0||NOTEXIST>TEST&&HELLO=OK)")));
+    }
+
+    @Test
+    public void testTagIterationIntermediateElementNotExistLowerThan() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","1.0.0");
+        System.clearProperty("NOTEXIST");
+        assertThat(false).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(BYE=1.0.0&&NOTEXIST<TEST&&HELLO=OK)")));
+    }
+
+    @Test
+    public void testTagIterationIntermediateElementNotExistLowerThanOrOperator() throws Exception {
+        System.setProperty("HELLO","OK");
+        System.setProperty("BYE","1.0.0");
+        System.clearProperty("NOTEXIST");
+        assertThat(true).isEqualTo(runontag.checkParams(runontag.getParams("@runOnEnv(BYE=1.0.0||NOTEXIST<TEST&&HELLO=OK)")));
+    }
 }
