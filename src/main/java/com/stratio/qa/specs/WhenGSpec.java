@@ -29,6 +29,7 @@ import com.stratio.qa.utils.ThreadProperty;
 import cucumber.api.DataTable;
 import cucumber.api.Transform;
 import cucumber.api.java.en.Given;
+import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import org.assertj.core.api.Assertions;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -1059,18 +1060,18 @@ public class WhenGSpec extends BaseGSpec {
     /**
      * Check if resources are released after uninstall and framework doesn't appear as inactive on mesos
      *
-     * @param framework Framework
+     * @param service service
      * @throws Exception exception
      */
-    @When("^I check that framework '(.+?)' doesn't appear as inactive$")
-    public void checkResources(String framework) throws Exception {
+    @When("^All resources from service '(.+?)' have been freed$")
+    public void checkResources(String service) throws Exception {
         sendRequestNoDataTable("GET", "/mesos/state-summary", null, null, null, null, null, "json");
 
         String json = "[" + commonspec.getResponse().getResponse() + "]";
         String parsedElement = "$..frameworks[?(@.active==false)].name";
         String value = commonspec.getJSONPathString(json, parsedElement, null);
 
-        Assertions.assertThat(value).as("Inactive frameworks").doesNotContain(framework);
+        Assertions.assertThat(value).as("Inactive services").doesNotContain(service);
     }
 
 }
