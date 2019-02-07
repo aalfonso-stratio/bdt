@@ -2,7 +2,11 @@
 
 Only listing significant user-visible, not internal code cleanups and minor bug fixes.
 
-## 0.8.0 (upcoming)
+## 0.9.0 (upcoming)
+
+* Pending changelog
+
+## 0.8.0-da23977 (Built: February 07, 2019 | Pre-release)
 
 * [LDG-96] New kafka steps
 * [QASAI-33] New step to check if a cookie has been saved correctly
