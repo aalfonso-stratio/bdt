@@ -20,12 +20,13 @@ import com.stratio.qa.utils.BaseGTest;
 import cucumber.api.CucumberOptions;
 import org.testng.annotations.Test;
 
-@CucumberOptions(plugin = "json:target/cucumber.json", features = {"src/test/resources/features/createJSONFile.feature",
-                             "src/test/resources/features/readFileToVariable.feature"})
-public class WhenGIT extends BaseGTest {
+@CucumberOptions(plugin = "json:target/cucumber.json", features = {
+        "src/test/resources/features/executeCommand.feature",
+        "src/test/resources/features/assertCommandExistsOnTimeOutIT.feature"})
+public class CommandExecutionIT extends BaseGTest {
 
-    @Test
-    public void createFileTest() throws Exception {
+    @Test(expectedExceptions = {})
+    public void commandExecutionTest() throws Exception {
         new CucumberRunner(this.getClass()).runCukes();
     }
 }

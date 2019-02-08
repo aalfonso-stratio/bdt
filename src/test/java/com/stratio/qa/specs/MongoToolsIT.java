@@ -15,7 +15,6 @@
  */
 package com.stratio.qa.specs;
 
-
 import com.stratio.qa.exceptions.DBException;
 import com.stratio.qa.utils.ThreadProperty;
 import org.testng.annotations.AfterClass;
@@ -24,16 +23,15 @@ import org.testng.annotations.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
 public class MongoToolsIT extends BaseGSpec {
-    GivenGSpec commonspecG;
+    DatabaseSpec commonspecG;
     String doc;
     String db = "mongoITDB";
     String collection = "testCollection";
     public MongoToolsIT() {
         ThreadProperty.set("class", this.getClass().getCanonicalName());
         this.commonspec = new CommonG();
-        commonspecG = new GivenGSpec(this.commonspec);
+        commonspecG = new DatabaseSpec(this.commonspec);
     }
 
     @BeforeClass

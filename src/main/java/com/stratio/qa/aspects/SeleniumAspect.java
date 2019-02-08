@@ -19,7 +19,7 @@ package com.stratio.qa.aspects;
 import com.stratio.qa.assertions.SeleniumAssert;
 import com.stratio.qa.specs.BaseGSpec;
 import com.stratio.qa.specs.CommonG;
-import com.stratio.qa.specs.ThenGSpec;
+import com.stratio.qa.specs.SeleniumSpec;
 import com.stratio.qa.utils.PreviousWebElements;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -96,8 +96,8 @@ public class SeleniumAspect extends BaseGSpec {
             if (driver != null) {
                 logger.info("Trying to capture screenshots...");
                 CommonG common = null;
-                if ((pjp.getThis() instanceof ThenGSpec) && (((ThenGSpec) pjp.getThis()).getCommonSpec() != null)) {
-                    common = ((ThenGSpec) pjp.getThis()).getCommonSpec();
+                if ((pjp.getThis() instanceof SeleniumSpec) && (((SeleniumSpec) pjp.getThis()).getCommonSpec() != null)) {
+                    common = ((SeleniumSpec) pjp.getThis()).getCommonSpec();
                 } else if ((pjp.getTarget() instanceof SeleniumAssert) && ((SeleniumAssert) pjp.getTarget()).getCommonspec() != null) {
                     common = ((CommonG) ((SeleniumAssert) pjp.getTarget()).getCommonspec());
                 } else {

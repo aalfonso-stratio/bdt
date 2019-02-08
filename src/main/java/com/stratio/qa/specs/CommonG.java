@@ -2253,4 +2253,26 @@ public class CommonG {
         return health;
     }
 
+    /**
+     * Executes the command specified in remote system
+     *
+     * @param command    command to be run locally
+     * @param exitStatus command exit status
+     * @param envVar     environment variable name
+     * @throws Exception exception
+     **/
+    public void executeCommand(String command, Integer exitStatus, String envVar) throws Exception {
+        if (exitStatus == null) {
+            exitStatus = 0;
+        }
+
+        command = "set -o pipefail && alias grep='grep --color=never' && " + command;
+        getRemoteSSHConnection().runCommand(command);
+        setCommandResult(getRemoteSSHConnection().getResult());
+        setCommandExitStatus(getRemoteSSHConnection().getExitStatus());
+        runCommandLoggerAndEnvVar(exitStatus, envVar, Boolean.FALSE);
+
+        Assertions.assertThat(getRemoteSSHConnection().getExitStatus()).isEqualTo(exitStatus);
+    }
+
 }
