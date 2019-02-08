@@ -27,6 +27,7 @@ import javax.net.ssl.*;
 import org.apache.http.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
@@ -81,7 +82,7 @@ public class GosecSSOUtils {
                 .setSslcontext(sslContext)
                 .setRedirectStrategy(new LaxRedirectStrategy())
                 .setDefaultRequestConfig(RequestConfig.custom()
-                        .setCircularRedirectsAllowed(true).build()).build();
+                        .setCookieSpec(CookieSpecs.STANDARD).setCircularRedirectsAllowed(true).build()).build();
         try {
             HttpResponse firstResponse = client.execute(httpGet, context);
 
