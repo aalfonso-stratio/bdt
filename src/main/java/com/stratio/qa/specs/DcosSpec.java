@@ -40,6 +40,7 @@ import static com.stratio.qa.assertions.Assertions.assertThat;
  */
 public class DcosSpec extends BaseGSpec {
 
+    RestSpec restSpec;
     /**
      * Generic constructor.
      *
@@ -47,7 +48,7 @@ public class DcosSpec extends BaseGSpec {
      */
     public DcosSpec(CommonG spec) {
         this.commonspec = spec;
-
+        this.restSpec = new RestSpec(spec);
     }
 
     /**
@@ -385,7 +386,7 @@ public class DcosSpec extends BaseGSpec {
      */
     @When("^All resources from service '(.+?)' have been freed$")
     public void checkResources(String service) throws Exception {
-        commonspec.generateRequest("GET", false, "/mesos/state-summary", null, null, null, null);
+        restSpec.sendRequestNoDataTable("GET", "/mesos/state-summary", null, null, null, null, null, "json");
 
         String json = "[" + commonspec.getResponse().getResponse() + "]";
         String parsedElement = "$..frameworks[?(@.active==false)].name";
