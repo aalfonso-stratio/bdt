@@ -1102,6 +1102,9 @@ public class CommonG {
                 } else if ("string".equals(type)) {
                     this.getLogger().debug("Sending request as: {}", type);
                     request = request.setHeader("Content-Type", "application/x-www-form-urlencoded");
+                } else if ("gov".equals(type)) {
+                    request = request.setHeader("Accept", "application/json");
+                    request = request.setHeader("X-TenantID", "NONE");
                 }
 
                 if (this.getResponse() != null) {
@@ -1143,6 +1146,9 @@ public class CommonG {
                     } else if ("string".equals(type)) {
                         this.getLogger().debug("Sending request as: {}", type);
                         request = request.setHeader("Content-Type", "application/x-www-form-urlencoded");
+                    } else if ("gov".equals(type)) {
+                        request = request.setHeader("Content-Type", "application/json,text/plain,*/*");
+                        request = request.setHeader("X-TenantID", "NONE");
                     }
                 }
                 if (this.getSeleniumCookies().size() > 0) {
@@ -1183,6 +1189,9 @@ public class CommonG {
                     } else if ("string".equals(type)) {
                         this.getLogger().debug("Sending request as: {}", type);
                         request = request.setHeader("Content-Type", "application/x-www-form-urlencoded");
+                    } else if ("gov".equals(type)) {
+                        request = request.setHeader("Content-Type", "application/json,text/plain,*/*");
+                        request = request.setHeader("X-TenantID", "NONE");
                     }
 
                     if (this.getResponse() != null) {
@@ -1223,6 +1232,9 @@ public class CommonG {
                         request = request.setHeader("Content-Type", "application/json");
                     } else if ("string".equals(type)) {
                         request = request.setHeader("Content-Type", "application/x-www-form-urlencoded");
+                    } else if ("gov".equals(type)) {
+                        request = request.setHeader("Content-Type", "application/json,text/plain,*/*");
+                        request = request.setHeader("X-TenantID", "NONE");
                     }
 
                     if (this.getResponse() != null) {

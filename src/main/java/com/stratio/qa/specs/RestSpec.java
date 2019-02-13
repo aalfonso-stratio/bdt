@@ -105,7 +105,7 @@ public class RestSpec extends BaseGSpec {
      *                      being the result of the modification: {"key1": "value1", "key2": {"key3": "new value3"}}
      * @throws Exception
      */
-    @Given("^in less than '(\\d+?)' seconds, checking each '(\\d+?)' seconds, I send a '(.+?)' request to '(.+?)' so that the response( does not)? contains '(.+?)' based on '([^:]+?)'( as '(json|string)')? with:$")
+    @Given("^in less than '(\\d+?)' seconds, checking each '(\\d+?)' seconds, I send a '(.+?)' request to '(.+?)' so that the response( does not)? contains '(.+?)' based on '([^:]+?)'( as '(json|string|gov)')? with:$")
     public void sendRequestDataTableTimeout(Integer timeout, Integer wait, String requestType, String endPoint, String contains, String responseVal, String baseData, String baz, String type, DataTable modifications) throws Exception {
 
         // Retrieve data
@@ -196,7 +196,7 @@ public class RestSpec extends BaseGSpec {
      *                      being the result of the modification: {"key1": "value1", "key2": {"key3": "new value3"}}
      * @throws Exception
      */
-    @When("^I send a '(.+?)' request to '(.+?)'( with user and password '(.+:.+?)')? based on '([^:]+?)'( as '(json|string)')? with:$")
+    @When("^I send a '(.+?)' request to '(.+?)'( with user and password '(.+:.+?)')? based on '([^:]+?)'( as '(json|string|gov)')? with:$")
     public void sendRequest(String requestType, String endPoint, String foo, String loginInfo, String baseData, String baz, String type, DataTable modifications) throws Exception {
         // Retrieve data
         String retrievedData = commonspec.retrieveData(baseData, type);
@@ -234,7 +234,7 @@ public class RestSpec extends BaseGSpec {
      * @param type
      * @throws Exception
      */
-    @When("^I send a '(.+?)' request to '(.+?)'( with user and password '(.+:.+?)')?( based on '([^:]+?)')?( as '(json|string)')?$")
+    @When("^I send a '(.+?)' request to '(.+?)'( with user and password '(.+:.+?)')?( based on '([^:]+?)')?( as '(json|string|gov)')?$")
     public void sendRequestNoDataTable(String requestType, String endPoint, String foo, String loginInfo, String bar, String baseData, String baz, String type) throws Exception {
         Future<Response> response;
         String user = null;
