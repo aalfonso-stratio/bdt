@@ -818,8 +818,6 @@ public class CommonG {
                 }
 
                 if (modifiedData.startsWith("[") && modifiedData.endsWith("]")) {
-//                    modifiedData = modifiedData.substring(1, modifiedData.length() - 1);
-//                    array = true;
                     modifiedData = "{\"content\":" + modifiedData + "}";
                     array = true;
                 } else {
@@ -1043,7 +1041,6 @@ public class CommonG {
         }
 
         if (array) {
-//            modifiedData = "[" + modifiedData + "]";
             modifiedData = modifiedData.substring(11, modifiedData.length() - 1);
         }
 
