@@ -400,7 +400,7 @@ public class RestSpec extends BaseGSpec {
     }
 
     @Then("^I save service response in environment variable '(.*?)'( and file '(.*?)')?$")
-    public void saveResponseInEnvironmentVariable(String envVar, String foo, String fileName) throws Exception {
+    public void saveResponseInEnvironmentVariableFile(String envVar, String foo, String fileName) throws Exception {
         String value = commonspec.getResponse().getResponse();
 
         ThreadProperty.set(envVar, value);

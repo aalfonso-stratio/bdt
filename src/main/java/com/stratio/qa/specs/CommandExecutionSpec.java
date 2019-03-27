@@ -194,8 +194,8 @@ public class CommandExecutionSpec extends BaseGSpec {
      *
      **/
     @Then("^the command output is empty$")
-    public void findShellOutput() throws Exception {
-        assertThat(commonspec.getCommandResult()).as("IsEmpty.").isEmpty();
+    public void emptyShellOutput() {
+        assertThat(commonspec.getCommandResult()).as("Command output should be empty").isEmpty();
     }
 
     /**
