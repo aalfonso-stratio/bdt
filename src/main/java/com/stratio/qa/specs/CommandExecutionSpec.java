@@ -190,6 +190,15 @@ public class CommandExecutionSpec extends BaseGSpec {
     }
 
     /**
+     * Check the command output is empty
+     *
+     **/
+    @Then("^the command output is empty$")
+    public void findShellOutput() throws Exception {
+        assertThat(commonspec.getCommandResult()).as("IsEmpty.").isEmpty();
+    }
+
+    /**
      * Check the non existence of a text at a command output
      *
      * @param search
