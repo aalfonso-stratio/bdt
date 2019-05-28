@@ -43,6 +43,8 @@ public class DcosSpec extends BaseGSpec {
 
     String descriptorPath = "/stratio_volume/descriptor.json";
 
+    String vaultResponsePath = "/stratio_volume/vault_response";
+
     /**
      * Generic constructor.
      *
@@ -863,52 +865,52 @@ public class DcosSpec extends BaseGSpec {
 
         switch (info) {
             case "MASTERS":
-                jqExpression = "jq -cM '.nodes[] | select(.role ?== \"master\") | .networking[0].ip' | jq -rs '. | join(\",\")'";
+                jqExpression = "jq -crM '.nodes[] | select(.role ?== \"master\") | .networking[0].ip' | jq -rs '. | join(\",\")'";
                 break;
             case "NODES":
-                jqExpression = "jq -cM '.nodes[] | select(.role ?== \"agent\") | .networking[0].ip' | jq -rs '. | join(\",\")'";
+                jqExpression = "jq -crM '.nodes[] | select(.role ?== \"agent\") | .networking[0].ip' | jq -rs '. | join(\",\")'";
                 break;
             case "PRIV_NODES":
-                jqExpression = "jq -cM '.nodes[] | select((.role ?== \"agent\") and .public ?== false) | .networking[0].ip' | jq -rs '. | join(\",\")'";
+                jqExpression = "jq -crM '.nodes[] | select((.role ?== \"agent\") and .public ?== false) | .networking[0].ip' | jq -rs '. | join(\",\")'";
                 break;
             case "PUBLIC_NODES":
-                jqExpression = "jq -cM '.nodes[] | select((.role ?== \"agent\") and .public ?== true) | .networking[0].ip' | jq -rs '. | join(\",\")'";
+                jqExpression = "jq -crM '.nodes[] | select((.role ?== \"agent\") and .public ?== true) | .networking[0].ip' | jq -rs '. | join(\",\")'";
                 break;
             case "GOSEC_NODES":
-                jqExpression = "jq -cM '.nodes[] | select(.role ?== \"gosec\") | .networking[0].ip' | jq -rs '. | join(\",\")'";
+                jqExpression = "jq -crM '.nodes[] | select(.role ?== \"gosec\") | .networking[0].ip' | jq -rs '. | join(\",\")'";
                 break;
             case "ID":
-                jqExpression = "jq -cM .id";
+                jqExpression = "jq -crM .id";
                 break;
             case "DNS_SEARCH":
-                jqExpression = "jq -cM .dnsSearch";
+                jqExpression = "jq -crM .dnsSearch";
                 break;
             case "INTERNAL_DOMAIN":
-                jqExpression = "jq -cM .internalDomain";
+                jqExpression = "jq -crM .internalDomain";
                 break;
             case "ARTIFACT_REPO":
-                jqExpression = "jq -cM .artifactRepository";
+                jqExpression = "jq -crM .artifactRepository";
                 break;
             case "DOCKER_REGISTRY":
-                jqExpression = "jq -cM .dockerRegistry";
+                jqExpression = "jq -crM .dockerRegistry";
                 break;
             case "EXTERNAL_DOCKER_REGISTRY":
-                jqExpression = "jq -cM .externalDockerRegistry";
+                jqExpression = "jq -crM .externalDockerRegistry";
                 break;
             case "REALM":
-                jqExpression = "jq -cM .security.kerberos.realm";
+                jqExpression = "jq -crM .security.kerberos.realm";
                 break;
             case "KRB_HOST":
-                jqExpression = "jq -cM .security.kerberos.kdcHost";
+                jqExpression = "jq -crM .security.kerberos.kdcHost";
                 break;
             case "LDAP_HOST":
-                jqExpression = "jq -cM .security.ldap.url";
+                jqExpression = "jq -crM .security.ldap.url";
                 break;
             case "ADMIN_USER":
-                jqExpression = "jq -cM .security.ldap.adminUserUuid";
+                jqExpression = "jq -crM .security.ldap.adminUserUuid";
                 break;
             case "TENANT":
-                jqExpression = "jq -cM .security.tenantSSODefault";
+                jqExpression = "jq -crM .security.tenantSSODefault";
                 break;
             default:
                 break;
@@ -920,23 +922,26 @@ public class DcosSpec extends BaseGSpec {
 
     /**
      * Obtains basic information for tests from descriptor file:
-     * EOS_CLUSTER_ID, EOS_DNS_SEARCH, EOS_INTERNAL_DOMAIN, DCOS_USER, DCOS_TENANT
+     * EOS_CLUSTER_ID, EOS_DNS_SEARCH, EOS_INTERNAL_DOMAIN, DCOS_USER, DCOS_TENANT, VAULT_TOKEN
      *
      * @throws Exception
      */
-    @Given("^I obtain basic information from descriptor file$")
+    @Given("^I obtain basic information from bootstrap$")
     public void obtainBasicInfoFromDescriptor() throws Exception {
         String varClusterID = "EOS_CLUSTER_ID";
         String varClusterDomain = "EOS_DNS_SEARCH";
         String varInternalDomain = "EOS_NTERNAL_DOMAIN";
         String varAdminUser = "DCOS_USER";
 //        String varTenant = "DCOS_TENANT";
+        String varVaultToken = "VAULT_TOKEN";
+        String vaultTokenJQ = "jq -cMr .root_token";
 
         obtainInfoFromDescriptor("ID", varClusterID);
         obtainInfoFromDescriptor("DNS_SEARCH", varClusterDomain);
         obtainInfoFromDescriptor("INTERNAL_DOMAIN", varInternalDomain);
         obtainInfoFromDescriptor("ADMIN_USER", varAdminUser);
 //        obtainInfoFromDescriptor("TENANT", varTenant);
-
+        obtainInfoFromFile(vaultTokenJQ, this.vaultResponsePath, varVaultToken);
     }
+
 }
