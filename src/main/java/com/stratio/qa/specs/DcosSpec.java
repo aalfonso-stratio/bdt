@@ -859,7 +859,7 @@ public class DcosSpec extends BaseGSpec {
      * @param envVar environment variable where to store retrieved information
      * @throws Exception
      */
-    @Given("^I obtain '(MASTERS|NODES|PRIV_NODES|PUBLIC_NODES|GOSEC_NODES|ID|DNS_SEARCH|INTERNAL_DOMAIN|ARTIFACT_REPO|DOCKER_REGISTRY|EXTERNAL_DOCKER_REGISTRY|REALM|KRB_HOST|LDAP_HOST|ADMIN_USER|TENANT)' from descriptor and save it in environment variable '(.+?)'$")
+    @Given("^I obtain '(MASTERS|NODES|PRIV_NODES|PUBLIC_NODES|PUBLIC_NODE|GOSEC_NODES|ID|DNS_SEARCH|INTERNAL_DOMAIN|ARTIFACT_REPO|DOCKER_REGISTRY|EXTERNAL_DOCKER_REGISTRY|REALM|KRB_HOST|LDAP_HOST|VAULT_HOST|ADMIN_USER|TENANT)' from descriptor and save it in environment variable '(.+?)'$")
     public void obtainInfoFromDescriptor(String info, String envVar) throws Exception {
         String jqExpression = "";
 
@@ -875,6 +875,9 @@ public class DcosSpec extends BaseGSpec {
                 break;
             case "PUBLIC_NODES":
                 jqExpression = "jq -crM '.nodes[] | select((.role ?== \"agent\") and .public ?== true) | .networking[0].ip' | jq -rs '. | join(\",\")'";
+                break;
+            case "PUBLIC_NODE":
+                jqExpression = "jq -cM '.nodes[] | select((.role ?== \"agent\") and .public ?== true) | .networking[0].ip' | jq -crMs '.[0]'";
                 break;
             case "GOSEC_NODES":
                 jqExpression = "jq -crM '.nodes[] | select(.role ?== \"gosec\") | .networking[0].ip' | jq -rs '. | join(\",\")'";
@@ -906,6 +909,9 @@ public class DcosSpec extends BaseGSpec {
             case "LDAP_HOST":
                 jqExpression = "jq -crM .security.ldap.url";
                 break;
+            case "VAULT_HOST":
+                jqExpression = "jq -crM '.nodes[] | select((.role ?== \"gosec\") and .id ?== \"gosec1\") | .networking[0].ip'";
+                break;
             case "ADMIN_USER":
                 jqExpression = "jq -crM .security.ldap.adminUserUuid";
                 break;
@@ -933,7 +939,9 @@ public class DcosSpec extends BaseGSpec {
         String varInternalDomain = "EOS_NTERNAL_DOMAIN";
         String varAdminUser = "DCOS_USER";
 //        String varTenant = "DCOS_TENANT";
+        String varVaultHost = "VAULT_HOST";
         String varVaultToken = "VAULT_TOKEN";
+        String varPublicNode = "PUBLIC_NODE";
         String vaultTokenJQ = "jq -cMr .root_token";
 
         obtainInfoFromDescriptor("ID", varClusterID);
@@ -941,7 +949,9 @@ public class DcosSpec extends BaseGSpec {
         obtainInfoFromDescriptor("INTERNAL_DOMAIN", varInternalDomain);
         obtainInfoFromDescriptor("ADMIN_USER", varAdminUser);
 //        obtainInfoFromDescriptor("TENANT", varTenant);
+        obtainInfoFromDescriptor("VAULT_HOST", varVaultHost);
         obtainInfoFromFile(vaultTokenJQ, this.vaultResponsePath, varVaultToken);
+        obtainInfoFromDescriptor("PUBLIC_NODE", varPublicNode);
     }
 
 }
