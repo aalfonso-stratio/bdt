@@ -939,7 +939,7 @@ public class DcosSpec extends BaseGSpec {
         String varInternalDomain = "EOS_INTERNAL_DOMAIN";
         String varAdminUser = "DCOS_USER";
 //        String varTenant = "DCOS_TENANT";
-        String varVaultHost = "VAULT_HOST";
+        String varVaultHost = "EOS_VAULT_HOST";
         String varVaultToken = "VAULT_TOKEN";
         String varPublicNode = "PUBLIC_NODE";
         String vaultTokenJQ = "jq -cMr .root_token";
