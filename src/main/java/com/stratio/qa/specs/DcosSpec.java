@@ -936,7 +936,7 @@ public class DcosSpec extends BaseGSpec {
     public void obtainBasicInfoFromDescriptor() throws Exception {
         String varClusterID = "EOS_CLUSTER_ID";
         String varClusterDomain = "EOS_DNS_SEARCH";
-        String varInternalDomain = "EOS_NTERNAL_DOMAIN";
+        String varInternalDomain = "EOS_INTERNAL_DOMAIN";
         String varAdminUser = "DCOS_USER";
 //        String varTenant = "DCOS_TENANT";
         String varVaultHost = "VAULT_HOST";
