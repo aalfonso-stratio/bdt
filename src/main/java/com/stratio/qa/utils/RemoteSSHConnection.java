@@ -97,13 +97,6 @@ public class RemoteSSHConnection {
         this.exitStatus = exitStatus;
     }
 
-
-
-
-
-
-
-
     /**
      * Copy localPath to remotePath using the session created
      *
