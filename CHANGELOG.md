@@ -16,6 +16,7 @@ Only listing significant user-visible, not internal code cleanups and minor bug 
 * [QATM-2364] Add EOS_ACCESS_POINT in returned info from bootstrap
 * [QATM-2363] Add step typing textx if the element exists using selenium
 * [QATM-2365] Add retrieve value js
+* [QATM-2488] Add tag to avoid execution when environment variables not defined
 
 ## 0.10.0 (May 23, 2019)
 
