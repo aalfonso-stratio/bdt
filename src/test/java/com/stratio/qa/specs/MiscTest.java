@@ -367,7 +367,7 @@ public class MiscTest {
         misc.matchWithExpresion(envVar, table);
     }
 
-    @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = "^Not a valid comparison. Valid ones are: is \\| matches \\| is higher than \\| is lower than \\| contains \\| does not contain \\| is different from$")
+    @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = "^Not a valid comparison. Valid ones are: is \\| matches \\| is higher than \\| is higher than or equal to \\| is lower than \\| is lower than or equal to \\| contains \\| does not contain \\| is different from$")
     public void testCheckValueInvalidComparison() throws Exception {
         ThreadProperty.set("class", this.getClass().getCanonicalName());
         CommonG commong = new CommonG();
@@ -399,6 +399,20 @@ public class MiscTest {
         misc.checkValue(ThreadProperty.get(envVar), "is lower than", "1O");
         ThreadProperty.set(envVar, "S");
         misc.checkValue(ThreadProperty.get(envVar), "is lower than", "1O");
+
+        ThreadProperty.set(envVar, "10");
+        misc.checkValue(ThreadProperty.get(envVar), "is higher than or equal to", "5");
+        ThreadProperty.set(envVar, "5");
+        misc.checkValue(ThreadProperty.get(envVar), "is higher than or equal to", "5");
+        ThreadProperty.set(envVar, "10");
+        misc.checkValue(ThreadProperty.get(envVar), "is higher than or equal to", "S");
+        ThreadProperty.set(envVar, "10");
+        misc.checkValue(ThreadProperty.get(envVar), "is lower than or equal to", "1O");
+        ThreadProperty.set(envVar, "5");
+        misc.checkValue(ThreadProperty.get(envVar), "is lower than or equal to", "1O");
+        ThreadProperty.set(envVar, "S");
+        misc.checkValue(ThreadProperty.get(envVar), "is lower than or equal to", "1O");
+
     }
 
 }
