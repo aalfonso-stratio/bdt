@@ -371,13 +371,13 @@ public class MiscTest {
         misc.matchWithExpresion(envVar, table);
     }
 
-    @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = "^Not a valid comparison. Valid ones are: is \\| matches \\| is higher than \\| is higher than or equal to \\| is lower than \\| is lower than or equal to \\| contains \\| does not contain \\| is different from$")
+    @Test
     public void testCheckValueInvalidComparison() throws Exception {
         ThreadProperty.set("class", this.getClass().getCanonicalName());
         CommonG commong = new CommonG();
         MiscSpec misc = new MiscSpec(commong);
 
-        misc.checkValue("BlaBlaBla", "not valid comparison", "BleBleBle");
+        assertThatExceptionOfType(AssertionError.class).isThrownBy(() -> misc.checkValue("BlaBlaBla", "not valid comparison", "BleBleBle")).withMessageContaining("Not a valid comparison. Valid ones are: is | matches | is higher than | is higher than or equal to | is lower than | is lower than or equal to | contains | does not contain | is different from");
     }
 
     @Test
@@ -416,13 +416,13 @@ public class MiscTest {
         misc.checkValue("prueba", "is", "prueba");
     }
 
-    @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = "^A number should be provided in order to perform a valid comparison.$")
+    @Test
     public void testCheckValueIsHigherThanException() throws Exception {
         ThreadProperty.set("class", this.getClass().getCanonicalName());
         CommonG commong = new CommonG();
         MiscSpec misc = new MiscSpec(commong);
 
-        misc.checkValue("prueba", "is higher than", "10");
+        assertThatExceptionOfType(AssertionError.class).isThrownBy(() -> misc.checkValue("prueba", "is higher than", "10")).withMessageContaining("A number should be provided in order to perform a valid comparison.");
     }
 
     @Test
@@ -443,13 +443,13 @@ public class MiscTest {
         misc.checkValue("10", "is higher than", "5");
     }
 
-    @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = "^A number should be provided in order to perform a valid comparison.$")
+    @Test
     public void testCheckValueIsHigherThanOrEqualToException() throws Exception {
         ThreadProperty.set("class", this.getClass().getCanonicalName());
         CommonG commong = new CommonG();
         MiscSpec misc = new MiscSpec(commong);
 
-        misc.checkValue("prueba", "is higher than or equal to", "10");
+        assertThatExceptionOfType(AssertionError.class).isThrownBy(() -> misc.checkValue("prueba", "is higher than or equal to", "10")).withMessageContaining("A number should be provided in order to perform a valid comparison.");
     }
 
     @Test
@@ -479,13 +479,13 @@ public class MiscTest {
         misc.checkValue("5", "is higher than or equal to", "5");
     }
 
-    @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = "^A number should be provided in order to perform a valid comparison.$")
+    @Test
     public void testCheckValueIsLowerThanException() throws Exception {
         ThreadProperty.set("class", this.getClass().getCanonicalName());
         CommonG commong = new CommonG();
         MiscSpec misc = new MiscSpec(commong);
 
-        misc.checkValue("prueba", "is lower than", "10");
+        assertThatExceptionOfType(AssertionError.class).isThrownBy(() -> misc.checkValue("prueba", "is lower than", "10")).withMessageContaining("A number should be provided in order to perform a valid comparison.");
     }
 
     @Test
@@ -506,13 +506,13 @@ public class MiscTest {
         misc.checkValue("5", "is lower than", "10");
     }
 
-    @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = "^A number should be provided in order to perform a valid comparison.$")
+    @Test
     public void testCheckValueIsLowerThanOrEqualToException() throws Exception {
         ThreadProperty.set("class", this.getClass().getCanonicalName());
         CommonG commong = new CommonG();
         MiscSpec misc = new MiscSpec(commong);
 
-        misc.checkValue("prueba", "is lower than or equal to", "10");
+        assertThatExceptionOfType(AssertionError.class).isThrownBy(() -> misc.checkValue("prueba", "is lower than or equal to", "10")).withMessageContaining("A number should be provided in order to perform a valid comparison.");
     }
 
     @Test
@@ -551,7 +551,7 @@ public class MiscTest {
         assertThatExceptionOfType(AssertionError.class).isThrownBy(() -> misc.checkValue("Prueba", "contains", "test")).withMessageContaining("Second value is not contained in first one.");
     }
 
-    @Test()
+    @Test
     public void testCheckValueContainsSuccess() throws Exception {
         ThreadProperty.set("class", this.getClass().getCanonicalName());
         CommonG commong = new CommonG();
@@ -569,7 +569,7 @@ public class MiscTest {
         assertThatExceptionOfType(AssertionError.class).isThrownBy(() -> misc.checkValue("Prueba", "does not contain", "rueb")).withMessageContaining("Second value is contained in first one.");
     }
 
-    @Test()
+    @Test
     public void testCheckValueDoesNotContainSuccess() throws Exception {
         ThreadProperty.set("class", this.getClass().getCanonicalName());
         CommonG commong = new CommonG();
@@ -587,7 +587,7 @@ public class MiscTest {
         assertThatExceptionOfType(AssertionError.class).isThrownBy(() -> misc.checkValue("Prueba", "is different from", "Prueba")).withMessageContaining("Both values are equal.");
     }
 
-    @Test()
+    @Test
     public void testCheckValueIsDifferentFromSuccess() throws Exception {
         ThreadProperty.set("class", this.getClass().getCanonicalName());
         CommonG commong = new CommonG();
