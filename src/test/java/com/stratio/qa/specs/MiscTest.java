@@ -379,7 +379,7 @@ public class MiscTest {
         CommonG commong = new CommonG();
         MiscSpec misc = new MiscSpec(commong);
 
-        assertThatExceptionOfType(AssertionError.class).isThrownBy(() -> misc.checkValue("BlaBlaBla", "not valid comparison", "BleBleBle")).withMessageContaining("Not a valid comparison. Valid ones are: is | matches | is higher than | is higher than or equal to | is lower than | is lower than or equal to | contains | does not contain | is different from");
+        assertThatExceptionOfType(Exception.class).isThrownBy(() -> misc.checkValue("BlaBlaBla", "not valid comparison", "BleBleBle")).withMessageContaining("Not a valid comparison. Valid ones are: is | matches | is higher than | is higher than or equal to | is lower than | is lower than or equal to | contains | does not contain | is different from");
     }
 
     @Test
@@ -451,7 +451,7 @@ public class MiscTest {
         CommonG commong = new CommonG();
         MiscSpec misc = new MiscSpec(commong);
 
-        assertThatExceptionOfType(AssertionError.class).isThrownBy(() -> misc.checkValue("prueba", "is higher than or equal to", "10")).withMessageContaining("A number should be provided in order to perform a valid comparison.");
+        assertThatExceptionOfType(Exception.class).isThrownBy(() -> misc.checkValue("prueba", "is higher than or equal to", "10")).withMessageContaining("A number should be provided in order to perform a valid comparison.");
     }
 
     @Test
@@ -487,7 +487,7 @@ public class MiscTest {
         CommonG commong = new CommonG();
         MiscSpec misc = new MiscSpec(commong);
 
-        assertThatExceptionOfType(AssertionError.class).isThrownBy(() -> misc.checkValue("prueba", "is lower than", "10")).withMessageContaining("A number should be provided in order to perform a valid comparison.");
+        assertThatExceptionOfType(Exception.class).isThrownBy(() -> misc.checkValue("prueba", "is lower than", "10")).withMessageContaining("A number should be provided in order to perform a valid comparison.");
     }
 
     @Test
@@ -514,7 +514,7 @@ public class MiscTest {
         CommonG commong = new CommonG();
         MiscSpec misc = new MiscSpec(commong);
 
-        assertThatExceptionOfType(AssertionError.class).isThrownBy(() -> misc.checkValue("prueba", "is lower than or equal to", "10")).withMessageContaining("A number should be provided in order to perform a valid comparison.");
+        assertThatExceptionOfType(Exception.class).isThrownBy(() -> misc.checkValue("prueba", "is lower than or equal to", "10")).withMessageContaining("A number should be provided in order to perform a valid comparison.");
     }
 
     @Test
