@@ -16,8 +16,10 @@
 package com.stratio.qa.specs;
 
 import com.stratio.qa.assertions.Assertions;
+import org.assertj.core.api.Fail;
 import com.stratio.qa.utils.ThreadProperty;
 import io.cucumber.datatable.DataTable;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.nio.file.Files;
@@ -422,7 +424,7 @@ public class MiscTest {
         CommonG commong = new CommonG();
         MiscSpec misc = new MiscSpec(commong);
 
-        assertThatExceptionOfType(AssertionError.class).isThrownBy(() -> misc.checkValue("prueba", "is higher than", "10")).withMessageContaining("A number should be provided in order to perform a valid comparison.");
+        assertThatExceptionOfType(Exception.class).isThrownBy(() -> misc.checkValue("prueba", "is higher than", "10")).withMessageContaining("A number should be provided in order to perform a valid comparison.");
     }
 
     @Test

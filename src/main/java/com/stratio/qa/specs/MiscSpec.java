@@ -230,7 +230,8 @@ public class MiscSpec extends BaseGSpec {
                 if (envVar.matches("^-?\\d+$") && value.matches("^-?\\d+$")) {
                     Assertions.assertThat(Integer.parseInt(envVar)).as("First value is not higher than second one.").isGreaterThan(Integer.parseInt(value));
                 } else {
-                    Fail.fail("A number should be provided in order to perform a valid comparison.");
+//                    Fail.fail("A number should be provided in order to perform a valid comparison.");
+                    throw new Exception("A number should be provided in order to perform a valid comparison.");
                 }
                 break;
             case "is higher than or equal to":
