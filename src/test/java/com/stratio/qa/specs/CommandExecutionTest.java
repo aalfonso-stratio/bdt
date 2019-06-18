@@ -80,5 +80,4 @@ public class CommandExecutionTest {
 
         Assertions.assertThatCode(() -> cmdExec.assertCommandExistsOnTimeOutLocal(5,1,"echo test | grep test", "test", null)).doesNotThrowAnyException();
     }
-
 }
