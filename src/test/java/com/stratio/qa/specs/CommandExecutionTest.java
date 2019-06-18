@@ -73,6 +73,15 @@ public class CommandExecutionTest {
     }
 
     @Test
+    public void testassertCommandExistsOnTimeOutLocalCorrectExitStatus() throws Exception {
+        ThreadProperty.set("class", this.getClass().getCanonicalName());
+        CommonG commong = new CommonG();
+        CommandExecutionSpec cmdExec = new CommandExecutionSpec(commong);
+
+        assertThatExceptionOfType(Exception.class).isThrownBy(() -> cmdExec.assertCommandExistsOnTimeOutLocal(5,1,"echo test | grep check", "check", "0")).withMessageContaining("Local command output don't found yet after 5 seconds");
+    }
+
+    @Test
     public void testassertCommandExistsOnTimeOutLocalSuccess() throws Exception {
         ThreadProperty.set("class", this.getClass().getCanonicalName());
         CommonG commong = new CommonG();
