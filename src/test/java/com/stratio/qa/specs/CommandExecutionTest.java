@@ -78,7 +78,7 @@ public class CommandExecutionTest {
         CommonG commong = new CommonG();
         CommandExecutionSpec cmdExec = new CommandExecutionSpec(commong);
 
-        assertThatExceptionOfType(Exception.class).isThrownBy(() -> cmdExec.assertCommandExistsOnTimeOutLocal(5,1,"echo test | grep test", "test", "0")).withMessageContaining("Local command output don't found yet after 5 seconds");
+        assertThatExceptionOfType(Exception.class).isThrownBy(() -> cmdExec.assertCommandExistsOnTimeOutLocal(5,1,"echo test | grep test", "check", "0")).withMessageContaining("Local command output don't found yet after 5 seconds");
     }
 
     @Test
