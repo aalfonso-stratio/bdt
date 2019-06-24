@@ -1841,7 +1841,11 @@ public class CommonG {
 
         BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
         while ((line = input.readLine()) != null) {
-            result += line;
+            if (result.isEmpty()) {
+                result += line;
+            } else {
+                result += "\n" + line;
+            }
         }
 
         input.close();
