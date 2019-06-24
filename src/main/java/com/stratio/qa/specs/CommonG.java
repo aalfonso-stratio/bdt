@@ -1847,7 +1847,6 @@ public class CommonG {
                 result += "\n" + line;
             }
         }
-
         input.close();
         this.commandResult = result;
         this.commandExitStatus = p.exitValue();
