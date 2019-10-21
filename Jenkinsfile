@@ -82,6 +82,7 @@ hose {
         | -DSECURIZED_ZOOKEEPER=false
         | -DWAIT=1
         | -DAGENT_LIST=1,2
+        | -DPROGLOOP=2
         | -DKAFKA_HOSTS=%%KAFKA:9092
         | -DSSH=%%UBUNTU
         | -DSLEEPTEST=1

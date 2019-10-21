@@ -31,6 +31,7 @@ import cucumber.api.Scenario;
 import cucumber.runner.AmbiguousStepDefinitionsException;
 import cucumber.runner.EventBus;
 import cucumber.runtime.Backend;
+import cucumber.runtime.CucumberException;
 import cucumber.runtime.RuntimeOptions;
 import cucumber.runtime.StepDefinitionMatch;
 import gherkin.events.PickleEvent;
@@ -136,6 +137,15 @@ public class ReplacementAspect {
             if (StepException.INSTANCE.getException() != null) {
                 return Type.SKIPPED;
             } else {
+                if (scenario.getSourceTagNames().contains("@error")) {
+                    for (String tag: scenario.getSourceTagNames()) {
+                        if (tag.contains("errorMessage")) {
+                            String msg = tag.substring((tag.lastIndexOf("(") + 1), (tag.length()) - 1).replaceAll("__", " ");
+                            logger.error("-> " + msg);
+                            throw new CucumberException(msg);
+                        }
+                    }
+                }
                 try {
                     PickleStepTestStep pickleTestStep = (PickleStepTestStep) pjp.getTarget();
                     PickleStep step = pickleTestStep.getPickleStep();

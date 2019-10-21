@@ -17,6 +17,7 @@
 package com.stratio.qa.aspects;
 
 import com.stratio.qa.exceptions.IncludeException;
+import com.stratio.qa.utils.ThreadProperty;
 import cucumber.runtime.io.Resource;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -58,9 +59,61 @@ public class LoopIncludeTagAspect {
         String path = resource.getPath().getRawSchemeSpecificPart();
         int endIndex = path.lastIndexOf("/") + 1;
         path = path.substring(0, endIndex);
+        boolean skipReplacement = false;
 
 
         for (int s = 0; s < lines.size(); s++) {
+            if (lines.get(s).toUpperCase().matches("\\s*@PROGLOOP.*")) {
+                String[] elems = new String[0];
+                String elem = "";
+                int times = 0;
+                listParams = lines.get(s).substring((lines.get(s).lastIndexOf("(") + 1), (lines.get(s).length()) - 1).split(",")[0];
+
+                elem = System.getProperty(listParams);
+
+                if (elem == null) {
+                    lines.set(s, "@error @errorMessage(Variable__" + listParams + "__is__not__defined.)");
+                } else {
+                    try {
+                        times = Integer.parseInt(elem);
+                    } catch (Exception ex) {
+                        lines.set(s, "@error @errorMessage(Variable__" + listParams + "__is__not__an__integer.)");
+                        skipReplacement = true;
+                    }
+
+                    if (!skipReplacement && times < 1) {
+                        lines.set(s, "@error @errorMessage(Variable__" + listParams + "__must__be__higher__than__0.)");
+                        skipReplacement = true;
+                    } else {
+                        elems = new String[times];
+                    }
+
+                    if (!skipReplacement) {
+                        for (Integer i = 1; i <= times; i++) {
+                            elems[i - 1] = i.toString();
+                        }
+
+                        paramReplace = lines.get(s).substring((lines.get(s).lastIndexOf("(") + 1), (lines.get(s).length()) - 1).split(",")[1];
+
+                        lines.set(s, " ");
+
+                        while (!(lines.get(s).toUpperCase().contains("SCENARIO:"))) {
+                            s++;
+                        }
+                        lines.set(s, lines.get(s).replaceAll("Scenario", "Scenario Outline"));
+                        s++;
+                        while (s < lines.size()) {
+                            if ((lines.get(s).toUpperCase().contains("SCENARIO")) || lines.get(s).matches("^\\s[^\\n|\\r]@.*")) {
+                                break;
+                            }
+                            s++;
+                        }
+                        lines.add(s, "Examples:");
+                        exampleLoopLines(paramReplace, elems, lines, s + 1);
+                        s = s + elems.length;
+                    }
+                }
+            }
             if (lines.get(s).toUpperCase().matches("\\s*@MULTILOOP.*")) {
                 Map<String, String[]> params = new HashMap<>();
                 String[] elements = lines.get(s).substring((lines.get(s).lastIndexOf("(") + 1), (lines.get(s).length()) - 1).split(",");
@@ -69,56 +122,65 @@ public class LoopIncludeTagAspect {
                     String listParam = elementParts[0];
                     String paramName = elementParts[1];
                     String[] elems;
-                    try {
-                        elems = System.getProperty(listParam).split(",");
-                    } catch (Exception e) {
-                        logger.debug("-> {} is not defined. Exception captured till scenario execution.", listParam);
-                        elems = "error,error".split(",");
+
+                    if (System.getProperty(listParam) == null) {
+                        lines.set(s, "@error @errorMessage(Variable__" + listParam + "__is__not__defined.)");
+                        skipReplacement = true;
+                        break;
                     }
+
+                    elems = System.getProperty(listParam).split(",");
                     params.put(paramName, elems);
                 }
 
-                lines.set(s, " ");
-                while (!(lines.get(s).toUpperCase().contains("SCENARIO:"))) {
-                    s++;
-                }
-                lines.set(s, lines.get(s).replaceAll("Scenario", "Scenario Outline"));
-                s++;
-                while (s < lines.size()) {
-                    if ((lines.get(s).toUpperCase().contains("SCENARIO")) || lines.get(s).matches("^\\s[^\\n|\\r]@.*")) {
-                        break;
+                if (!skipReplacement) {
+                    lines.set(s, " ");
+
+                    while (!(lines.get(s).toUpperCase().contains("SCENARIO:"))) {
+                        s++;
                     }
+                    lines.set(s, lines.get(s).replaceAll("Scenario", "Scenario Outline"));
                     s++;
+                    while (s < lines.size()) {
+                        if ((lines.get(s).toUpperCase().contains("SCENARIO")) || lines.get(s).matches("^\\s[^\\n|\\r]@.*")) {
+                            break;
+                        }
+                        s++;
+                    }
+                    lines.add(s, "Examples:");
+                    int deltaLines = exampleMultiloopLines(params, lines, s + 1);
+                    s = s + deltaLines;
                 }
-                lines.add(s, "Examples:");
-                int deltaLines = exampleMultiloopLines(params, lines, s + 1);
-                s = s + deltaLines;
             }
             if (lines.get(s).toUpperCase().matches("\\s*@LOOP.*")) {
-                String[] elems;
+                String[] elems = new String[0];
                 listParams = lines.get(s).substring((lines.get(s).lastIndexOf("(") + 1), (lines.get(s).length()) - 1).split(",")[0];
                 try {
                     elems = System.getProperty(listParams).split(",");
                 } catch (Exception e) {
-                    logger.debug("-> {} is not defined. Exception captured till scenario execution.", listParams);
-                    elems = "error,error".split(",");
+                    lines.set(s, "@error @errorMessage(Variable__" + listParams + "__is__not__defined.)");
+                    skipReplacement = true;
                 }
-                paramReplace = lines.get(s).substring((lines.get(s).lastIndexOf("(") + 1), (lines.get(s).length()) - 1).split(",")[1];
-                lines.set(s, " ");
-                while (!(lines.get(s).toUpperCase().contains("SCENARIO:"))) {
-                    s++;
-                }
-                lines.set(s, lines.get(s).replaceAll("Scenario", "Scenario Outline"));
-                s++;
-                while (s < lines.size()) {
-                    if ((lines.get(s).toUpperCase().contains("SCENARIO")) || lines.get(s).matches("^\\s[^\\n|\\r]@.*")) {
-                        break;
+                if (!skipReplacement) {
+                    paramReplace = lines.get(s).substring((lines.get(s).lastIndexOf("(") + 1), (lines.get(s).length()) - 1).split(",")[1];
+
+                    lines.set(s, " ");
+
+                    while (!(lines.get(s).toUpperCase().contains("SCENARIO:"))) {
+                        s++;
                     }
+                    lines.set(s, lines.get(s).replaceAll("Scenario", "Scenario Outline"));
                     s++;
+                    while (s < lines.size()) {
+                        if ((lines.get(s).toUpperCase().contains("SCENARIO")) || lines.get(s).matches("^\\s[^\\n|\\r]@.*")) {
+                            break;
+                        }
+                        s++;
+                    }
+                    lines.add(s, "Examples:");
+                    exampleLoopLines(paramReplace, elems, lines, s + 1);
+                    s = s + elems.length;
                 }
-                lines.add(s, "Examples:");
-                exampleLoopLines(paramReplace, elems, lines, s + 1);
-                s = s + elems.length;
             }
             if (lines.get(s).toUpperCase().matches("\\s*@BACKGROUND.*")) {
                 listParams = lines.get(s).substring((lines.get(s).lastIndexOf("(") + 1), (lines.get(s).length()) - 1);
@@ -138,6 +200,7 @@ public class LoopIncludeTagAspect {
                     }
                 }
             }
+            skipReplacement = false;
         }
         parseLines(lines, path);
         return String.join("\n", lines);
