@@ -17,7 +17,6 @@
 package com.stratio.qa.aspects;
 
 import com.stratio.qa.exceptions.IncludeException;
-import com.stratio.qa.utils.ThreadProperty;
 import cucumber.runtime.io.Resource;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
