@@ -27,6 +27,8 @@ import java.util.*;
 
 /**
  * Generic File handling Specs.
+ *
+ * @see <a href="FileSpec-annotations.html">File Steps &amp; Matching Regex</a>
  */
 public class FileSpec extends BaseGSpec {
 
