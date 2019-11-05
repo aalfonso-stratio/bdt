@@ -34,6 +34,8 @@ import static com.stratio.qa.assertions.Assertions.assertThat;
 
 /**
  * Generic API Rest Specs.
+ *
+ * @see <a href="RestSpec-annotations.html">REST Steps &amp; Matching Regex</a>
  */
 public class RestSpec extends BaseGSpec {
 
