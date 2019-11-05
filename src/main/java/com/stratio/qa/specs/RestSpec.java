@@ -38,6 +38,8 @@ import static org.assertj.core.api.Assertions.fail;
 
 /**
  * Generic API Rest Specs.
+ *
+ * @see <a href="RestSpec-annotations.html">REST Steps &amp; Matching Regex</a>
  */
 public class RestSpec extends BaseGSpec {
 

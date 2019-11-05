@@ -41,6 +41,8 @@ import static org.testng.Assert.fail;
 
 /**
  * Generic Selenium Specs.
+ *
+ * @see <a href="SeleniumSpec-annotations.html">Selenium Steps &amp; Matching Regex</a>
  */
 public class SeleniumSpec extends BaseGSpec {
 

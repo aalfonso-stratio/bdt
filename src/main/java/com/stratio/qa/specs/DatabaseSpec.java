@@ -48,6 +48,8 @@ import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
 /**
  * Generic Database Specs.
+ *
+ * @see <a href="DatabaseSpec-annotations.html">Database Steps &amp; Matching Regex</a>
  */
 public class DatabaseSpec extends BaseGSpec {
 
