@@ -27,6 +27,8 @@ import static com.stratio.qa.assertions.Assertions.assertThat;
 
 /**
  * Generic Command Execution Specs.
+ *
+ * @see <a href="CommandExecutionSpec-annotations.html">Command Execution Steps &amp; Matching Regex</a>
  */
 public class CommandExecutionSpec extends BaseGSpec {
 

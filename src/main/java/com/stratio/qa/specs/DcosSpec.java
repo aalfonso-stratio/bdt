@@ -37,6 +37,8 @@ import static com.stratio.qa.assertions.Assertions.assertThat;
 
 /**
  * Generic DC/OS Specs.
+ *
+ * @see <a href="DcosSpec-annotations.html">DCOS Steps &amp; Matching Regex</a>
  */
 public class DcosSpec extends BaseGSpec {
 

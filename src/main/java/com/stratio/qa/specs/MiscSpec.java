@@ -36,6 +36,8 @@ import static com.stratio.qa.assertions.Assertions.assertThat;
 
 /**
  * Generic Miscellaneous Specs.
+ *
+ * @see <a href="MiscSpec-annotations.html">Miscellaneous Steps &amp; Matching Regex</a>
  */
 public class MiscSpec extends BaseGSpec {
 
