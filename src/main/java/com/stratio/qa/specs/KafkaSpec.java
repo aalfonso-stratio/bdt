@@ -26,6 +26,8 @@ import java.net.UnknownHostException;
 
 /**
  * Generic Kafka Specs.
+ *
+ * @see <a href="KafkaSpec-annotations.html">Kafka Steps &amp; Matching Regex</a>
  */
 public class KafkaSpec extends BaseGSpec {
 

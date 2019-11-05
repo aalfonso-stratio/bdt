@@ -26,6 +26,8 @@ import static org.testng.AssertJUnit.fail;
 
 /**
  * Generic LDAP Specs.
+ *
+ * @see <a href="LdapSpec-annotations.html">LDAP Steps &amp; Matching Regex</a>
  */
 public class LdapSpec extends BaseGSpec {
 
