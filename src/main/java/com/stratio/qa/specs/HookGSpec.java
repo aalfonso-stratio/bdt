@@ -133,9 +133,6 @@ public class HookGSpec extends BaseGSpec {
     @Before(order = ORDER_10, value = {"@mobile or @web"})
     public void seleniumSetup() throws MalformedURLException {
         String grid = System.getProperty("SELENIUM_GRID");
-        if (grid == null) {
-            fail("Selenium grid not available");
-        }
         String b = ThreadProperty.get("browser");
         if ("".equals(b)) {
             fail("Non available browsers");
