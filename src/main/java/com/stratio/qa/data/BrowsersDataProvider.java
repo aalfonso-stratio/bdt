@@ -212,7 +212,10 @@ public final class BrowsersDataProvider {
                     }
                 }
             }
+        } else if (System.getProperty("FORCE_BROWSER") != null) {
+            response.add(System.getProperty("FORCE_BROWSER"));
         }
+
         // Sort response
         Collections.sort(response);
         return response;
