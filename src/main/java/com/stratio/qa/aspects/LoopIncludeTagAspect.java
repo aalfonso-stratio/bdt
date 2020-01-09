@@ -338,7 +338,7 @@ public class LoopIncludeTagAspect {
     public String getScenName(String s) {
 
         String scenName = s.substring((s.lastIndexOf("scenario:") + "scenario:".length()));
-        if (s.contains("params")) {
+        if (s.contains("params:")) {
             scenName = scenName.substring(0, scenName.indexOf(","));
         } else {
             scenName = scenName.substring(0, scenName.indexOf(")"));
@@ -349,7 +349,7 @@ public class LoopIncludeTagAspect {
 
     public String[] getParams(String s) {
         String[] vals = null;
-        if (s.contains("params")) {
+        if (s.contains("params:")) {
             String[] pairs = s.substring((s.lastIndexOf("[") + 1), (s.length()) - 2).split(",");
             vals = new String[(pairs.length) * 2];
             int index = 0;
