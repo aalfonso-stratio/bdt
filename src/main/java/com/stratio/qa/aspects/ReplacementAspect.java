@@ -34,7 +34,6 @@ import cucumber.runtime.Backend;
 import cucumber.runtime.CucumberException;
 import cucumber.runtime.RuntimeOptions;
 import cucumber.runtime.StepDefinitionMatch;
-import de.heikoseeberger.akkahttpjson4s.Json4sSupport;
 import gherkin.events.PickleEvent;
 import gherkin.pickles.*;
 import gherkin.pickles.Argument;
