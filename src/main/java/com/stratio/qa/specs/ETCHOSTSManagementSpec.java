@@ -48,7 +48,7 @@ public class ETCHOSTSManagementSpec extends BaseGSpec {
      */
     @Given("^I save host '(.+?)' with ip '(.+?)' in /etc/hosts( in the ssh connection)?( with id '(.+?)')?$")
     public void addEntryHostsFile(String hostname, String ip, String remote, String sshConnectionId) throws Exception {
-        String backupCommand = "sudo cp /etc/hosts.BAK " + commonspec.getETCHOSTSManagementUtils().getBackupFile();
+        String backupCommand = "sudo cp " + commonspec.getETCHOSTSManagementUtils().getFile() + " " + commonspec.getETCHOSTSManagementUtils().getBackupFile();
         String checkBackupCommand = "if [ ! -f " + commonspec.getETCHOSTSManagementUtils().getBackupFile() + " ]; then " + backupCommand  + "; fi";
         String addCommand = "echo \"" + ip + "   " + hostname + "\" | sudo tee -a " + commonspec.getETCHOSTSManagementUtils().getFile();
 
