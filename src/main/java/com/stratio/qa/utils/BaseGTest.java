@@ -114,7 +114,8 @@ public abstract class BaseGTest {
                 Map.Entry pair = (Map.Entry) it.next();
                 if (pair.getValue() != null) {
                     // Restore remote /etc/hosts and remove pending locks, if needed
-                    ETCHOSTSManagementUtil.INSTANCE.getETCHOSTSManagementUtils().forceReleaseLock(pair.getKey().toString());
+                    ETCHOSTSManagementUtil.INSTANCE.getETCHOSTSManagementUtils().forceReleaseLock("in the ssh connection", pair.getKey().toString());
+
                     // Close ssh connection
                     logger.debug("Closing SSH remote connection with ID: " + pair.getKey());
                     ((RemoteSSHConnection) pair.getValue()).getSession().disconnect();
@@ -124,7 +125,7 @@ public abstract class BaseGTest {
         }
 
         // Restore local /etc/hosts and remove pending locks, if needed
-        ETCHOSTSManagementUtil.INSTANCE.getETCHOSTSManagementUtils().forceReleaseLock(null);
+        ETCHOSTSManagementUtil.INSTANCE.getETCHOSTSManagementUtils().forceReleaseLock(null, null);
     }
 
     /**

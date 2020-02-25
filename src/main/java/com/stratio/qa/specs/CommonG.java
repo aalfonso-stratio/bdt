@@ -181,6 +181,7 @@ public class CommonG {
      */
     public void setRemoteSSHConnection(RemoteSSHConnection remoteSSHConnection, String sshConnectionId) {
         RemoteSSHConnectionsUtil.getRemoteSSHConnectionsMap().put(sshConnectionId, remoteSSHConnection);
+        RemoteSSHConnectionsUtil.setLastRemoteSSHConnectionId(sshConnectionId);
         RemoteSSHConnectionsUtil.setLastRemoteSSHConnection(remoteSSHConnection);
     }
 

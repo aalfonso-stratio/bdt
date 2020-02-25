@@ -25,6 +25,8 @@ public class RemoteSSHConnectionsUtil {
 
     private static RemoteSSHConnection remoteSSHConnection;
 
+    private static String remoteSSHConnectionId;
+
     public static Map<String, RemoteSSHConnection> getRemoteSSHConnectionsMap() {
         return remoteSSHConnectionsMap;
     }
@@ -33,7 +35,15 @@ public class RemoteSSHConnectionsUtil {
         return remoteSSHConnection;
     }
 
+    public static String getLastRemoteSSHConnectionId() {
+        return remoteSSHConnectionId;
+    }
+
     public static void setLastRemoteSSHConnection(RemoteSSHConnection remote) {
         remoteSSHConnection = remote;
+    }
+
+    public static void setLastRemoteSSHConnectionId(String sshConnectionId) {
+        remoteSSHConnectionId = sshConnectionId;
     }
 }

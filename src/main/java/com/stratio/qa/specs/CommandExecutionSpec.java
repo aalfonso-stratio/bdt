@@ -412,6 +412,7 @@ public class CommandExecutionSpec extends BaseGSpec {
     @Then("^I put remote SSH connection with id '(.+?)' as active$")
     public void setActiveSSHConnection(String sshConnectionId) throws Exception {
         RemoteSSHConnectionsUtil.setLastRemoteSSHConnection(RemoteSSHConnectionsUtil.getRemoteSSHConnectionsMap().get(sshConnectionId));
+        RemoteSSHConnectionsUtil.setLastRemoteSSHConnectionId(sshConnectionId);
     }
 
     /**
