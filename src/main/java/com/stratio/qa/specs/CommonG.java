@@ -2529,6 +2529,7 @@ public class CommonG {
         return VaultUtil.INSTANCE.getVaultUtils();
     }
 
+    /**
      * Get /etc/hosts management utils.
      *
      * @return ETCHOSTSManagementUtils
