@@ -61,6 +61,7 @@ import org.slf4j.LoggerFactory;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.lang.management.ManagementFactory;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
@@ -2528,4 +2529,12 @@ public class CommonG {
         return VaultUtil.INSTANCE.getVaultUtils();
     }
 
+     * Get /etc/hosts management utils.
+     *
+     * @return ETCHOSTSManagementUtils
+     */
+    public ETCHOSTSManagementUtils getETCHOSTSManagementUtils() {
+        return ETCHOSTSManagementUtil.INSTANCE.getETCHOSTSManagementUtils();
+    }
 }
+
