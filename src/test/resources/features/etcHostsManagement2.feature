@@ -3,7 +3,7 @@ Feature: /etc/hosts management tests without restoring file and releasing lock
 
   Scenario: Modify /etc/hosts in remote SSH connection
     # Check we can add entry
-    Given I open a ssh connection to '${ES_NODE}' with user 'root' and password 'stratio'
+    Given I open a ssh connection to '${SSH}' with user 'root' and password 'stratio'
     And I run 'cat /etc/hosts' in the ssh connection and save the value in environment variable 'initialHostsFile'
     When I save host 'bdt3.stratio.com' with ip '3.3.3.3' in /etc/hosts in the ssh connection
     And I run 'cat /etc/hosts' in the ssh connection

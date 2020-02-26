@@ -3,7 +3,7 @@ Feature: Check /etc/hosts has been restored and lock file removed by general cle
 
   Scenario: Check remote machine is back to initial state
     # Check /etc/hosts file is restored
-    Given I open a ssh connection to '${ES_NODE}' with user 'root' and password 'stratio'
+    Given I open a ssh connection to '${SSH}' with user 'root' and password 'stratio'
     When I run 'cat /etc/hosts' in the ssh connection
     Then the command output does not contain '3.3.3.3   bdt3.stratio.com'
     # Check backup and lock file have been removed
