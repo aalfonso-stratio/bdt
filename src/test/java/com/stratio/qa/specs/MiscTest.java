@@ -385,7 +385,7 @@ public class MiscTest {
         CommonG commong = new CommonG();
         MiscSpec misc = new MiscSpec(commong);
 
-        assertThatExceptionOfType(ComparisonFailure.class).isThrownBy(() -> misc.checkValue("10", "is", "5")).withMessageContaining("Numbers are not equal.");
+        assertThatExceptionOfType(ComparisonFailure.class).isThrownBy(() -> misc.checkValue("10", "is", "5")).withMessageContaining("Values are not equal.");
     }
 
     @Test()
