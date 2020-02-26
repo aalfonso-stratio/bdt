@@ -59,7 +59,7 @@ public class ETCHOSTSManagementUtils {
         return lockFile;
     }
 
-    private String obtainPID() {
+    public String obtainPID() {
         String vmName = ManagementFactory.getRuntimeMXBean().getName();
         String pid = vmName.substring(0, vmName.indexOf("@"));
 
@@ -206,7 +206,12 @@ public class ETCHOSTSManagementUtils {
             }
             releaseLock(remote, sshConnectionId);
         } catch (Exception e) {
-            logger.debug("Nothing to be cleaned for this execution.");
+            if (remote != null) {
+                String connectionId = obtainSSHConnectionId(sshConnectionId);
+                logger.debug("Nothing to be cleaned for this execution for connection: " + connectionId);
+            } else {
+                logger.debug("Nothing to be cleaned for this execution locally");
+            }
         }
     }
 }

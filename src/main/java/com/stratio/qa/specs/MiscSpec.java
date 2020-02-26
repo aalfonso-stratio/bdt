@@ -223,7 +223,7 @@ public class MiscSpec extends BaseGSpec {
     public void checkValue(String envVar, String operation, String value) throws Exception {
         switch (operation.toLowerCase()) {
             case "is":
-                Assertions.assertThat(envVar).as("Numbers are not equal.").isEqualTo(value);
+                Assertions.assertThat(envVar).as("Values are not equal.").isEqualTo(value);
                 break;
             case "matches":
                 Assertions.assertThat(envVar).as("Values are different.").matches(value);

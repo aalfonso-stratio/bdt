@@ -17,6 +17,7 @@
 package com.stratio.qa.specs;
 
 import com.stratio.qa.utils.RemoteSSHConnectionsUtil;
+import com.stratio.qa.utils.ThreadProperty;
 import cucumber.api.java.en.Given;
 
 
@@ -38,7 +39,7 @@ public class ETCHOSTSManagementSpec extends BaseGSpec {
     }
 
     /**
-     * If there is no previous backup of /etc/hosts, it will create it and add the new entry,
+     * If there is no previous backup of /etc/hosts and we can get the lock, it will create it and add the new entry,
      * otherwise it will only add the new entry.
      *
      * @param hostname  hostname to be added to /etc/hosts
@@ -54,7 +55,7 @@ public class ETCHOSTSManagementSpec extends BaseGSpec {
     }
 
     /**
-     * If /etc/hosts backup file, restore it, otherwise do nothing
+     * If /etc/hosts backup file exists and we have the lock, restore it, otherwise do nothing
      *
      * @param remote    whether we want to restore /etc/hosts locally or in a remote system
      * @param sshConnectionId   previously saved ssh connection where to perform the action
@@ -64,6 +65,17 @@ public class ETCHOSTSManagementSpec extends BaseGSpec {
     public void restoreHostsFile(String remote, String sshConnectionId) throws Exception {
         // Release lock
         commonspec.getETCHOSTSManagementUtils().releaseLock(remote, sshConnectionId);
+    }
+
+    /**
+     * Obtain java PID process of current execution and save it in environment variable
+     *
+     * @param envVar    variable where to save current java PID
+     */
+    @Given("^I obtain java pid and save the value in environment variable '(.+?)'$")
+    public void obtainJavaPID(String envVar) {
+        String javaPID = commonspec.getETCHOSTSManagementUtils().obtainPID();
+        ThreadProperty.set(envVar, javaPID);
     }
 
 }

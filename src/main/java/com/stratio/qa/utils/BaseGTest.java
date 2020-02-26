@@ -80,7 +80,7 @@ public abstract class BaseGTest {
     }
 
     /**
-     * Method executed after a test method.
+     * Method executed before a test method.
      *
      * @param method
      */
@@ -90,7 +90,7 @@ public abstract class BaseGTest {
     }
 
     /**
-     * Method executed before method.
+     * Method executed after a test method.
      *
      * @param method
      */
@@ -99,7 +99,7 @@ public abstract class BaseGTest {
     }
 
     /**
-     * Method executed before a class.
+     * Method executed after a test class.
      */
     @AfterClass(alwaysRun = true)
     public void afterGClass() throws Exception {
