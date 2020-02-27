@@ -21,6 +21,7 @@ import com.jayway.jsonpath.JsonPath;
 import com.ning.http.client.Response;
 import com.stratio.qa.utils.GosecSSOUtils;
 import com.stratio.qa.utils.RemoteSSHConnection;
+import com.stratio.qa.utils.RemoteSSHConnectionsUtil;
 import com.stratio.qa.utils.ThreadProperty;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
@@ -887,6 +888,12 @@ public class DcosSpec extends BaseGSpec {
      */
     @Given("^I( force to)? obtain basic information from bootstrap$")
     public void obtainBasicInfoFromDescriptor(String force) throws Exception {
+        String localDescriptorFile;
+        String localDescriptorFilePath;
+        String localVaultResponseFile;
+        String localVaultResponseFilePath;
+        String localCaTrustFilePath;
+
         // General values
         String varClusterID = "EOS_CLUSTER_ID";
         String varClusterDomain = "EOS_DNS_SEARCH";
@@ -898,7 +905,6 @@ public class DcosSpec extends BaseGSpec {
         String varVaultToken = "VAULT_TOKEN";
         String varPublicNode = "PUBLIC_NODE";
         String varAccessPoint = "EOS_ACCESS_POINT";
-        String vaultTokenJQ = "jq -cMr .root_token";
         String varRealm = "EOS_REALM";
         // LDAP values
         String varLDAPurl = "LDAP_URL";
@@ -908,9 +914,35 @@ public class DcosSpec extends BaseGSpec {
         String varLDAPbase = "LDAP_BASE";
         String varLDAPadminGroup = "LDAP_ADMIN_GROUP";
 
+        String bootstrap_ip = System.getProperty("BOOTSTRAP_IP");
+        String bootstrap_user;
+        String bootstrap_pem;
+
+        // Check if needed parameters have been passed
+        if (bootstrap_ip == null) {
+            throw new Exception("BOOTSTRAP_IP variable needs to be provided in order to obtain information from system.");
+        } else {
+            bootstrap_user = System.getProperty("REMOTE_USER");
+            if (bootstrap_user == null) {
+                throw new Exception("REMOTE_USER variable needs to be provided in order to obtain information from system.");
+            } else {
+                bootstrap_pem = (System.getProperty("PEM_FILE_PATH"));
+                if (bootstrap_pem == null) {
+                    throw new Exception("PEM_FILE_PATH variable needs to be provided in order to obtain information from system.");
+                }
+            }
+
+            localDescriptorFile = "descriptor_" + bootstrap_ip + ".json";
+            localDescriptorFilePath = "./target/test-classes/" + localDescriptorFile;
+            localVaultResponseFile = "vault_response_" + bootstrap_ip;
+            localVaultResponseFilePath = "./target/test-classes/" + localVaultResponseFile;
+            localCaTrustFilePath = "./target/test-classes/ca_test.crt";
+        }
+
         String[] vars = {varClusterID, varClusterDomain, varInternalDomain, varIp, varAdminUser, varTenant, varVaultHost, varVaultToken, varPublicNode, varAccessPoint, varRealm, varLDAPurl, varLDAPport, varLDAPuserDn, varLDAPgroupDn, varLDAPbase, varLDAPadminGroup};
         boolean bootstrapInfoObtained = true;
 
+        // Check if info have been retrieved previously
         if (force != null) {
             bootstrapInfoObtained = false;
         } else {
@@ -923,33 +955,181 @@ public class DcosSpec extends BaseGSpec {
         }
 
         if (!bootstrapInfoObtained) {
-            obtainInfoFromDescriptor("ID", varClusterID);
-            obtainInfoFromDescriptor("DNS_SEARCH", varClusterDomain);
-            obtainInfoFromDescriptor("INTERNAL_DOMAIN", varInternalDomain);
-            obtainInfoFromDescriptor("IP", varIp);
-            obtainInfoFromDescriptor("ADMIN_USER", varAdminUser);
-            obtainInfoFromDescriptor("TENANT", varTenant);
-            obtainInfoFromDescriptor("VAULT_HOST", varVaultHost);
-            obtainInfoFromDescriptor("REALM", varRealm);
-            obtainInfoFromFile(vaultTokenJQ, this.vaultResponsePath, varVaultToken);
-            commonspec.getRemoteSSHConnection().runCommand("set -o pipefail && cat " + this.descriptorPath + " | " + "jq -crM '.nodes[] | select((.role ?== \"agent\") and .public ?== true)'" + " | " + "wc -l");
-            if (!(commonspec.getRemoteSSHConnection().getResult().equals("0"))) {
-                obtainInfoFromDescriptor("PUBLIC_NODE", varPublicNode);
-            }
-            obtainInfoFromDescriptor("ACCESS_POINT", varAccessPoint);
+            commonspec.getLogger().debug("Openning connection to bootstrap to obtain descriptor file: " + descriptorPath);
+            commonspec.setRemoteSSHConnection(new RemoteSSHConnection(bootstrap_user, null, bootstrap_ip, "22", bootstrap_pem), "bootstrap_connection");
 
-            // Get CA to trust certificates
+            commonspec.getLogger().debug("Copying descriptor file to: " + localDescriptorFilePath);
+            commonspec.getRemoteSSHConnection().copyFrom(descriptorPath, localDescriptorFilePath);
+
+            commonspec.getLogger().debug("Copying vault_response file to: " + localVaultResponseFilePath);
+            commonspec.getRemoteSSHConnection().copyFrom(vaultResponsePath, localVaultResponseFilePath);
+
             String caTrust = (System.getProperty("EOS_CA_TRUST") != null) ? System.getProperty("EOS_CA_TRUST") : "/stratio_volume/cas_trusted/ca.crt";
-            commonspec.getRemoteSSHConnection().copyFrom(caTrust, "target/test-classes/ca_test.crt");
+            commonspec.getLogger().debug("Copying ca_trust file to: " + localCaTrustFilePath);
+            commonspec.getRemoteSSHConnection().copyFrom(caTrust, localCaTrustFilePath);
 
-            obtainInfoFromDescriptor("LDAP_URL", varLDAPurl);
-            obtainInfoFromDescriptor("LDAP_PORT", varLDAPport);
-            obtainInfoFromDescriptor("LDAP_USER_DN", varLDAPuserDn);
-            obtainInfoFromDescriptor("LDAP_GROUP_DN", varLDAPgroupDn);
-            obtainInfoFromDescriptor("LDAP_BASE", varLDAPbase);
-            obtainInfoFromDescriptor("LDAP_ADMIN_GROUP", varLDAPadminGroup);
+            // Close connection to bootstrap system
+            commonspec.getRemoteSSHConnection().closeConnection();
+            RemoteSSHConnectionsUtil.getRemoteSSHConnectionsMap().remove("bootstrap_connection");
+            RemoteSSHConnectionsUtil.setLastRemoteSSHConnectionId(null);
+            RemoteSSHConnectionsUtil.setLastRemoteSSHConnection(null);
+
+            // Save content of files in memory to speed up process
+            String descriptor = commonspec.retrieveData(localDescriptorFile, "json");
+            String response = commonspec.retrieveData(localVaultResponseFile, "json");
+
+            obtainJSONInfo(descriptor, "ID", varClusterID);
+            obtainJSONInfo(descriptor, "DNS_SEARCH", varClusterDomain);
+            obtainJSONInfo(descriptor, "INTERNAL_DOMAIN", varInternalDomain);
+            obtainJSONInfo(descriptor, "IP", varIp);
+            obtainJSONInfo(descriptor, "ADMIN_USER", varAdminUser);
+            obtainJSONInfo(descriptor, "TENANT", varTenant);
+            obtainJSONInfo(descriptor, "VAULT_HOST", varVaultHost);
+            obtainJSONInfo(descriptor, "REALM", varRealm);
+            obtainJSONInfo(descriptor, "ACCESS_POINT", varAccessPoint);
+            obtainJSONInfo(descriptor, "LDAP_URL", varLDAPurl);
+            obtainJSONInfo(descriptor, "LDAP_PORT", varLDAPport);
+            obtainJSONInfo(descriptor, "LDAP_USER_DN", varLDAPuserDn);
+            obtainJSONInfo(descriptor, "LDAP_GROUP_DN", varLDAPgroupDn);
+            obtainJSONInfo(descriptor, "LDAP_BASE", varLDAPbase);
+            obtainJSONInfo(descriptor, "LDAP_ADMIN_GROUP", varLDAPadminGroup);
+            obtainJSONInfo(descriptor, "PUBLIC_NODE", varPublicNode);
+
+            obtainJSONInfo(response, "ROOT_TOKEN", varVaultToken);
         } else {
             commonspec.getLogger().debug("Basic information from bootstrap was previously obtained");
         }
     }
+
+
+    /**
+     * Obtains info from a json stored in a variable and expose it in a thread variable
+     *
+     * @param json  json where to get info from
+     * @param info  info to be obtained from json
+     * @param envVar    thread environment variable where to expose obtained info
+     */
+    public void obtainJSONInfo(String json, String info, String envVar) {
+        String jqExpression = "";
+        String position = null;
+
+        switch (info) {
+            case "MASTERS":
+                jqExpression = "$.nodes[?(@.role == \"master\")].networking[0].ip";
+                break;
+            case "NODES":
+                jqExpression = "$.nodes[?(@.role == \"agent\")].networking[0].ip";
+                break;
+            case "PRIV_NODES":
+                jqExpression = "$.nodes[?(@.role == \"agent\" && @.public == false)].networking[0].ip";
+                break;
+            case "PUBLIC_NODES":
+                jqExpression = "$.nodes[?(@.role == \"agent\" && @.public == true)].networking[0].ip";
+                break;
+            case "PUBLIC_NODE":
+                jqExpression = "$.nodes[?(@.role == \"agent\" && @.public == true)].networking[0].ip";
+                position = "0";
+                break;
+            case "GOSEC_NODES":
+                jqExpression = "$.nodes[?(@.role == \"gosec\")].networking[0].ip";
+                break;
+            case "ID":
+                jqExpression = "$.id";
+                break;
+            case "DNS_SEARCH":
+                jqExpression = "$.dnsSearch";
+                break;
+            case "INTERNAL_DOMAIN":
+                jqExpression = "$.internalDomain";
+                break;
+            case "ARTIFACT_REPO":
+                jqExpression = "$.artifactRepository";
+                break;
+            case "DOCKER_REGISTRY":
+                jqExpression = "$.dockerRegistry";
+                break;
+            case "EXTERNAL_DOCKER_REGISTRY":
+                jqExpression = "$.externalDockerRegistry";
+                break;
+            case "REALM":
+                jqExpression = "$.security.kerberos.realm";
+                break;
+            case "KRB_HOST":
+                jqExpression = "$.security.kerberos.kdcHost";
+                break;
+            case "LDAP_HOST":
+                jqExpression = "$.security.ldap.url";
+                break;
+            case "VAULT_HOST":
+                jqExpression = "$.nodes[?(@.role == \"gosec\")].networking[0].ip";
+                position = "0";
+                break;
+            case "IP":
+                jqExpression = "$.nodes[?(@.role == \"master\")].networking[0].ip";
+                position = "0";
+                break;
+            case "ADMIN_USER":
+                jqExpression = "$.security.ldap.adminUserUuid";
+                break;
+            case "TENANT":
+                jqExpression = "$.security.tenantSSODefault";
+                break;
+            case "ACCESS_POINT":
+                jqExpression = "$.proxyAccessPointURL";
+                break;
+            case "LDAP_URL":
+                jqExpression = "$.security.ldap.url";
+                break;
+            case "LDAP_PORT":
+                jqExpression = "$.security.ldap.port";
+                break;
+            case "LDAP_USER_DN":
+                jqExpression = "$.security.ldap.userDn";
+                break;
+            case "LDAP_GROUP_DN":
+                jqExpression = "$.security.ldap.groupDN";
+                break;
+            case "LDAP_BASE":
+                jqExpression = "$.security.ldap.ldapBase";
+                break;
+            case "LDAP_ADMIN_GROUP":
+                jqExpression = "$.security.ldap.adminrouterAuthorizedGroup";
+                break;
+            case "ROOT_TOKEN":
+                jqExpression = "$.root_token";
+                break;
+            default:
+                break;
+        }
+
+        String value = "";
+        try {
+            value = commonspec.getJSONPathString(json, jqExpression, position).replaceAll("\\[", "").replaceAll("\\]", "").replaceAll("\"", "");
+        } catch (Exception e) {
+            if (info == "PUBLIC_NODE" || info == "TENANT") {
+                value = null;
+            } else {
+                throw e;
+            }
+        }
+
+        switch (info) {
+            case "TENANT":
+                if (value == null) {
+                    value = "NONE";
+                }
+                break;
+            case "ACCESS_POINT":
+                value = value.replaceAll("https://", "");
+                break;
+            default:
+                break;
+        }
+
+        if (!(info == "PUBLIC_NODE" && value == null)) {
+            ThreadProperty.set(envVar, value);
+        }
+
+    }
+
 }

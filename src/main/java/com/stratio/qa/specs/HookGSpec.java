@@ -49,6 +49,8 @@ import static org.testng.Assert.fail;
 
 public class HookGSpec extends BaseGSpec {
 
+    public static final int ORDER_0 = 0;
+
     public static final int ORDER_10 = 10;
 
     public static final int ORDER_20 = 20;
@@ -83,7 +85,7 @@ public class HookGSpec extends BaseGSpec {
     /**
      * Clean the exception list.
      */
-    @Before(order = 0)
+    @Before(order = ORDER_0)
     public void globalSetup() {
         commonspec.getExceptions().clear();
         StepException.INSTANCE.setException(null);
@@ -245,7 +247,7 @@ public class HookGSpec extends BaseGSpec {
     /**
      * Close logger.
      */
-    @After(order = 0)
+    @After(order = ORDER_0)
     public void teardown() {
     }
 
@@ -258,7 +260,7 @@ public class HookGSpec extends BaseGSpec {
         }
     }
 
-    @Before(order = 10, value = "@rest")
+    @Before(order = ORDER_10, value = "@rest")
     public void restClientSetup() throws Exception {
         commonspec.getLogger().debug("Starting a REST client");
 
@@ -266,7 +268,7 @@ public class HookGSpec extends BaseGSpec {
                 .build()));
     }
 
-    @After(order = 10, value = "@rest")
+    @After(order = ORDER_10, value = "@rest")
     public void restClientTeardown() throws IOException {
         commonspec.getLogger().debug("Shutting down REST client");
         commonspec.getClient().close();
@@ -275,5 +277,15 @@ public class HookGSpec extends BaseGSpec {
     private boolean isTagIncludedInScenario(Scenario scenario, String customTAG) {
         Collection<String> tags = scenario.getSourceTagNames();
         return tags.contains(customTAG);
+    }
+
+    @Before(order = ORDER_10, value = "@dcos")
+    public void dcosSetup() throws Exception {
+        DcosSpec dcosSpec = new DcosSpec(commonspec);
+        dcosSpec.obtainBasicInfoFromDescriptor(null);
+    }
+
+    @After(order = ORDER_20, value = "@dcos")
+    public void dcosCleanup() {
     }
 }

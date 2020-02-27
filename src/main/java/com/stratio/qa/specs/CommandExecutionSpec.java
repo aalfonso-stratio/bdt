@@ -67,14 +67,14 @@ public class CommandExecutionSpec extends BaseGSpec {
                 throw new Exception("You have to provide a password or a pem file to be used for connection");
             }
             commonspec.setRemoteSSHConnection(new RemoteSSHConnection(user, password, remoteHost, remotePort, null), sshConnectionIdAux);
-            commonspec.getLogger().debug("Opening ssh connection with password: { " + password + "}", commonspec.getRemoteSSHConnection());
+            commonspec.getLogger().debug("Opening ssh connection with password: { " + password + "}", sshConnectionIdAux);
         } else {
             File pem = new File(pemFile);
             if (!pem.exists()) {
                 throw new Exception("Pem file: " + pemFile + " does not exist");
             }
             commonspec.setRemoteSSHConnection(new RemoteSSHConnection(user, null, remoteHost, remotePort, pemFile), sshConnectionIdAux);
-            commonspec.getLogger().debug("Opening ssh connection with pemFile: {}", commonspec.getRemoteSSHConnection());
+            commonspec.getLogger().debug("Opening ssh connection with pemFile: {}", sshConnectionIdAux);
         }
     }
 
