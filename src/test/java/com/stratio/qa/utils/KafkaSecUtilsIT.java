@@ -172,5 +172,4 @@ public class KafkaSecUtilsIT {
         Assertions.assertThatCode(() -> kafka_utils.deleteTopic(topic)).doesNotThrowAnyException();
         Assertions.assertThatCode(() -> kafka_utils.checkTopicDoesNotExist(topic)).doesNotThrowAnyException();
     }
-
 }
