@@ -38,11 +38,15 @@ hose {
            'sleep': 30,
            'healthcheck': 9042]],
         ['KAFKA': [
-           'image': 'confluent/kafka:0.10.0.0-cp1',
+           'image': 'confluentinc/cp-kafka:5.3.1',
            'env': [
                  'KAFKA_ZOOKEEPER_CONNECT=%%ZOOKEEPER:2181',
                  'KAFKA_ADVERTISED_HOST_NAME=%%OWNHOSTNAME',
-                 'KAFKA_DELETE_TOPIC_ENABLE=true'],
+                 'KAFKA_DELETE_TOPIC_ENABLE=true',
+                 'KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://%%OWNHOSTNAME:29092,PLAINTEXT_HOST://localhost:9092',
+                 'KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT',
+                 'KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1',
+                 'KAFKA_BROKER_ID=1'],
            'sleep': 30,       
            'healthcheck': 9300]],
         ['LDAP': [
@@ -83,7 +87,7 @@ hose {
         | -DWAIT=1
         | -DAGENT_LIST=1,2
         | -DPROGLOOP=2
-        | -DKAFKA_HOSTS=%%KAFKA:9092
+        | -DKAFKA_HOSTS=%%KAFKA:29092
         | -DSSH=%%UBUNTU
         | -DSLEEPTEST=1
         | -DLDAP_USER='cn=admin,dc=stratio,dc=com'

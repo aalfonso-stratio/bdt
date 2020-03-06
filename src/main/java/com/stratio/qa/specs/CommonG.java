@@ -303,15 +303,6 @@ public class CommonG {
     }
 
     /**
-     * Get the Kafka utils.
-     *
-     * @return KafkaUtils
-     */
-    public KafkaUtils getKafkaUtils() {
-        return KafkaUtil.INSTANCE.getKafkaUtils();
-    }
-
-    /**
      * Get the MongoDB utils.
      *
      * @return MongoDBUtils
@@ -2538,5 +2529,15 @@ public class CommonG {
     public ETCHOSTSManagementUtils getETCHOSTSManagementUtils() {
         return ETCHOSTSManagementUtil.INSTANCE.getETCHOSTSManagementUtils();
     }
+
+    /**
+     * Get Kafka utils.
+     *
+     * @return KafkaSecUtils
+     */
+    public KafkaSecUtils getKafkaSecUtils() {
+        return KafkaSecUtil.INSTANCE.getKafkaSecUtils();
+    }
+
 }
 

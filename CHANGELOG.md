@@ -12,6 +12,7 @@ Only listing significant user-visible, not internal code cleanups and minor bug 
 * [QATM-3183] Use Marathon API to obtain service versions
 * [QATM-3182] Check status for services tasks 
 * [QATM-3192] Add steps for configuration-api and calico network management
+* [QATM-3194] Update Kafka client version and steps
 
 ## 0.13.0 (February 12, 2020)
 

@@ -16,13 +16,12 @@
 
 package com.stratio.qa.utils;
 
-public enum KafkaUtil {
+public enum KafkaSecUtil {
     INSTANCE;
 
-    private final KafkaUtils cUtils = new KafkaUtils();
+    private final KafkaSecUtils kafkaSecUtils = new KafkaSecUtils();
 
-    public KafkaUtils getKafkaUtils() {
-        return cUtils;
+    public KafkaSecUtils getKafkaSecUtils() {
+        return kafkaSecUtils;
     }
-
 }

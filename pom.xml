@@ -86,7 +86,8 @@
         <jsoup.version>1.7.3</jsoup.version>
         <json.version>20180130</json.version>
         <crossdata-drivers.version>2.16.1-63d529c</crossdata-drivers.version>
-
+        <kafka-scala.version>2.11</kafka-scala.version>
+        <kafka.version>2.3.1</kafka.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
@@ -369,19 +370,14 @@
             <version>2.6.2</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka-clients</artifactId>
-            <version>0.10.0.0</version>
-        </dependency>
-        <dependency>
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>
             <version>2.1.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka_2.11</artifactId>
-            <version>0.10.0.0</version>
+            <artifactId>kafka_${kafka-scala.version}</artifactId>
+            <version>${kafka.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>

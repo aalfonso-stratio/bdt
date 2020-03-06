@@ -994,7 +994,6 @@ public class CommonGTest {
         CommonG commong = new CommonG();
         commong.getCassandraClient();
         commong.getElasticSearchClient();
-        commong.getKafkaUtils();
         commong.getMongoDBClient();
         commong.getZookeeperSecClient();
     }
