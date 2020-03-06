@@ -20,6 +20,4 @@ Feature: Kafka steps test
   Scenario: Delete topics and close connection
     When I delete topic '${TOPIC:-ittopic}1'
     Then topic '${TOPIC:-ittopic}1' does not exist
-    When I delete topic '${TOPIC:-ittopic}2'
-    Then topic '${TOPIC:-ittopic}2' does not exist
     And I close Kafka connection
