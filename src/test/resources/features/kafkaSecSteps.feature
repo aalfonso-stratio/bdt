@@ -1,7 +1,7 @@
 Feature: Kafka steps test
 
   Scenario: Open Kafka connection
-    Given I open connection to kafka with url '${KAFKA_BROKER}:${KAFKA_PORT:-29092}'
+    Given I open connection to kafka with url '${KAFKA_HOSTS}'
 
   Scenario: Create topic
     When I create topic '${TOPIC:-ittopic}1'
