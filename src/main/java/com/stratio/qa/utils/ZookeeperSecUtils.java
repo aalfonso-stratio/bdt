@@ -51,19 +51,6 @@ public class ZookeeperSecUtils {
         this.retryPolicy = new ExponentialBackoffRetry(1000, 3);
     }
 
-//    public void connectZk(String hosts, String jaasPath, String krb5Path) throws InterruptedException {
-//        this.zk_hosts = hosts;
-//        this.curatorZkClient = CuratorFrameworkFactory.builder().connectString(this.zk_hosts).retryPolicy(this.retryPolicy).connectionTimeoutMs(this.timeout).build();
-//
-//        if (jaasPath != null && krb5Path != null) {
-//            System.setProperty("java.security.auth.login.config", jaasPath);
-//            System.setProperty("java.security.krb5.conf", krb5Path);
-//        }
-//
-//        this.curatorZkClient.start();
-//        this.curatorZkClient.blockUntilConnected();
-//    }
-
     public void connectZk(String hosts) throws InterruptedException {
         this.zk_hosts = hosts;
         this.curatorZkClient = CuratorFrameworkFactory.builder().connectString(this.zk_hosts).retryPolicy(this.retryPolicy).connectionTimeoutMs(this.timeout).build();
