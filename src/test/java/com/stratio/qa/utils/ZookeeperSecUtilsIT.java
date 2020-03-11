@@ -27,14 +27,14 @@ public class ZookeeperSecUtilsIT extends BaseGSpec {
         ZookeeperSecUtils zkUtils = new ZookeeperSecUtils();
 
         // Connect
-        zkUtils.connectZk();
+        zkUtils.connectZk(System.getProperty("ZOOKEEPER_HOSTS"));
 
         // createNonEphemeralZnode
         String znodePath = "/mypath";
         if (zkUtils.exists(znodePath)) {
             zkUtils.delete(znodePath);
         }
-        zkUtils.zCreate(znodePath, false);
+        zkUtils.zCreate(znodePath, null,false);
         assertThat(zkUtils.exists(znodePath)).isTrue();
 
         // createAnEphemeralZnode
@@ -42,7 +42,7 @@ public class ZookeeperSecUtilsIT extends BaseGSpec {
         if (zkUtils.exists(znodePath)) {
             zkUtils.delete(znodePath);
         }
-        zkUtils.zCreate(znodePath, true);
+        zkUtils.zCreate(znodePath, null,true);
         assertThat(zkUtils.exists(znodePath)).isTrue();
 
         // deleteANonEphemeralZnode
@@ -50,7 +50,7 @@ public class ZookeeperSecUtilsIT extends BaseGSpec {
         if (zkUtils.exists(znodePath)) {
             zkUtils.delete(znodePath);
         }
-        zkUtils.zCreate(znodePath, false);
+        zkUtils.zCreate(znodePath, null,false);
         zkUtils.delete(znodePath);
         assertThat(zkUtils.exists(znodePath)).isFalse();
 
@@ -59,7 +59,7 @@ public class ZookeeperSecUtilsIT extends BaseGSpec {
         if (zkUtils.exists(znodePath)) {
             zkUtils.delete(znodePath);
         }
-        zkUtils.zCreate(znodePath, true);
+        zkUtils.zCreate(znodePath, null,true);
         zkUtils.delete(znodePath);
         assertThat(zkUtils.exists(znodePath)).isFalse();
 

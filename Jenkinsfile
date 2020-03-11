@@ -16,9 +16,8 @@ hose {
 
     ITSERVICES = [
         ['ZOOKEEPER': [
-           'image': 'jplock/zookeeper:3.5.2-alpha',
-           'env': [
-                 'zk_id=1'],
+           'image': 'zookeeper:3.5.7',
+           'env': [],
            'sleep': 30,
            'healthcheck': 2181]],
         ['MONGODB': [

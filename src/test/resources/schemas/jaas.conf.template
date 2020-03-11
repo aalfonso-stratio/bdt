@@ -1,8 +1,8 @@
-Server {
+Client {
   com.sun.security.auth.module.Krb5LoginModule required
   useKeyTab=true
   storeKey=true
   useTicketCache=false
-  keyTab="/etc/security/keytabs/hbase.service.keytab"
-  principal="hbase/$HBase.Master.hostname";
-};   
+  keyTab="keytabPath"
+  principal="principalValue";
+};

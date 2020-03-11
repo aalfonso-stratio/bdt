@@ -995,7 +995,7 @@ public class CommonGTest {
         commong.getCassandraClient();
         commong.getElasticSearchClient();
         commong.getMongoDBClient();
-        commong.getZookeeperSecClient();
+        commong.getZookeeperSecUtils();
     }
 
     @Test

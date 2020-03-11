@@ -43,19 +43,29 @@ public class ZookeeperSpec extends BaseGSpec {
      * @param zookeeperHosts as host:port (comma separated)
      * @throws InterruptedException exception
      */
-    @Given("^I connect to Zookeeper at '(.+)'$")
-    public void connectToZk(String zookeeperHosts) throws InterruptedException {
-        commonspec.getZookeeperSecClient().setZookeeperSecConnection(zookeeperHosts, 3000);
-        commonspec.getZookeeperSecClient().connectZk();
+    @Given("I connect to Zookeeper at {string}")
+    public void connectToZk(String zookeeperHosts) throws Exception {
+        commonspec.getZookeeperSecUtils().connectZk(zookeeperHosts);
     }
 
+
+    /**
+     * Connect to secured zookeeper.
+     *
+     * @param zookeeperHosts as host:port (comma separated)
+     * @throws InterruptedException exception
+     */
+    @Given("^I connect to Zookeeper at '(.+)' with keytab '(.+)', principal '(.+)' and krb5 '(.+)'$")
+    public void connectToSecuredZk(String zookeeperHosts, String keytabPath, String principal, String krb5Path) throws Exception {
+        commonspec.getZookeeperSecUtils().connectZk(zookeeperHosts, keytabPath, principal, krb5Path);
+    }
 
     /**
      * Disconnect from zookeeper.
      */
     @Given("^I disconnect from Zookeeper$")
     public void disconnectFromZk() throws InterruptedException {
-        commonspec.getZookeeperSecClient().disconnect();
+        commonspec.getZookeeperSecUtils().disconnect();
     }
 
     /**
@@ -65,7 +75,7 @@ public class ZookeeperSpec extends BaseGSpec {
      */
     @When("^I remove the zNode '(.+?)'$")
     public void removeZNode(String zNode) throws Exception {
-        commonspec.getZookeeperSecClient().delete(zNode);
+        commonspec.getZookeeperSecUtils().delete(zNode);
     }
 
 
@@ -79,11 +89,7 @@ public class ZookeeperSpec extends BaseGSpec {
     @When("^I create the zNode '(.+?)'( with content '(.+?)')? which (IS|IS NOT) ephemeral$")
     public void createZNode(String path, String content, String sEphemeral) throws Exception {
         boolean ephemeral = sEphemeral.equals("IS");
-        if (content != null) {
-            commonspec.getZookeeperSecClient().zCreate(path, content, ephemeral);
-        } else {
-            commonspec.getZookeeperSecClient().zCreate(path, ephemeral);
-        }
+        commonspec.getZookeeperSecUtils().zCreate(path, content, ephemeral);
     }
 
     /**
@@ -95,16 +101,16 @@ public class ZookeeperSpec extends BaseGSpec {
     @Then("^the zNode '(.+?)' exists( and contains '(.+?)')?$")
     public void checkZnodeExists(String zNode, String document) throws Exception {
         if (document == null) {
-            String breakpoint = commonspec.getZookeeperSecClient().zRead(zNode);
+            String breakpoint = commonspec.getZookeeperSecUtils().zRead(zNode);
             assert breakpoint.equals("") : "The zNode does not exist";
         } else {
-            assert commonspec.getZookeeperSecClient().zRead(zNode).contains(document) : "The zNode does not exist or the content does not match";
+            assert commonspec.getZookeeperSecUtils().zRead(zNode).contains(document) : "The zNode does not exist or the content does not match";
         }
     }
 
     @Then("^the zNode '(.+?)' does not exist")
     public void checkZnodeNotExist(String zNode) throws Exception {
-        assert !commonspec.getZookeeperSecClient().exists(zNode) : "The zNode exists";
+        assert !commonspec.getZookeeperSecUtils().exists(zNode) : "The zNode exists";
     }
 
 }

@@ -134,8 +134,6 @@ public class CommonG {
 
     private String restProtocol;
 
-    private ZookeeperSecUtils zkSecClient;
-
     private Optional<SearchResult> previousLdapResults;
 
     private Connection myConnection = null;
@@ -309,15 +307,6 @@ public class CommonG {
      */
     public MongoDBUtils getMongoDBClient() {
         return MongoDBUtil.INSTANCE.getMongoDBUtils();
-    }
-
-    /**
-     * Get the Zookeeper Sec utils.
-     *
-     * @return ZookeperSecUtils
-     */
-    public ZookeeperSecUtils getZookeeperSecClient() {
-        return ZookeeperSecUtil.INSTANCE.getZookeeperSecUtils();
     }
 
     /**
@@ -2086,10 +2075,6 @@ public class CommonG {
 
     }
 
-    public ZookeeperSecUtils getZkSecClient() {
-        return zkSecClient;
-    }
-
     public void runCommandAndGetResult(String command) throws Exception {
         getRemoteSSHConnection().runCommand(command);
         setCommandResult(getRemoteSSHConnection().getResult());
@@ -2537,6 +2522,15 @@ public class CommonG {
      */
     public KafkaSecUtils getKafkaSecUtils() {
         return KafkaSecUtil.INSTANCE.getKafkaSecUtils();
+    }
+
+    /**
+     * Get Zookeeper utils.
+     *
+     * @return ZookeeperSecUtils
+     */
+    public ZookeeperSecUtils getZookeeperSecUtils() {
+        return ZookeeperSecUtil.INSTANCE.getZookeeperSecUtils();
     }
 
 }
