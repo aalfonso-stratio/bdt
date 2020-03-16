@@ -68,9 +68,12 @@ public class CassandraUtils {
     public void connect(String secured) {
         buildCluster(secured);
         this.cassandraqueryUtils = new CassandraQueryUtils();
-        this.metadata = this.cluster.getMetadata();
+//        this.metadata = this.cluster.getMetadata();
+        String clusterName = this.cluster.getClusterName();
+//        LOGGER.debug("Connected to cluster (" + host + "): "
+//                + metadata.getClusterName() + "\n");
         LOGGER.debug("Connected to cluster (" + host + "): "
-                + metadata.getClusterName() + "\n");
+                + clusterName + "\n");
         this.session = this.cluster.connect();
     }
 
