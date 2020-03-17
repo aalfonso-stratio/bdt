@@ -17,26 +17,27 @@
 package com.stratio.qa.utils;
 
 import com.stratio.qa.assertions.Assertions;
+import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.fs.permission.FsPermission;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import org.w3c.dom.Document;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
 public class HDFSSecUtils {
 
@@ -82,6 +83,7 @@ public class HDFSSecUtils {
     public void closeConnection() {
         conf.clear();
         conf = null;
+        logger.info("Connection closed sucessfully.");
     }
 
     public void writeToHDFS(String sourcePath, String destinationPath) throws IOException {
@@ -102,17 +104,17 @@ public class HDFSSecUtils {
         fileSystem.close();
     }
 
-    public void deleteHDFSDirectory(String hdfsStorePath) throws IOException {
+    public void deleteFile(String hdfsStorePath) throws IOException {
         Path hdfsPath = new Path(hdfsStorePath);
 
         FileSystem fileSystem = FileSystem.get(conf);
 
-        if (fileSystem.exists(hdfsPath)) {
-            fileSystem.delete(hdfsPath, true);
-            logger.info("Directory: {} deleted successfully." + hdfsPath);
-        } else {
-            logger.info("Input Directory: {} does not exists." + hdfsPath);
-        }
+        Assertions.assertThat(fileSystem.exists(hdfsPath)).as("Path provided: " + hdfsStorePath + " does not exist.").isTrue();
+        Assertions.assertThat(fileSystem.isFile(hdfsPath)).as("Path provided: " + hdfsStorePath + " is not a file.").isTrue();
+
+        fileSystem.delete(hdfsPath, false);
+
+        logger.info("File: {} deleted successfully." + hdfsPath);
     }
 
     public void fileExists(String hdfsStorePath) throws IOException {
@@ -129,5 +131,58 @@ public class HDFSSecUtils {
         FileSystem fileSystem = FileSystem.get(conf);
 
         Assertions.assertThat(fileSystem.exists(hdfsPath)).as("File: " + hdfsStorePath + " exists.").isFalse();
+    }
+
+    public String listFiles(String content, String hdfsDirPath) throws IOException {
+        String files = "";
+        Path path = new Path(hdfsDirPath);
+
+        FileSystem fileSystem = FileSystem.get(conf);
+
+        if ("files".equals(content)) {
+            RemoteIterator<LocatedFileStatus> iterator = fileSystem.listFiles(path, false);
+
+            while (iterator.hasNext()) {
+                files = files + iterator.next().getPath().getName() + "\n";
+            }
+        } else {
+            FileStatus[] status = fileSystem.listStatus(path);
+            for (int i = 0; i < status.length; i++) {
+                if (status[i].isDirectory()) {
+                    files = files + status[i].getPath().getName() + "/\n";
+                } else {
+                    files = files + status[i].getPath().getName() + "\n";
+                }
+            }
+        }
+
+        return files.trim();
+    }
+
+    public void createDirectory(String dir, String permissions) throws IOException {
+        Path path = new Path(dir);
+
+        FileSystem fileSystem = FileSystem.get(conf);
+
+        if (permissions == null) {
+            fileSystem.mkdirs(path, new FsPermission(FsPermission.getDefault()));
+            logger.info("Directory: {} created successfully." + dir);
+        } else {
+            fileSystem.mkdirs(path, new FsPermission(permissions));
+            logger.info("Directory: {} created successfully." + dir);
+        }
+    }
+
+    public void deleteDirectory(String dir, boolean recursive) throws IOException {
+        Path path = new Path(dir);
+
+        FileSystem fileSystem = FileSystem.get(conf);
+
+        Assertions.assertThat(fileSystem.exists(path)).as("Path provided: " + dir + " does not exist.").isTrue();
+
+        Assertions.assertThat(fileSystem.isDirectory(path)).as("Path provided: " + dir + " is not a directory.").isTrue();
+
+        fileSystem.delete(path, recursive);
+        logger.info("Directory: {} deleted successfully." + dir);
     }
 }

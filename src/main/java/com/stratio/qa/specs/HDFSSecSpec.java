@@ -16,6 +16,7 @@
 
 package com.stratio.qa.specs;
 
+import com.stratio.qa.utils.ThreadProperty;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -80,7 +81,7 @@ public class HDFSSecSpec extends BaseGSpec {
 
     @When("^I delete file '(.+?)' from HDFS$")
     public void deleteFile(String hdfsPath) throws IOException {
-        commonspec.getHDFSSecUtils().deleteHDFSDirectory(hdfsPath);
+        commonspec.getHDFSSecUtils().deleteFile(hdfsPath);
     }
 
     @Then("^file '(.+?)' exists in HDFS$")
@@ -93,4 +94,23 @@ public class HDFSSecSpec extends BaseGSpec {
         commonspec.getHDFSSecUtils().fileDoesNotExist(hdfsPath);
     }
 
+    @When("^I list (content|files) in HDFS directory '(.+?)' and save it in environment variable '(.+?)'$")
+    public void listDir(String content, String dirPath, String envVar) throws IOException {
+        String list = commonspec.getHDFSSecUtils().listFiles(content, dirPath);
+        ThreadProperty.set(envVar, list);
+    }
+
+    @Given("^I create HDFS directory '(.+?)'( with permissions '(.+?)')?$")
+    public void createDirectory(String dir, String permissions) throws IOException {
+        commonspec.getHDFSSecUtils().createDirectory(dir, permissions);
+    }
+
+    @Given("^I delete HDFS directory '(.+?)'( recursively)?$")
+    public void deleteDrectory(String dir, String recursively) throws IOException {
+        if (recursively == null) {
+            commonspec.getHDFSSecUtils().deleteDirectory(dir, false);
+        } else {
+            commonspec.getHDFSSecUtils().deleteDirectory(dir, true);
+        }
+    }
 }

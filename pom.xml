@@ -419,16 +419,6 @@
             <version>2.7.2</version>
         </dependency>
         <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-transport</artifactId>
-            <version>4.1.47.Final</version>
-        </dependency>
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-common</artifactId>
-            <version>4.1.47.Final</version>
-        </dependency>
-        <dependency>
             <groupId>sun.jdk</groupId>
             <artifactId>tools</artifactId>
             <version>1.8.0</version>

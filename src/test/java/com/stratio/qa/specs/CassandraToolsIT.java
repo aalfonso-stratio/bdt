@@ -72,9 +72,9 @@ public class CassandraToolsIT extends BaseGSpec {
     @BeforeClass
     public void prepareCassandra() {
         commonspec.getCassandraClient().connect(null);
-        commonspec.getCassandraClient().createKeyspace(this.keySpace);
-        commonspecG.createTableWithData(this.tableName, this.keySpace, this.dataTableCreation);
-        commonspecG.insertData(this.keySpace, this.tableName, dataTable1Insertion);
+//        commonspec.getCassandraClient().createKeyspace(this.keySpace);
+//        commonspecG.createTableWithData(this.tableName, this.keySpace, this.dataTableCreation);
+//        commonspecG.insertData(this.keySpace, this.tableName, dataTable1Insertion);
     }
 
     @Test
