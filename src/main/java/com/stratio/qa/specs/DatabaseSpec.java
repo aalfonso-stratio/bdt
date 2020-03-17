@@ -32,9 +32,11 @@ import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import io.cucumber.datatable.DataTable;
 import org.assertj.core.api.Assertions;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.testng.Assert;
 
+import javax.net.ssl.SSLException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.UnknownHostException;
 import java.sql.*;
@@ -127,12 +129,12 @@ public class DatabaseSpec extends BaseGSpec {
      * @param host        ES host
      * @param nativePort  ES port
      * @param clusterName ES clustername
-     * @throws DBException           exception
-     * @throws UnknownHostException  exception
+     * @param keyStorePath File keystore in format .jks
+     * @param keyStorePassword KeyStore Password
      * @throws NumberFormatException exception
      */
-    @Given("^I connect to Elasticsearch cluster at host '(.+?)'( using native port '(.+?)')?( using cluster name '(.+?)')?$")
-    public void connectToElasticSearch(String host, String nativePort, String clusterName) throws DBException, UnknownHostException, NumberFormatException {
+    @Given("^I connect to Elasticsearch cluster at host '(.+?)'( using native port '(.+?)')?( with trustStorePath '(.+?)')?( and trustStorePassword '(.+?)')?( with keyStorePath '(.+?)')?( and keyStorePassword '(.+?)')?( using cluster name '(.+?)')?$")
+    public void connectToElasticSearch(String host, String nativePort, String trustStorePath, String trustStorePassword, String keyStorePath, String keyStorePassword, String clusterName) throws NumberFormatException, SSLException {
         LinkedHashMap<String, Object> settings_map = new LinkedHashMap<String, Object>();
         if (clusterName != null) {
             settings_map.put("cluster.name", clusterName);
@@ -146,7 +148,12 @@ public class DatabaseSpec extends BaseGSpec {
             commonspec.getElasticSearchClient().setNativePort(ES_DEFAULT_NATIVE_PORT);
         }
         commonspec.getElasticSearchClient().setHost(host);
-        commonspec.getElasticSearchClient().connect();
+
+        if (trustStorePath != null && trustStorePassword != null && keyStorePath != null  && keyStorePassword != null) {
+            commonspec.getElasticSearchClient().connect(keyStorePath, keyStorePassword, trustStorePath, trustStorePassword);
+        } else {
+            commonspec.getElasticSearchClient().connect();
+        }
     }
 
     /**
@@ -462,8 +469,8 @@ public class DatabaseSpec extends BaseGSpec {
             commonspec.setResultsType("elasticsearch");
             commonspec.setElasticsearchResults(
                     commonspec.getElasticSearchClient()
-                            .searchSimpleFilterElasticsearchQuery(indexName, mappingName, columnName,
-                                    value, filterType)
+                            .searchSimpleFilterElasticsearchQuery(indexName, columnName, value, filterType)
+
             );
         } catch (Exception e) {
             commonspec.getLogger().debug("Exception captured");
@@ -535,29 +542,112 @@ public class DatabaseSpec extends BaseGSpec {
      *
      * @param index
      */
-    @When("^I create an elasticsearch index named '(.+?)'( removing existing index if exist)?$")
-    public void createElasticsearchIndex(String index, String removeIndex) {
+    @When("^I create an elasticsearch index named '(.+?)'( with '(.*?)' shards)?( with '(.*?)' replicas)?( removing existing index if exist)?$")
+    public void createElasticsearchIndex(String index, String shards, String replicas, String removeIndex) {
+        Settings.Builder settings = Settings.builder();
+
+        if (shards != null) {
+            settings.put("index.number_of_shards", shards);
+        }
+        if (replicas != null) {
+            settings.put("index.number_of_replicas", replicas);
+        }
         if (removeIndex != null && commonspec.getElasticSearchClient().indexExists(index)) {
             commonspec.getElasticSearchClient().dropSingleIndex(index);
         }
-        commonspec.getElasticSearchClient().createSingleIndex(index);
+        commonspec.getElasticSearchClient().createSingleIndex(index, settings);
+    }
+
+
+    /**
+     * Check number of shards from elasticsearch index.
+     *
+     * @param index
+     * @param numberOfShards
+     */
+    @Then("^The number of shards from index '(.+?)' is '(.+?)'$")
+    public void checkNumberOfShardsFromIndex(String index, String numberOfShards) {
+        assertThat(commonspec.getElasticSearchClient().getNumberOfShardsFromIndex(index)).isEqualTo(numberOfShards);
     }
 
     /**
-     * Index a document within a mapping type.
+     * Check number of replicas from elasticsearch index.
      *
+     * @param index
+     * @param numberOfReplicas
+     */
+    @Then("^The number of replicas from index '(.+?)' is '(.+?)'$")
+    public void checkNumberOfReplicasFromIndex(String index, String numberOfReplicas) {
+        assertThat(commonspec.getElasticSearchClient().getNumberOfReplicasFromIndex(index)).isEqualTo(numberOfReplicas);
+    }
+
+
+    /**
+     * Obtain number of shards from elasticsearch index.
+     *
+     * @param index
+     */
+    @Then("^I obtain the number of shards from index '(.+?)'$")
+    public void obtainNumberOfShardsFromIndex(String index) {
+        commonspec.getElasticSearchClient().getNumberOfShardsFromIndex(index);
+    }
+
+    /**
+     * Check number of shards from elasticsearch index.
+     *
+     * @param index
+     */
+    @Then("^I obtain the number of replicas from index '(.+?)'$")
+    public void obtainNumberOfReplicasFromIndex(String index) {
+        commonspec.getElasticSearchClient().getNumberOfReplicasFromIndex(index);
+    }
+
+    /**
+     * Index a document.
+     *
+     * @param baseData
      * @param indexName
-     * @param mappingName
-     * @param key
-     * @param value
      * @throws Exception
      */
-    @When("^I index a document in the index named '(.+?)' using the mapping named '(.+?)' with key '(.+?)' and value '(.+?)'$")
-    public void indexElasticsearchDocument(String indexName, String mappingName, String key, String value) throws Exception {
-        ArrayList<XContentBuilder> mappingsource = new ArrayList<XContentBuilder>();
-        XContentBuilder builder = jsonBuilder().startObject().field(key, value).endObject();
-        mappingsource.add(builder);
-        commonspec.getElasticSearchClient().createMapping(indexName, mappingName, mappingsource);
+    @When("^I index a document '(.+?)' with id '(.+?)' in the index named '(.+?)'$")
+    public void indexElasticsearchDocument(String baseData, String id, String indexName) throws Exception {
+        // Retrieve data
+        String retrieveData = commonspec.retrieveData(baseData, "json");
+        commonspec.getElasticSearchClient().indexDocument(indexName, id, retrieveData);
+    }
+
+    /**
+     * Check that the ElasticSearch index exists.
+     *
+     * @param documentId
+     * @param indexName
+     */
+    @Then("^An elasticsearch document id '(.+?)' exists in an index named '(.+?)'")
+    public void elasticSearchDocumentExist(String documentId, String indexName) {
+        assert (commonspec.getElasticSearchClient().existsDocument(indexName, documentId)) : "There is no document in these index";
+    }
+
+    /**
+     * Check that the ElasticSearch document not exists.
+     *
+     * @param documentId
+     * @param indexName
+     */
+    @Then("^An elasticsearch document id '(.+?)' does not exist in an index named '(.+?)'")
+    public void elasticSearchDocumentNotExist(String documentId, String indexName) {
+        assert (!commonspec.getElasticSearchClient().existsDocument(indexName, documentId)) : "There is a document in these index";
+    }
+
+    /**
+     * Delete a document.
+     *
+     * @param documentId
+     * @param indexName
+     * @throws Exception
+     */
+    @Then("^I delete an elasticsearch document with id '(.+?)' in the index named '(.+?)'$")
+    public void elasticSearchDocumentDelete(String documentId, String indexName) {
+        commonspec.getElasticSearchClient().deleteDocument(indexName, documentId);
     }
 
     /*
@@ -901,11 +991,10 @@ public class DatabaseSpec extends BaseGSpec {
      * @param columnName
      * @param columnValue
      */
-    @Then("^The Elasticsearch index named '(.+?)' and mapping '(.+?)' contains a column named '(.+?)' with the value '(.+?)'$")
-    public void elasticSearchIndexContainsDocument(String indexName, String mappingName, String columnName, String columnValue) throws Exception {
+    @Then("^The Elasticsearch index named '(.+?)' contains a column named '(.+?)' with the value '(.+?)'$")
+    public void elasticSearchIndexContainsDocument(String indexName, String columnName, String columnValue) throws Exception {
         Assertions.assertThat((commonspec.getElasticSearchClient().searchSimpleFilterElasticsearchQuery(
                 indexName,
-                mappingName,
                 columnName,
                 columnValue,
                 "equals"

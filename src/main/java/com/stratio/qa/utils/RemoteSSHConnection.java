@@ -436,6 +436,30 @@ public class RemoteSSHConnection {
         return b;
     }
 
+    public void openSshTunnel(String host, String user, String pemFilePath, String tunnelHostIp, String tunnelHostPort, String tunnelLocalPort) throws JSchException {
+
+        final String STRICT_HOST_KEY_CHECKING_KEY = "StrictHostKeyChecking";
+        final String STRICT_HOST_KEY_CHECKING_VALUE = "no";
+
+        // Create JSch object and set pem key
+        JSch jsch = new JSch();
+        JSch.setConfig(STRICT_HOST_KEY_CHECKING_KEY, STRICT_HOST_KEY_CHECKING_VALUE);
+        jsch.addIdentity(pemFilePath);
+
+        // Open session
+        Session session = jsch.getSession(user, host, 22);
+        session.connect();
+        logger.info("Connected to {}@{} with pemFile: {}", user, host, pemFilePath);
+
+        // Set port forwarding hop
+        logger.info("Attempting to start port forwarding {}:{}:{}", tunnelLocalPort, tunnelHostIp, tunnelHostPort);
+        int assignedPort = session.setPortForwardingL(Integer.valueOf(tunnelLocalPort), tunnelHostIp, Integer.valueOf(tunnelHostPort));
+        logger.info("Completed port forwarding in local port {}", assignedPort);
+
+        this.setSession(session);
+
+    }
+
     private static class MyUserInfo implements UserInfo {
         public String getPassword() {
             return "";

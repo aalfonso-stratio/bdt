@@ -907,6 +907,9 @@ public class DcosSpec extends BaseGSpec {
         String varAccessPoint = "EOS_ACCESS_POINT";
         String varRealm = "EOS_REALM";
         String varAddressPool = "ADDRESS_POOL";
+        String varDockerRegistry = "DOCKER_REGISTRY";
+        String varExternalDockerRegistry = "EXTERNAL_DOCKER_REGISTRY";
+        String varArtifactRepository = "ARTIFACT_REPOSITORY";
 
         // LDAP values
         String varLDAPurl = "LDAP_URL";
@@ -997,6 +1000,9 @@ public class DcosSpec extends BaseGSpec {
             obtainJSONInfo(descriptor, "LDAP_ADMIN_GROUP", varLDAPadminGroup);
             obtainJSONInfo(descriptor, "PUBLIC_NODE", varPublicNode);
             obtainJSONInfo(descriptor, "ADDRESS_POOL", varAddressPool);
+            obtainJSONInfo(descriptor, "DOCKER_REGISTRY", varDockerRegistry);
+            obtainJSONInfo(descriptor, "EXTERNAL_DOCKER_REGISTRY", varExternalDockerRegistry);
+            obtainJSONInfo(descriptor, "ARTIFACT_REPOSITORY", varArtifactRepository);
 
             obtainJSONInfo(response, "ROOT_TOKEN", varVaultToken);
         } else {
@@ -1045,7 +1051,7 @@ public class DcosSpec extends BaseGSpec {
             case "INTERNAL_DOMAIN":
                 jqExpression = "$.internalDomain";
                 break;
-            case "ARTIFACT_REPO":
+            case "ARTIFACT_REPOSITORY":
                 jqExpression = "$.artifactRepository";
                 break;
             case "DOCKER_REGISTRY":
