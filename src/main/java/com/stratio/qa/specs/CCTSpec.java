@@ -538,11 +538,11 @@ public class CCTSpec extends BaseGSpec {
     /**
      * Get service schema
      *
-     * @param level     level of schema
-     * @param service   name of service
-     * @param model     model of service
-     * @param version   version of service
-     * @param envVar    environment variable to save response
+     * @param level     schema level
+     * @param service   service name
+     * @param model     service model
+     * @param version   service version
+     * @param envVar    environment variable to save response in
      * @param fileName  file name where response is saved
      * @throws Exception
      */
@@ -558,7 +558,7 @@ public class CCTSpec extends BaseGSpec {
         commonspec.setResponse("GET", response.get());
 
         if (commonspec.getResponse().getStatusCode() != 200) {
-            throw new Exception("Request failed to endpoint: " + endPoint + " with status code: " + commonspec.getResponse().getStatusCode());
+            throw new Exception("Request to endpoint: " + endPoint + " failed with status code: " + commonspec.getResponse().getStatusCode());
         }
 
         String json = commonspec.getResponse().getResponse();
@@ -589,4 +589,87 @@ public class CCTSpec extends BaseGSpec {
         Assertions.assertThat(new File(absolutePathFile).isFile());
     }
 
+    /**
+     * Install service
+     * @param service   service name
+     * @param model     service model
+     * @param version   service version
+     * @param tenant    tenant where to install service in
+     * @param jsonFile  marathon json to deploy
+     * @throws Exception
+     */
+    @Given("^I install service '(.+?)' with model '(.+?)' and version '(.+?)' in tenant '(.+?)' using json '(.+?)'$")
+    public void installServiceFromMarathonJson(String service, String model, String version, String tenant, String jsonFile) throws Exception {
+        String endPoint = "/service/" + ThreadProperty.get("deploy_api_id") + "/deploy/" + service + "/" + model + "/" + version + "/schema?tenantId=" + tenant;
+        String data = this.commonspec.retrieveData(jsonFile, "json");
+
+        Future<Response> response = commonspec.generateRequest("POST", true, null, null, endPoint, data, "json");
+        commonspec.setResponse("POST", response.get());
+
+        if (commonspec.getResponse().getStatusCode() != 202) {
+            throw new Exception("Request to endpoint: " + endPoint + " failed with status code: " + commonspec.getResponse().getStatusCode());
+        }
+
+        // Check Application in API
+        RestSpec restSpec = new RestSpec(commonspec);
+
+        String endPointStatus;
+        if (ThreadProperty.get("cct-marathon-services_id") == null) {
+            endPointStatus = "/service/" + ThreadProperty.get("deploy_api_id") + "/deploy/status/all";
+        } else {
+            endPointStatus = "/service/" + ThreadProperty.get("cct-marathon-services_id") + "/v1/services?tenant=" + tenant;
+        }
+
+        String serviceName = "/" + service;
+
+        if (!"NONE".equals(tenant)) {
+            serviceName = "/" + tenant + "/" + tenant + "-" + service;
+        }
+        restSpec.sendRequestTimeout(200, 20, "GET", endPointStatus, null, serviceName);
+    }
+
+    /**
+     * Uninstall service from tenant
+     *
+     * @param service   service name
+     * @param tenant    tenant where service is installed
+     * @throws Exception
+     */
+    @Given("^I uninstall service '(.+?)' from tenant '(.+?)'$")
+    public void uninstallService(String service, String tenant) throws Exception {
+        String tenant_prefix = "";
+
+        if (!"NONE".equals(tenant)) {
+            tenant_prefix = tenant + "/" + tenant + "-";
+        }
+
+        String endPoint = "/service/" + ThreadProperty.get("deploy_api_id") + "/deploy/uninstall?app=" + tenant_prefix + service;
+
+        Future<Response> response = commonspec.generateRequest("DELETE", true, null, null, endPoint, "", "json");
+        commonspec.setResponse("DELETE", response.get());
+
+        if (commonspec.getResponse().getStatusCode() != 202 && commonspec.getResponse().getStatusCode() != 200) {
+            throw new Exception("Request to endpoint: " + endPoint + " failed with status code: " + commonspec.getResponse().getStatusCode());
+        }
+
+        // Check service has disappeared
+        RestSpec restSpec = new RestSpec(commonspec);
+
+        String endPointStatus;
+        if (ThreadProperty.get("cct-marathon-services_id") == null) {
+            endPointStatus = "/service/" + ThreadProperty.get("deploy_api_id") + "/deploy/status/all";
+        } else {
+            endPointStatus = "/service/" + ThreadProperty.get("cct-marathon-services_id") + "/v1/services?tenant=" + tenant;
+        }
+
+        String serviceName = "/" + service;
+        if (!"NONE".equals(tenant)) {
+            serviceName = "/" + tenant + "/" + tenant + "-" + service;
+        }
+        restSpec.sendRequestTimeout(200, 20, "GET", endPointStatus, "does not", serviceName);
+
+        // Check all resources have been freed
+        DcosSpec dcosSpec = new DcosSpec(commonspec);
+        dcosSpec.checkResources(serviceName);
+    }
 }

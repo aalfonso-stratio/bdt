@@ -5,6 +5,8 @@ Only listing significant user-visible, not internal code cleanups and minor bug 
 ## 0.15.0 (upcoming)
 
 * [QATM-3183] Fix @dcos annotation if some container is null
+* [PIT-457] Step to make CCT installations independent from CCT version
+* [PIT-458] Step to make CCT uninstallations independent from CCT version
 
 ## 0.14.0 (March 09, 2020)
 
