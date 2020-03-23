@@ -30,7 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 // cassandra table creation and data insertion test
 // with equalsColumns comparison
-public class CassandraToolsIT extends BaseGSpec {
+public class CassandraTools extends BaseGSpec {
     public static final int VALUE_SUBSTRING = 3;
     DatabaseSpec commonspecG;
     //for table creation
@@ -63,7 +63,7 @@ public class CassandraToolsIT extends BaseGSpec {
     String tableName = "testcstring";
     String keySpace = "stratio_decision";
 
-    public CassandraToolsIT() {
+    public CassandraTools() {
         ThreadProperty.set("class", this.getClass().getCanonicalName());
         this.commonspec = new CommonG();
         commonspecG = new DatabaseSpec(this.commonspec);
