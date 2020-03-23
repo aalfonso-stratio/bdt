@@ -35,6 +35,7 @@ import org.assertj.core.api.Assertions;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.testng.Assert;
+import org.testng.asserts.Assertion;
 
 import javax.net.ssl.SSLException;
 import java.lang.reflect.InvocationTargetException;
@@ -1134,6 +1135,7 @@ public class DatabaseSpec extends BaseGSpec {
         //from Cucumber Datatable, the pattern to verify
         List<String> tablePattern = new ArrayList<String>();
         tablePattern = dataTable.asList(String.class);
+
         //the result from select
         List<String> sqlTable = new ArrayList<String>();
 
@@ -1356,5 +1358,152 @@ public class DatabaseSpec extends BaseGSpec {
                 fail("Error in table comparison: comparing table. Row " + row + " not found in query response.");
             }
         }
+    }
+
+    @Then("^I wait for '(\\d+)' seconds, checking every '(\\d+)' seconds for users existance:$")
+    public void waitForUsersExistance(int wait, int period, DataTable users) throws Exception {
+        String prefixQuery = "SELECT usename FROM pg_catalog.pg_user WHERE usename IN (";
+        String suffixQuery = ") ORDER BY usename;";
+        String usersQuery = "";
+        boolean finished = false;
+
+        List<String> expectedResult = new ArrayList<>();
+        expectedResult.add("usename");
+        for (int i = 0; i < users.cells().size(); i++) {
+            String user = users.cells().get(i).get(0);
+            if (i == 0) {
+                usersQuery = usersQuery + "'" + user + "'";
+            } else {
+                usersQuery = usersQuery + ",'" + user + "'";
+            }
+            expectedResult.add(user);
+        }
+
+        String query = prefixQuery + usersQuery + suffixQuery;
+
+        for (int i = 0; (i <= wait); i += period) {
+
+            this.selectData(query);
+
+            try {
+                compareList(expectedResult);
+                finished = true;
+                commonspec.getLogger().debug("Users found in database.");
+                break;
+            } catch (AssertionError | Exception e) {
+                commonspec.getLogger().debug("Users not in database yet. Sleeping for " + period + " seconds.");
+                Thread.sleep(period * 1000);
+            }
+        }
+
+        if (!finished) {
+            Assert.fail("Users are not available in database after specified timeout.");
+        }
+    }
+
+    @Then("^I wait for '(\\d+)' seconds, checking every '(\\d+)' seconds for groups existance:$")
+    public void waitForGroupsExistance(int wait, int period, DataTable groups) throws Exception {
+        String prefixQuery = "SELECT groname FROM pg_catalog.pg_group WHERE groname IN (";
+        String suffixQuery = ") ORDER BY groname;";
+        String groupsQuery = "";
+        boolean finished = false;
+
+        List<String> expectedResult = new ArrayList<>();
+        expectedResult.add("groname");
+        for (int i = 0; i < groups.cells().size(); i++) {
+            String group = groups.cells().get(i).get(0);
+            if (i == 0) {
+                groupsQuery = groupsQuery + "'g_" + group + "'";
+            } else {
+                groupsQuery = groupsQuery + ",'g_" + group + "'";
+            }
+            expectedResult.add("g_" + group);
+        }
+
+        String query = prefixQuery + groupsQuery + suffixQuery;
+
+        for (int i = 0; (i <= wait); i += period) {
+
+            this.selectData(query);
+
+            try {
+                compareList(expectedResult);
+                finished = true;
+                commonspec.getLogger().debug("Groups found in database.");
+                break;
+            } catch (AssertionError | Exception e) {
+                commonspec.getLogger().debug("Groups not in database yet. Sleeping for " + period + " seconds.");
+                Thread.sleep(period * 1000);
+            }
+        }
+
+        if (!finished) {
+            Assert.fail("Groups are not available in database after specified timeout.");
+        }
+    }
+
+    @Then("^I wait for '(\\d+)' seconds, checking every '(\\d+)' seconds in group '(.*?)' for users existance:$")
+    public void waitUsersInGroupExistance(int wait, int period, String group, DataTable users) throws Exception {
+        String prefixQuery = "SELECT group_.groname group_name, array_to_string(array_agg(member_.rolname::text ORDER BY member_.rolname), ',') AS members FROM pg_group group_ LEFT JOIN pg_auth_members am ON am.roleid=group_.grosysid LEFT JOIN pg_roles member_ ON member_.oid=am.member WHERE group_.groname='g_";
+        String suffixQuery = "' GROUP BY group_.grosysid , group_.groname ORDER BY group_.groname;";
+        String query = prefixQuery + group + suffixQuery;
+
+        String usersList = "";
+        for (int i = 0; i < users.cells().size(); i++) {
+            String user = users.cells().get(i).get(0);
+            if (i == 0) {
+                usersList = usersList + user;
+            } else {
+                usersList = usersList + "," + user;
+            }
+        }
+
+        boolean finished = false;
+
+//        List<String> expectedResult = new ArrayList<>();
+//        expectedResult.add("group_name", "members");
+//        expectedResult.add(group, usersList);
+
+        List<List<String>> rawData = Arrays.asList(Arrays.asList("group_name", "members"), Arrays.asList("g_" + group, usersList));
+//        DataTable expectedResult = DataTable.create(rawData);
+        List<String> expectedResult = new ArrayList<>();
+        rawData.forEach(e -> expectedResult.addAll(e));
+
+        for (int i = 0; (i <= wait); i += period) {
+
+            this.selectData(query);
+
+            try {
+                compareList(expectedResult);
+                finished = true;
+                commonspec.getLogger().debug("Users belonging to group in database found.");
+                break;
+            } catch (AssertionError | Exception e) {
+                commonspec.getLogger().debug("Users do not belong to group in database yet. Sleeping for " + period + " seconds.");
+                Thread.sleep(period * 1000);
+            }
+        }
+
+        if (!finished) {
+            Assert.fail("Users do not belong to group in database after specified timeout.");
+        }
+    }
+
+
+    public void compareList(List<String> tablePattern) throws Exception {
+
+        List<String> sqlTable = new ArrayList<String>();
+
+        //the result is taken from previous step
+        for (int i = 0; ThreadProperty.get("queryresponse" + i) != null; i++) {
+            String ip_value = ThreadProperty.get("queryresponse" + i);
+            sqlTable.add(i, ip_value);
+        }
+
+        for (int i = 0; ThreadProperty.get("queryresponse" + i) != null; i++) {
+            ThreadProperty.remove("queryresponse" + i);
+        }
+
+        assertThat(tablePattern).as("response is not equal to the expected").isEqualTo(sqlTable);
     }
 }
