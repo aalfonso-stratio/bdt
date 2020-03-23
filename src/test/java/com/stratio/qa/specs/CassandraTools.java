@@ -87,8 +87,7 @@ public class CassandraTools extends BaseGSpec {
         // USE of Keyspace
         commonspec.getLogger().debug("Verifying if the keyspace {} exists", this.keySpace);
         commonspec.getCassandraClient().useKeyspace(this.keySpace);
-        // Obtain the types and column names of the datatable
-        // to return in a hashmap,
+        // Obtain the types and column names of the datatable to return in a hashmap,
         // dataTableColumns uses to simulate the behavior
         // of data reception as  "col1-varchar", "col2-int"
         Map<String, String> dataTableColumns = extractColumnNamesAndTypes(this.dataTableComparison.cells().get(0));
