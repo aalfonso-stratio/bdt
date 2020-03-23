@@ -84,7 +84,6 @@ public class CassandraTools extends BaseGSpec {
 
     @Test
     public void test_assertValuesOfTable_success() {
-
         // USE of Keyspace
         commonspec.getLogger().debug("Verifying if the keyspace {} exists", this.keySpace);
         commonspec.getCassandraClient().useKeyspace(this.keySpace);
