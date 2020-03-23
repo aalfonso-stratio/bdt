@@ -90,7 +90,7 @@ public class CassandraTools extends BaseGSpec {
         // Obtain the types and column names of the datatable
         // to return in a hashmap,
         // dataTableColumns uses to simulate the behavior
-        //of data reception as  "col1-varchar", "col2-int"
+        // of data reception as  "col1-varchar", "col2-int"
         Map<String, String> dataTableColumns = extractColumnNamesAndTypes(this.dataTableComparison.cells().get(0));
         // check the table to have columns
         String query = "SELECT * FROM " + this.tableName + " LIMIT 1;";
