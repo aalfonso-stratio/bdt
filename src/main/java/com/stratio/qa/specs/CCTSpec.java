@@ -594,12 +594,13 @@ public class CCTSpec extends BaseGSpec {
      * @param service   service name
      * @param model     service model
      * @param version   service version
+     * @param name      service instance name
      * @param tenant    tenant where to install service in
      * @param jsonFile  marathon json to deploy
      * @throws Exception
      */
-    @Given("^I install service '(.+?)' with model '(.+?)' and version '(.+?)' in tenant '(.+?)' using json '(.+?)'$")
-    public void installServiceFromMarathonJson(String service, String model, String version, String tenant, String jsonFile) throws Exception {
+    @Given("^I install service '(.+?)' with model '(.+?)' and version '(.+?)' and instance name '(.+?)' in tenant '(.+?)' using json '(.+?)'$")
+    public void installServiceFromMarathonJson(String service, String model, String version, String name, String tenant, String jsonFile) throws Exception {
         String endPoint = "/service/" + ThreadProperty.get("deploy_api_id") + "/deploy/" + service + "/" + model + "/" + version + "/schema?tenantId=" + tenant;
         String data = this.commonspec.retrieveData(jsonFile, "json");
 
@@ -620,11 +621,12 @@ public class CCTSpec extends BaseGSpec {
             endPointStatus = "/service/" + ThreadProperty.get("cct-marathon-services_id") + "/v1/services?tenant=" + tenant;
         }
 
-        String serviceName = "/" + service;
+        String serviceName = "/" + name;
 
         if (!"NONE".equals(tenant)) {
-            serviceName = "/" + tenant + "/" + tenant + "-" + service;
+            serviceName = "/" + tenant + "/" + tenant + "-" + name;
         }
+
         restSpec.sendRequestTimeout(200, 20, "GET", endPointStatus, null, serviceName);
     }
 

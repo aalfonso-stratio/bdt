@@ -44,10 +44,14 @@ public class VaultSpec extends BaseGSpec {
      *
      * @param value specific certificate's entry
      * @param path certificate's path in Vault
+     * @param inPeople [optional] look into /people in Vault (/userland by default)
      * @throws Exception
      */
-    @Given("^I get certificate '(.+?)' from path '(.+?)' in PEM/KEY format$")
-    public void getCertificate(String value, String path) throws Exception {
+    @Given("^I get certificate '(.+?)' from path '(.+?)' in PEM/KEY format( in /people)?$")
+    public void getCertificate(String value, String path, String inPeople) throws Exception {
+        if (inPeople != null) {
+            commonspec.getVaultUtils().setBasePathToPeople();
+        }
         commonspec.getVaultUtils().getPEMKEYCertificate(path, value);
     }
 
@@ -58,10 +62,14 @@ public class VaultSpec extends BaseGSpec {
      *
      * @param value specific certificate's entry
      * @param path certificate's path in Vault
+     * @param inPeople [optional] look into /people in Vault (/userland by default)
      * @throws Exception
      */
-    @Given("^I get certificate '(.+?)' from path '(.+?)' in PEM format$")
-    public void getPubCertificate(String value, String path) throws Exception {
+    @Given("^I get certificate '(.+?)' from path '(.+?)' in PEM format( in /people)?$")
+    public void getPubCertificate(String value, String path, String inPeople) throws Exception {
+        if (inPeople != null) {
+            commonspec.getVaultUtils().setBasePathToPeople();
+        }
         commonspec.getVaultUtils().getPEMCertificate(path, value);
     }
 
@@ -72,10 +80,14 @@ public class VaultSpec extends BaseGSpec {
      *
      * @param value specific certificate's entry
      * @param path certificate's path in Vault
+     * @param inPeople [optional] look into /people in Vault (/userland by default)
      * @throws Exception
      */
-    @Given("^I get certificate '(.+?)' from path '(.+?)' in KEY format$")
-    public void getKeyCertificate(String value, String path) throws Exception {
+    @Given("^I get certificate '(.+?)' from path '(.+?)' in KEY format( in /people)?$")
+    public void getKeyCertificate(String value, String path, String inPeople) throws Exception {
+        if (inPeople != null) {
+            commonspec.getVaultUtils().setBasePathToPeople();
+        }
         commonspec.getVaultUtils().getKEYCertificate(path, value);
     }
 
@@ -99,10 +111,14 @@ public class VaultSpec extends BaseGSpec {
      * @param value specific certificate's entry
      * @param path certificate's path in Vault
      * @param envVar environment variable to save the P12 password
+     * @param inPeople [optional] look into /people in Vault (/userland by default)
      * @throws Exception
      */
-    @Given("^I get certificate '(.+?)' from path '(.+?)' in P12 format and save the password in environment variable '(.+?)'$")
-    public void getP12Certificate(String value, String path, String envVar) throws Exception {
+    @Given("^I get certificate '(.+?)' from path '(.+?)' in P12 format and save the password in environment variable '(.+?)'( in /people)?$")
+    public void getP12Certificate(String value, String path, String envVar, String inPeople) throws Exception {
+        if (inPeople != null) {
+            commonspec.getVaultUtils().setBasePathToPeople();
+        }
         commonspec.getVaultUtils().getPKCS12Certificate(path, value, envVar);
     }
 
@@ -114,10 +130,14 @@ public class VaultSpec extends BaseGSpec {
      * @param value specific certificate's entry
      * @param path certificate's path in Vault
      * @param envVar environment variable to save the P12 password
+     * @param inPeople [optional] look into /people in Vault (/userland by default)
      * @throws Exception
      */
-    @Given("^I get certificate '(.+?)' from path '(.+?)' in JKS and save the password in environment variable '(.+?)'$")
-    public void getJKSCertificate(String value, String path, String envVar) throws Exception {
+    @Given("^I get certificate '(.+?)' from path '(.+?)' in JKS and save the password in environment variable '(.+?)'( in /people)?$")
+    public void getJKSCertificate(String value, String path, String envVar, String inPeople) throws Exception {
+        if (inPeople != null) {
+            commonspec.getVaultUtils().setBasePathToPeople();
+        }
         commonspec.getVaultUtils().getKeystore(path, value, envVar);
     }
 
@@ -128,10 +148,14 @@ public class VaultSpec extends BaseGSpec {
      *
      * @param value specific certificate's entry
      * @param path certificate's path in Vault
+     * @param inPeople [optional] look into /people in Vault (/userland by default)
      * @throws Exception
      */
-    @Given("^I get certificate '(.+?)' from path '(.+?)' in PK8 format$")
-    public void getPK8Certificate(String value, String path) throws Exception {
+    @Given("^I get certificate '(.+?)' from path '(.+?)' in PK8 format( in /people)?$")
+    public void getPK8Certificate(String value, String path, String inPeople) throws Exception {
+        if (inPeople != null) {
+            commonspec.getVaultUtils().setBasePathToPeople();
+        }
         commonspec.getVaultUtils().getPKCS8Certificate(path, value);
     }
 
@@ -154,10 +178,14 @@ public class VaultSpec extends BaseGSpec {
      *
      * @param value specific keytab's entry
      * @param path Keytab's path in Vault
+     * @param inPeople [optional] look into /people in Vault (/userland by default)
      * @throws Exception
      */
-    @Given("^I get keytab '(.+?)' from path '(.+?)'$")
-    public void getKeytab(String value, String path) throws Exception {
+    @Given("^I get keytab '(.+?)' from path '(.+?)'( in /people)?$")
+    public void getKeytab(String value, String path, String inPeople) throws Exception {
+        if (inPeople != null) {
+            commonspec.getVaultUtils().setBasePathToPeople();
+        }
         commonspec.getVaultUtils().getKeytabKrb(path, value);
     }
 
@@ -167,10 +195,14 @@ public class VaultSpec extends BaseGSpec {
      * @param value specific principal's entry
      * @param path Keytab's path in Vault
      * @param envVar environment variable to save the principal
+     * @param inPeople [optional] look into /people in Vault (/userland by default)
      * @throws Exception
      */
-    @Given("^I get principal '(.+?)' from path '(.+?)' and save it in environment variable '(.+?)'$")
-    public void getPrincipal(String value, String path, String envVar) throws Exception {
+    @Given("^I get principal '(.+?)' from path '(.+?)' and save it in environment variable '(.+?)'( in /people)?$")
+    public void getPrincipal(String value, String path, String envVar, String inPeople) throws Exception {
+        if (inPeople != null) {
+            commonspec.getVaultUtils().setBasePathToPeople();
+        }
         commonspec.getVaultUtils().getPrincipalKrb(path, value, envVar);
     }
 
@@ -178,10 +210,15 @@ public class VaultSpec extends BaseGSpec {
      * Get 'pass' from specified password. The ouput is the 'pass' saved in environmental variable.
      *
      * @param path Password's path in Vault
+     * @param envVar environment variable to save the password
+     * @param inPeople [optional] look into /people in Vault (/userland by default)
      * @throws Exception
      */
-    @Given("^I get password from path '(.+?)' and save it in environment variable '(.+?)'$")
-    public void getPwd(String path, String envVar) throws Exception {
+    @Given("^I get password from path '(.+?)' and save it in environment variable '(.+?)'( in /people)?$")
+    public void getPwd(String path, String envVar, String inPeople) throws Exception {
+        if (inPeople != null) {
+            commonspec.getVaultUtils().setBasePathToPeople();
+        }
         commonspec.getVaultUtils().getPass(path, envVar);
     }
 
@@ -189,10 +226,15 @@ public class VaultSpec extends BaseGSpec {
      * Get 'user' from specified password. The ouput is the 'user' saved in environmental variable.
      *
      * @param path Password's path in Vault
+     * @param envVar environment variable to save the user
+     * @param inPeople [optional] look into /people in Vault (/userland by default)
      * @throws Exception
      */
-    @Given("^I get user from path '(.+?)' and save it in environment variable '(.+?)'$")
-    public void getUsr(String path, String envVar) throws Exception {
+    @Given("^I get user from path '(.+?)' and save it in environment variable '(.+?)'( in /people)?$")
+    public void getUsr(String path, String envVar, String inPeople) throws Exception {
+        if (inPeople != null) {
+            commonspec.getVaultUtils().setBasePathToPeople();
+        }
         commonspec.getVaultUtils().getUser(path, envVar);
     }
 

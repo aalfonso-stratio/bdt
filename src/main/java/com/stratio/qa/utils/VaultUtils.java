@@ -36,6 +36,10 @@ public class VaultUtils {
 
     private String userlandBasePath = "/userland";
 
+    private String peopleBasePath = "/people";
+
+    private String basePath;
+
     private String caBasePath = "/ca-trust";
 
     private String certificatesPath = "/certificates/";
@@ -53,6 +57,7 @@ public class VaultUtils {
     private String certKeyReplacements = "sed 's/-----BEGIN RSA PRIVATE KEY-----/-----BEGIN RSA PRIVATE KEY-----\\n/g' | sed 's/-----END RSA PRIVATE KEY-----/\\n-----END RSA PRIVATE KEY-----/g'";
 
     public VaultUtils() {
+        this.basePath = this.userlandBasePath;
         this.host = System.getProperty("EOS_VAULT_HOST") != null ? System.getProperty("EOS_VAULT_HOST") : ThreadProperty.get("EOS_VAULT_HOST") != null ? ThreadProperty.get("EOS_VAULT_HOST") : "";
         this.token = System.getProperty("VAULT_TOKEN") != null ? System.getProperty("VAULT_TOKEN") : ThreadProperty.get("VAULT_TOKEN") != null ? ThreadProperty.get("VAULT_TOKEN") : "";
         this.protocol = System.getProperty("VAULT_PROTOCOL") != null ? "http://" : "https://";
@@ -60,6 +65,10 @@ public class VaultUtils {
 
     public void setProtocol(String protocol) {
         this.protocol = protocol;
+    }
+
+    public void setBasePathToPeople() {
+        this.basePath = this.peopleBasePath;
     }
 
     private void getDataFromPath(String dataPath, String filter) throws Exception {
@@ -70,7 +79,7 @@ public class VaultUtils {
     }
 
     private void getPublicCertificate(String certPath, String certValue) throws Exception {
-        String certificatePath = userlandBasePath + certificatesPath + certPath;
+        String certificatePath = basePath + certificatesPath + certPath;
         String filter = "jq -r '.data.\"" + certValue + "_crt\"'";
         this.getDataFromPath(certificatePath, filter);
 
@@ -81,7 +90,7 @@ public class VaultUtils {
     }
 
     private void getPrivateCertificate(String certPath, String certValue) throws Exception {
-        String certificatePath = userlandBasePath + certificatesPath + certPath;
+        String certificatePath = basePath + certificatesPath + certPath;
         String filter = "jq -r '.data.\"" + certValue + "_key\"'";
         this.getDataFromPath(certificatePath, filter);
 
@@ -183,7 +192,7 @@ public class VaultUtils {
     }
 
     private void getKeytabKerberos(String krbPath, String krbValue) throws Exception {
-        String keytabPath = userlandBasePath + kerberosPath + krbPath;
+        String keytabPath = basePath + kerberosPath + krbPath;
         String filter = "jq -r '.data.\"" + krbValue + "_keytab\"'";
         this.getDataFromPath(keytabPath, filter);
 
@@ -194,7 +203,7 @@ public class VaultUtils {
     }
 
     private String getPrincipalKerberos(String krbPath, String krbValue) throws Exception {
-        String principalPath = userlandBasePath + kerberosPath + krbPath;
+        String principalPath = basePath + kerberosPath + krbPath;
         String filter = "jq -r '.data.\"" + krbValue + "_principal\"'";
         this.getDataFromPath(principalPath, filter);
 
@@ -213,7 +222,7 @@ public class VaultUtils {
     }
 
     private String getPassPassword(String passPath) throws Exception {
-        String passwordPath = userlandBasePath + passwordsPath + passPath;
+        String passwordPath = basePath + passwordsPath + passPath;
         String filter = "jq -r '.data.\"pass\"'";
         this.getDataFromPath(passwordPath, filter);
 
@@ -222,7 +231,7 @@ public class VaultUtils {
     }
 
     private String getUserPassword(String passPath) throws Exception {
-        String passwordPath = userlandBasePath + passwordsPath + passPath;
+        String passwordPath = basePath + passwordsPath + passPath;
         String filter = "jq -r '.data.\"user\"'";
         this.getDataFromPath(passwordPath, filter);
 
