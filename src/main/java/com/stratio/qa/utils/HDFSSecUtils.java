@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
 
 public class HDFSSecUtils {
 
-    private final Logger logger = LoggerFactory.getLogger(KafkaSecUtils.class);
+    private final Logger logger = LoggerFactory.getLogger(HDFSSecUtils.class);
 
     private ByteArrayOutputStream outputStream;
 
