@@ -52,6 +52,8 @@ public class KafkaSecUtils {
 
     private final long kafkaProducerTimeoutMS;
 
+    private final long KAFKA_DEFAULT_TIMEOUT_MS;
+
     Properties kafkaConnectionProperties;
 
     Properties kafkaProducerProperties;
@@ -63,6 +65,7 @@ public class KafkaSecUtils {
     public KafkaSecUtils() {
         kafkaConsumerTimeoutMS = System.getProperty("KAFKA_CONSUMER_TIMEOUT_MS") != null ? Long.parseLong(System.getProperty("KAFKA_CONSUMER_TIMEOUT_MS")) : 10000L;
         kafkaProducerTimeoutMS = System.getProperty("KAFKA_PRODUCER_TIMEOUT_MS") != null ? Long.parseLong(System.getProperty("KAFKA_PRODUCER_TIMEOUT_MS")) : 10000L;
+        KAFKA_DEFAULT_TIMEOUT_MS = System.getProperty("KAFKA_DEFAULT_TIMEOUT_MS") != null ? Long.parseLong(System.getProperty("KAFKA_DEFAULT_TIMEOUT_MS")) : 20000L;
 
         kafkaConnectionProperties = new Properties();
         kafkaProducerProperties = new Properties();
@@ -142,12 +145,12 @@ public class KafkaSecUtils {
     }
 
     public String listTopics() throws Exception {
-        return adminClient.listTopics().names().get(20000L, TimeUnit.MILLISECONDS).toString();
+        return adminClient.listTopics().names().get(KAFKA_DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS).toString();
     }
 
     public void deleteTopic(String topic) throws Exception {
         logger.debug("Deleting topic: " + topic);
-        adminClient.deleteTopics(asList(topic)).all().get(20000L, TimeUnit.MILLISECONDS);
+        adminClient.deleteTopics(asList(topic)).all().get(KAFKA_DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
         logger.debug("Topic deleted.");
     }
 
@@ -165,12 +168,12 @@ public class KafkaSecUtils {
     }
 
     public void checkTopicExists(String topic) throws Exception {
-        Set<String> topicsList = adminClient.listTopics().names().get(20000L, TimeUnit.MILLISECONDS);
+        Set<String> topicsList = adminClient.listTopics().names().get(KAFKA_DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
         Assertions.assertThat(topicsList.contains(topic)).as("Topic " + topic + " does not exist.").isTrue();
     }
 
     public void checkTopicDoesNotExist(String topic) throws Exception {
-        Set<String> topicsList = adminClient.listTopics().names().get(20000L, TimeUnit.MILLISECONDS);
+        Set<String> topicsList = adminClient.listTopics().names().get(KAFKA_DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
         Assertions.assertThat(topicsList.contains(topic)).as("Topic " + topic + " exists.").isFalse();
     }
 
@@ -184,7 +187,7 @@ public class KafkaSecUtils {
 
         logger.debug("Creating topic: " + topic);
         NewTopic newTopic = new NewTopic(topic, 1, (short) 1).configs(topicProperties);
-        adminClient.createTopics(asList(newTopic)).all().get(20000L, TimeUnit.MILLISECONDS);
+        adminClient.createTopics(asList(newTopic)).all().get(KAFKA_DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
         logger.debug("Topic created.");
 
         if (numPartitions != null) {
@@ -196,7 +199,7 @@ public class KafkaSecUtils {
                 }
             };
 
-            adminClient.createPartitions(partitions).all().get(20000L, TimeUnit.MILLISECONDS);
+            adminClient.createPartitions(partitions).all().get(KAFKA_DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
             logger.debug("Partitions created.");
         }
     }
