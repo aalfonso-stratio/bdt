@@ -2533,5 +2533,13 @@ public class CommonG {
         return ZookeeperSecUtil.INSTANCE.getZookeeperSecUtils();
     }
 
+    /**
+     * Get HDFS utils.
+     *
+     * @return HDFSSecUtils
+     */
+    public HDFSSecUtils getHDFSSecUtils() {
+        return HDFSSecUtil.INSTANCE.getHDFSSecUtils();
+    }
 }
 

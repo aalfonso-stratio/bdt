@@ -24,7 +24,7 @@ import org.testng.annotations.Test;
 @CucumberOptions(plugin = "json:target/cucumber.json", features = {
         "src/test/resources/features/cassandraSteps.feature"
 })
-public class CassandraStepsIT extends BaseGTest {
+public class CassandraSteps extends BaseGTest {
 
     @Test(dataProvider = "scenarios")
     public void run(PickleEventWrapper pickleWrapper, CucumberFeatureWrapper featureWrapper) throws Throwable {

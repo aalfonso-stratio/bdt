@@ -30,7 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 // cassandra table creation and data insertion test
 // with equalsColumns comparison
-public class CassandraToolsIT extends BaseGSpec {
+public class CassandraTools extends BaseGSpec {
     public static final int VALUE_SUBSTRING = 3;
     DatabaseSpec commonspecG;
     //for table creation
@@ -63,7 +63,7 @@ public class CassandraToolsIT extends BaseGSpec {
     String tableName = "testcstring";
     String keySpace = "stratio_decision";
 
-    public CassandraToolsIT() {
+    public CassandraTools() {
         ThreadProperty.set("class", this.getClass().getCanonicalName());
         this.commonspec = new CommonG();
         commonspecG = new DatabaseSpec(this.commonspec);
@@ -84,14 +84,12 @@ public class CassandraToolsIT extends BaseGSpec {
 
     @Test
     public void test_assertValuesOfTable_success() {
-
         // USE of Keyspace
         commonspec.getLogger().debug("Verifying if the keyspace {} exists", this.keySpace);
         commonspec.getCassandraClient().useKeyspace(this.keySpace);
-        // Obtain the types and column names of the datatable
-        // to return in a hashmap,
+        // Obtain the types and column names of the datatable to return in a hashmap,
         // dataTableColumns uses to simulate the behavior
-        //of data reception as  "col1-varchar", "col2-int"
+        // of data reception as  "col1-varchar", "col2-int"
         Map<String, String> dataTableColumns = extractColumnNamesAndTypes(this.dataTableComparison.cells().get(0));
         // check the table to have columns
         String query = "SELECT * FROM " + this.tableName + " LIMIT 1;";
@@ -110,10 +108,9 @@ public class CassandraToolsIT extends BaseGSpec {
         // USE of Keyspace
         commonspec.getLogger().debug("Verifying if the keyspace {} exists", this.keySpace);
         commonspec.getCassandraClient().useKeyspace(this.keySpace);
-        // Obtain the types and column names of the datatable
-        // to return in a hashmap,
+        // Obtain the types and column names of the datatable to return in a hashmap,
         // dataTableColumns uses to simulate the behavior
-        //of data reception as  "col1-varchar", "col2-int"
+        // of data reception as  "col1-varchar", "col2-int"
         Map<String, String> dataTableColumns = extractColumnNamesAndTypes(this.dataTableComparison2.cells().get(0));
         // check the table to have columns
         String query = "SELECT * FROM " + this.tableName + " LIMIT 1;";
