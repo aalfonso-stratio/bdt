@@ -1388,10 +1388,10 @@ public class DatabaseSpec extends BaseGSpec {
             try {
                 compareList(expectedResult);
                 finished = true;
-                commonspec.getLogger().debug("Users found in database.");
+                commonspec.getLogger().info("Users found in database.");
                 break;
-            } catch (AssertionError | Exception e) {
-                commonspec.getLogger().debug("Users not in database yet. Sleeping for " + period + " seconds.");
+            } catch (Throwable e) {
+                commonspec.getLogger().info("Users not in database yet. Sleeping for " + period + " seconds.");
                 Thread.sleep(period * 1000);
             }
         }
@@ -1429,10 +1429,10 @@ public class DatabaseSpec extends BaseGSpec {
             try {
                 compareList(expectedResult);
                 finished = true;
-                commonspec.getLogger().debug("Groups found in database.");
+                commonspec.getLogger().info("Groups found in database.");
                 break;
             } catch (AssertionError | Exception e) {
-                commonspec.getLogger().debug("Groups not in database yet. Sleeping for " + period + " seconds.");
+                commonspec.getLogger().info("Groups not in database yet. Sleeping for " + period + " seconds.");
                 Thread.sleep(period * 1000);
             }
         }
@@ -1460,12 +1460,7 @@ public class DatabaseSpec extends BaseGSpec {
 
         boolean finished = false;
 
-//        List<String> expectedResult = new ArrayList<>();
-//        expectedResult.add("group_name", "members");
-//        expectedResult.add(group, usersList);
-
         List<List<String>> rawData = Arrays.asList(Arrays.asList("group_name", "members"), Arrays.asList("g_" + group, usersList));
-//        DataTable expectedResult = DataTable.create(rawData);
         List<String> expectedResult = new ArrayList<>();
         rawData.forEach(e -> expectedResult.addAll(e));
 
@@ -1476,10 +1471,10 @@ public class DatabaseSpec extends BaseGSpec {
             try {
                 compareList(expectedResult);
                 finished = true;
-                commonspec.getLogger().debug("Users belonging to group in database found.");
+                commonspec.getLogger().info("Users belonging to group in database found.");
                 break;
             } catch (AssertionError | Exception e) {
-                commonspec.getLogger().debug("Users do not belong to group in database yet. Sleeping for " + period + " seconds.");
+                commonspec.getLogger().info("Users do not belong to group in database yet. Sleeping for " + period + " seconds.");
                 Thread.sleep(period * 1000);
             }
         }
@@ -1488,7 +1483,6 @@ public class DatabaseSpec extends BaseGSpec {
             Assert.fail("Users do not belong to group in database after specified timeout.");
         }
     }
-
 
     public void compareList(List<String> tablePattern) throws Exception {
 
