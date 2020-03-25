@@ -50,6 +50,95 @@ public class CCTSpec extends BaseGSpec {
 
     /**
      * Checks in Command Center service status
+     * @param timeout
+     * @param wait
+     * @param service
+     * @param numTasks
+     * @param taskType
+     * @param expectedStatus Expected status (healthy|unhealthy|running|stopped)
+     * @throws Exception
+     */
+    @Given("^in less than '(\\d+)' seconds, checking each '(\\d+)' seconds, I check that the service '(.+?)' in CCT with '(\\d+)' tasks of type '(.+?)' is in '(healthy|unhealthy|running|stopped)' status")
+    public void checkServiceStatus(Integer timeout, Integer wait, String service, Integer numTasks, String taskType, String expectedStatus) throws Exception {
+        String endPoint = "/service/deploy-api/deployments/service?instanceName=" + service;
+        if (ThreadProperty.get("cct-marathon-services_id") != null) {
+            endPoint = "/service/cct-marathon-services/v1/services/" + service;
+        }
+        boolean  statusService = false;
+        for (int i = 0; (i <= timeout) && (!statusService); i += wait) {
+            try {
+                Future<Response> response = commonspec.generateRequest("GET", false, null, null, endPoint, "", null);
+                commonspec.setResponse(endPoint, response.get());
+                statusService = checkServiceStatusInResponse(expectedStatus, commonspec.getResponse().getResponse(), numTasks, taskType);
+            } catch (Exception e) {
+                commonspec.getLogger().debug("Error in request " + endPoint + " - " + e.toString());
+            }
+            if (i < timeout) {
+                Thread.sleep(wait * 1000);
+            }
+        }
+        if (!statusService) {
+            fail(expectedStatus + " status not found after " + timeout + " seconds for service " + service);
+        }
+    }
+
+    /**
+     * Check status of a task in response of the CCT
+     * @param expectedStatus
+     * @param response
+     * @param tasks
+     * @param name
+     * @return
+     */
+    public boolean checkServiceStatusInResponse(String expectedStatus, String response, Integer tasks, String name) {
+        JSONObject cctJsonResponse = new JSONObject(response);
+        JSONArray arrayOfTasks = (JSONArray) cctJsonResponse.get("tasks");
+        int task_counter = 0;
+        String key = "status";
+        if (arrayOfTasks.getJSONObject(0).toString().contains("state")) {
+            key = "state";
+            switch (expectedStatus.toLowerCase()) {
+                case "running":
+                case "healthy":
+                    expectedStatus = "TASK_RUNNING";
+                    break;
+                case "stopped":
+                case "unhealthy":
+                    expectedStatus = "TASK_KILLED";
+                    break;
+                default:
+                    return false;
+            }
+        }
+        if (arrayOfTasks.length() == 1 || tasks == null) {
+            boolean res = (arrayOfTasks.getJSONObject(0).getString(key).equalsIgnoreCase(expectedStatus));
+            if (!res) {
+                commonspec.getLogger().warn("The status of " + arrayOfTasks.getJSONObject(0).getString("name") + " is " + arrayOfTasks.getJSONObject(0).getString(key));
+                commonspec.getLogger().warn("Status of " + arrayOfTasks.getJSONObject(0).getString("name") + " expected " + expectedStatus);
+            }
+            return res;
+        }
+        String regex_name = ".[" + name + "]*";
+        for (int i = 0; i < arrayOfTasks.length(); i++) {
+            JSONObject task = arrayOfTasks.getJSONObject(i);
+            if (task.getString("name").matches(regex_name)) {
+                task_counter++;
+                if (!task.getString(key).equalsIgnoreCase(expectedStatus)) {
+                    commonspec.getLogger().warn("The status of " + task.getString("name") + "is " + task.getString(key));
+                    commonspec.getLogger().warn("Status of " + task.getString("name") + "expected " + expectedStatus);
+                    return false;
+                }
+            }
+        }
+        if (task_counter == tasks) {
+            return true;
+        }
+        commonspec.getLogger().error("The number of task deployed are not be the expected tasks");
+        return false;
+    }
+
+    /**
+     * Checks in Command Center service status
      *
      * @param timeout
      * @param wait
@@ -66,7 +155,6 @@ public class CCTSpec extends BaseGSpec {
             endPoint = "/service/cct-marathon-services/v1/services/" + service;
             useMarathonServices = true;
         }
-
         boolean found = false;
         boolean isDeployed = false;
 

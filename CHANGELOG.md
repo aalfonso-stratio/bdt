@@ -4,6 +4,7 @@ Only listing significant user-visible, not internal code cleanups and minor bug 
 
 ## 0.15.0 (upcoming)
 
+* [PIT-449] Improve obtain task status from the CCT version
 * [QATM-3183] Fix @dcos annotation if some container is null
 * [PIT-457] Step to make CCT installations independent from CCT version
 * [PIT-458] Step to make CCT uninstallations independent from CCT version
