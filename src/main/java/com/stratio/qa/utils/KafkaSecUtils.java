@@ -22,6 +22,7 @@ import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.KafkaAdminClient;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.admin.NewPartitions;
+import org.apache.kafka.clients.admin.ListTopicsResult;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -132,6 +133,34 @@ public class KafkaSecUtils {
 
         adminClient = KafkaAdminClient.create(kafkaConnectionProperties);
         logger.debug("Kafka connection created.");
+    }
+
+    public void checkKafkaReady(int timeout, int wait) throws Exception {
+        boolean ready = false;
+
+        for (int i = 0; (i <= timeout); i += wait) {
+            try {
+                ListTopicsResult topics = adminClient.listTopics();
+                Set<String> names = topics.names().get();
+                if (names.isEmpty()) {
+                    // case: if no topic found.
+                    logger.info("Kafka not ready yet to accept requests. Waiting...");
+                    Thread.sleep(wait * 1000);
+                } else {
+                    ready = true;
+                    logger.info("Kafka ready to accept requests after " + i + " seconds.");
+                    break;
+                }
+            } catch (Exception e) {
+                // Kafka is not available
+                logger.info("Kafka not ready yet to accept requests. Waiting...");
+                Thread.sleep(wait * 1000);
+            }
+        }
+
+        if (!ready) {
+            throw new Exception("Kafka not ready after " + timeout + " seconds.");
+        }
     }
 
     public void closeConnection() {

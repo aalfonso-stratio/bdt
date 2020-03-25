@@ -74,6 +74,11 @@ public class KafkaSecSpec extends BaseGSpec {
         commonspec.getKafkaSecUtils().closeConnection();
     }
 
+    @Given("^I wait '(\\d+)' seconds, checking every '(\\d+)' seconds for kafka server availability$")
+    public void checkKafkaReady(Integer timeout, Integer wait) throws Exception {
+        commonspec.getKafkaSecUtils().checkKafkaReady(timeout, wait);
+    }
+
     /**
      * Delete topic in Kafka cluster
      *
