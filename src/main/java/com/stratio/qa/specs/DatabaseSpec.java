@@ -1488,7 +1488,7 @@ public class DatabaseSpec extends BaseGSpec {
 
         List<String> sqlTable = new ArrayList<String>();
 
-        //the result is taken from previous step
+        // the result is taken from previous step
         for (int i = 0; ThreadProperty.get("queryresponse" + i) != null; i++) {
             String ip_value = ThreadProperty.get("queryresponse" + i);
             sqlTable.add(i, ip_value);
