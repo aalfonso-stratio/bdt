@@ -233,6 +233,7 @@ public class KafkaSecSpec extends BaseGSpec {
 
     /**
      * Check that I do not have authorization to send transactional messages to topic
+     *
      * @param topic         topic where to send message
      * @param brokersUrl    Kafka cluster URL
      * @param keystore      keystore for secured connection
@@ -242,7 +243,7 @@ public class KafkaSecSpec extends BaseGSpec {
      * @throws Exception
      */
     @Then("^I cannot send transactional messages to topic '(.+?)' with url '(.+?)' with keyStorePath '(.+?)' and keyStorePassword '(.+?)' and trustStorePath '(.+?)' and trustStorePassword '(.+?)'$")
-    public void cannotSendTransactionalMessages(String message, String topic, String brokersUrl, String keystore, String keypass, String truststore, String trustpass) throws Exception {
+    public void cannotSendTransactionalMessages(String topic, String brokersUrl, String keystore, String keypass, String truststore, String trustpass) throws Exception {
         commonspec.getKafkaSecUtils().cannotSendTransactionalMessages(topic, brokersUrl, keystore, keypass, truststore, trustpass);
     }
 
@@ -256,5 +257,21 @@ public class KafkaSecSpec extends BaseGSpec {
     @Then("^number of partitions in topic '(.+?)' is '(.+?)'$")
     public void checkNumberPartitionsIsN(String topic, String numPartitions) throws Exception {
         commonspec.getKafkaSecUtils().numbersOfPartitionsIsN(topic, numPartitions);
+    }
+
+    /**
+     * Check that I do not have authorization to consume messages from topic
+     *
+     * @param topic         topic where to send message
+     * @param brokersUrl    Kafka cluster URL
+     * @param keystore      keystore for secured connection
+     * @param keypass       key password for secured connection
+     * @param truststore    truststore for secured connection
+     * @param trustpass     password for secured connection
+     * @throws Exception
+     */
+    @Then("^I cannot consume messages from topic '(.+?)' with url '(.+?)' with keyStorePath '(.+?)' and keyStorePassword '(.+?)' and trustStorePath '(.+?)' and trustStorePassword '(.+?)'$")
+    public void cannotConsumeMessages(String topic, String brokersUrl, String keystore, String keypass, String truststore, String trustpass) throws Exception {
+        commonspec.getKafkaSecUtils().cannotConsumeMessages(topic, brokersUrl, keystore, keypass, truststore, trustpass);
     }
 }

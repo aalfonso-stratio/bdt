@@ -350,7 +350,7 @@ public class KafkaSecUtils {
         createConnection(brokersUrl, keystore, keypass, truststore, trustpass);
 
         // send transactional messages
-        sendTransactionalMessages(topic, brokersUrl, keystore, keypass, truststore, trustpass);
+        sendTransactionalMessages(topic);
     }
 
     public void cannotSendTransactionalMessages(String topic, String brokersUrl, String keystore, String keypass, String truststore, String trustpass) throws Exception {
@@ -367,6 +367,25 @@ public class KafkaSecUtils {
         }
 
         Assertions.assertThat(isLaunchedNoAuthException).as("NoAuth Exception not launched. Check that ACLs are set to produce transactional messages to Topic").isTrue();
+    }
+
+    public void cannotConsumeMessages(String topic, String brokersUrl, String keystore, String keypass, String truststore, String trustpass) throws Exception {
+        boolean isLaunchedNoAuthException = false;
+
+        // Create connection with new connection details
+        createConnection(brokersUrl, keystore, keypass, truststore, trustpass);
+
+        try {
+            containsMessage(topic, null, "message");
+            logger.error("NoAuth Exception not launched. Check that ACLs are set to produce transactional messages to Topic");
+        } catch (Exception consumeException) {
+            if (consumeException.getMessage().contains("Not authorized")) {
+                logger.info("NoAuth consuming message from {} topic", topic);
+                isLaunchedNoAuthException = true;
+            }
+        }
+
+        Assertions.assertThat(isLaunchedNoAuthException).as("NoAuth Exception not launched. Check that ACLs are set to consume messages in Topic").isTrue();
     }
 
     public void containsMessage(String topic, String partitionId, String message) throws Exception {
@@ -390,6 +409,9 @@ public class KafkaSecUtils {
             }
 
             Assertions.assertThat(result.contains(message)).as("Topic does not exist or the content does not match").isTrue();
+        } catch (Exception e) {
+            logger.error("Not possible to consume from topic: {} with error: {}", topic, e.getMessage());
+            throw e;
         }
     }
 
@@ -412,6 +434,9 @@ public class KafkaSecUtils {
             for (int i = 0; i < 5; i++) {
                 Assertions.assertThat(result.contains(message + i)).as("Topic does not exist or the content does not match").isTrue();
             }
+        } catch (Exception e) {
+            logger.error("Not possible to consume from topic: {} with error: {}", topic, e.getMessage());
+            throw e;
         }
     }
 
@@ -443,6 +468,9 @@ public class KafkaSecUtils {
                     Assertions.assertThat(result.contains(value)).as("Topic: " + topic + " does not contain value: " + value).isTrue();
                 }
             }
+        } catch (Exception e) {
+            logger.error("Not possible to consume from topic: {} with error: {}", topic, e.getMessage());
+            throw e;
         }
     }
 
