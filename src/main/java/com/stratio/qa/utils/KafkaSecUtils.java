@@ -107,7 +107,11 @@ public class KafkaSecUtils {
         logger.debug("Kafka connection created.");
     }
 
-    public void createConnection(String brokersUrl, String keystore, String keypass, String truststore, String trustpass) {
+    public void createConnection(String brokersUrl, String keystore, String keypass, String truststore, String trustpass) throws InterruptedException {
+        if (adminClient != null) {
+            closeConnection();
+        }
+
         kafkaConnectionProperties.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, brokersUrl);
         kafkaProducerProperties.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, brokersUrl);
         kafkaConsumerProperties.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, brokersUrl);
@@ -173,8 +177,26 @@ public class KafkaSecUtils {
         }
     }
 
+
     public String listTopics() throws Exception {
-        return adminClient.listTopics().names().get(KAFKA_DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS).toString();
+        String topics;
+
+        topics = adminClient.listTopics().names().get(KAFKA_DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS).toString();
+
+        return topics;
+    }
+
+    public String listTopics(String brokersUrl, String keystore, String keypass, String truststore, String trustpass) throws Exception {
+        String topics;
+
+        // create connection
+        createConnection(brokersUrl, keystore, keypass, truststore, trustpass);
+        // list topics
+        topics = listTopics();
+        // close connection
+        closeConnection();
+
+        return topics;
     }
 
     public void deleteTopic(String topic) throws Exception {
@@ -184,26 +206,42 @@ public class KafkaSecUtils {
     }
 
     public void deleteTopic(String topic, String brokersUrl, String keystore, String keypass, String truststore, String trustpass) throws Exception {
-        // Close previous Admin Client
-        if (adminClient != null) {
-            adminClient.close();
-        }
-
-        // Create connection with new connection details
+        // create connection
         createConnection(brokersUrl, keystore, keypass, truststore, trustpass);
-
         // delete topic
         deleteTopic(topic);
+        // close connection
+        closeConnection();
     }
 
     public void checkTopicExists(String topic) throws Exception {
         Set<String> topicsList = adminClient.listTopics().names().get(KAFKA_DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+
         Assertions.assertThat(topicsList.contains(topic)).as("Topic " + topic + " does not exist.").isTrue();
+    }
+
+    public void checkTopicExists(String topic, String brokersUrl, String keystore, String keypass, String truststore, String trustpass) throws Exception {
+        // create connection
+        createConnection(brokersUrl, keystore, keypass, truststore, trustpass);
+        // check topic exists
+        checkTopicExists(topic);
+        // close connection
+        closeConnection();
     }
 
     public void checkTopicDoesNotExist(String topic) throws Exception {
         Set<String> topicsList = adminClient.listTopics().names().get(KAFKA_DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+
         Assertions.assertThat(topicsList.contains(topic)).as("Topic " + topic + " exists.").isFalse();
+    }
+
+    public void checkTopicDoesNotExist(String topic, String brokersUrl, String keystore, String keypass, String truststore, String trustpass) throws Exception {
+        // create connection
+        createConnection(brokersUrl, keystore, keypass, truststore, trustpass);
+        // check topic does not exist
+        checkTopicDoesNotExist(topic);
+        // close connection
+        closeConnection();
     }
 
     public void createTopic(String topic, String numPartitions) throws Exception {
@@ -234,16 +272,12 @@ public class KafkaSecUtils {
     }
 
     public void createTopic(String topic, String numPartitions, String brokersUrl, String keystore, String keypass, String truststore, String trustpass) throws Exception {
-        // Close previous Admin Client
-        if (adminClient != null) {
-            adminClient.close();
-        }
-
         // Create connection with new connection details
         createConnection(brokersUrl, keystore, keypass, truststore, trustpass);
-
         // create topic
         createTopic(topic, numPartitions);
+        // close connection
+        closeConnection();
     }
 
     public void cannotCreateTopic(String topic, String numPartitions, String brokersUrl, String keystore, String keypass, String truststore, String trustpass) throws Exception {
@@ -261,6 +295,24 @@ public class KafkaSecUtils {
         }
 
         Assertions.assertThat(isLaunchedNoAuthException).as("NoAuth Exception not launched. Check that ACLs are set to create that Topic").isTrue();
+    }
+
+    public void cannotDeleteTopic(String topic, String brokersUrl, String keystore, String keypass, String truststore, String trustpass) throws Exception {
+        boolean isLaunchedNoAuthException = false;
+
+        try {
+            deleteTopic(topic, brokersUrl, keystore, keypass, truststore, trustpass);
+
+            logger.error("NoAuth Exception not launched. Check that ACLs are set to create that Topic");
+        } catch (Exception createException) {
+            if (createException.getCause() instanceof org.apache.kafka.common.errors.TopicAuthorizationException) {
+                logger.info("NoAuth deleting {} topic", topic);
+                isLaunchedNoAuthException = true;
+            }
+        }
+
+        Assertions.assertThat(isLaunchedNoAuthException).as("NoAuth Exception not launched. Check that ACLs are set to delete that Topic").isTrue();
+
     }
 
     public void sendMessage(String topic, String partition, String message) throws Exception {
@@ -291,16 +343,12 @@ public class KafkaSecUtils {
     }
 
     public void sendMessage(String topic, String partition, String message, String brokersUrl, String keystore, String keypass, String truststore, String trustpass) throws Exception {
-        // Close previous Admin Client
-        if (adminClient != null) {
-            adminClient.close();
-        }
-
         // Create connection with new connection details
         createConnection(brokersUrl, keystore, keypass, truststore, trustpass);
-
         // send message
         sendMessage(topic, partition, message);
+        // close connection
+        closeConnection();
     }
 
     public void cannotSendMessage(String topic, String partition, String message, String brokersUrl, String keystore, String keypass, String truststore, String trustpass) throws Exception {
@@ -341,16 +389,12 @@ public class KafkaSecUtils {
     }
 
     public void sendTransactionalMessages(String topic, String brokersUrl, String keystore, String keypass, String truststore, String trustpass) throws Exception {
-        // Close previous Admin Client
-        if (adminClient != null) {
-            adminClient.close();
-        }
-
         // Create connection with new connection details
         createConnection(brokersUrl, keystore, keypass, truststore, trustpass);
-
         // send transactional messages
         sendTransactionalMessages(topic);
+        // close connection
+        closeConnection();
     }
 
     public void cannotSendTransactionalMessages(String topic, String brokersUrl, String keystore, String keypass, String truststore, String trustpass) throws Exception {
@@ -360,7 +404,7 @@ public class KafkaSecUtils {
             sendTransactionalMessages(topic, brokersUrl, keystore, keypass, truststore, trustpass);
             logger.error("NoAuth Exception not launched. Check that ACLs are set to produce transactional messages to Topic");
         } catch (Exception sendTransactionalException) {
-            if (sendTransactionalException.getCause() instanceof org.apache.kafka.common.errors.TopicAuthorizationException) {
+            if (sendTransactionalException instanceof org.apache.kafka.common.errors.TransactionalIdAuthorizationException) {
                 logger.info("NoAuth sending transactional message to {} topic", topic);
                 isLaunchedNoAuthException = true;
             }
@@ -372,12 +416,9 @@ public class KafkaSecUtils {
     public void cannotConsumeMessages(String topic, String brokersUrl, String keystore, String keypass, String truststore, String trustpass) throws Exception {
         boolean isLaunchedNoAuthException = false;
 
-        // Create connection with new connection details
-        createConnection(brokersUrl, keystore, keypass, truststore, trustpass);
-
         try {
-            containsMessage(topic, null, "message");
-            logger.error("NoAuth Exception not launched. Check that ACLs are set to produce transactional messages to Topic");
+            containsMessage(topic, null, "message", brokersUrl, keystore, keypass, truststore, trustpass);
+            logger.error("NoAuth Exception not launched. Check that ACLs are set to consume messages to Topic");
         } catch (Exception consumeException) {
             if (consumeException.getMessage().contains("Not authorized")) {
                 logger.info("NoAuth consuming message from {} topic", topic);
@@ -415,6 +456,15 @@ public class KafkaSecUtils {
         }
     }
 
+    public void containsMessage(String topic, String partitionId, String message, String brokersUrl, String keystore, String keypass, String truststore, String trustpass) throws Exception {
+        // open connection
+        createConnection(brokersUrl, keystore, keypass, truststore, trustpass);
+        // check topic contains message
+        containsMessage(topic, partitionId, message);
+        // close connection
+        closeConnection();
+    }
+
     public void containsTransactionalMessages(String topic) throws Exception {
         String message = "testsAT_transactional_message_";
         kafkaConsumerProperties.put("group.id", "functionalAT");
@@ -438,6 +488,15 @@ public class KafkaSecUtils {
             logger.error("Not possible to consume from topic: {} with error: {}", topic, e.getMessage());
             throw e;
         }
+    }
+
+    public void containsTransactionalMessages(String topic, String brokersUrl, String keystore, String keypass, String truststore, String trustpass) throws Exception {
+        // create connection
+        createConnection(brokersUrl, keystore, keypass, truststore, trustpass);
+        // check topic contains transactional messages
+        containsTransactionalMessages(topic);
+        // close connection
+        closeConnection();
     }
 
     public void containsNMessagesInTopic(String topic, String numMessages, String partitionId, DataTable values) throws Exception {
@@ -474,8 +533,27 @@ public class KafkaSecUtils {
         }
     }
 
+    public void containsNMessagesInTopic(String topic, String numMessages, String partitionId, String brokersUrl, String keystore, String keypass, String truststore, String trustpass, DataTable values) throws Exception {
+        // create connection
+        createConnection(brokersUrl, keystore, keypass, truststore, trustpass);
+        // check topic contains specified messages
+        containsNMessagesInTopic(topic, numMessages, partitionId, values);
+        // close connection
+        closeConnection();
+    }
+
     public void numbersOfPartitionsIsN(String topic, String numPartitions) throws Exception {
         int partitions = adminClient.describeTopics(asList(topic)).all().get().get(topic).partitions().size();
+
         Assertions.assertThat(partitions).as("Expected number of partitions: " + numPartitions + " is different from obtained one: " + partitions).isEqualTo(Integer.parseInt(numPartitions));
+    }
+
+    public void numbersOfPartitionsIsN(String topic, String numPartitions, String brokersUrl, String keystore, String keypass, String truststore, String trustpass) throws Exception {
+        // create connection
+        createConnection(brokersUrl, keystore, keypass, truststore, trustpass);
+        // check number of partitions in topic is the specified
+        numbersOfPartitionsIsN(topic, numPartitions);
+        // close connection
+        closeConnection();
     }
 }
