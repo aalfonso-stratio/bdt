@@ -1204,6 +1204,9 @@ public class DcosSpec extends BaseGSpec {
         if (ThreadProperty.get("cct-marathon-services_version") != null) {
             ThreadProperty.set("cct-marathon-services_id", "cct-marathon-services");
         }
+        if (ThreadProperty.get("cct-universe_version") != null) {
+            ThreadProperty.set("cct-universe_id", "cct-universe");
+        }
         if (ThreadProperty.get("cct-deploy-api_version") != null && ThreadProperty.get("cct-deploy-api_version").startsWith("1.")) {
             ThreadProperty.set("deploy_api_id", "cct-deploy-api");
         } else {
