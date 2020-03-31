@@ -443,24 +443,15 @@ public class CommandExecutionSpec extends BaseGSpec {
              */
     @When("^I open a ssh tunnel to '(.+?)' with user '(.+?)' using pem file '(.+?)' to host ip '(.+?)' host port '(.+?)' to local port '(.+?)'")
     public void openSshTunnelTo(String host, String user, String pemFilePath, String tunnelHostIp, String tunnelHostPort, String tunnelLocalPort) throws Exception {
-        commonspec.setRemoteSSHConnection(new RemoteSSHConnection(user, null, host, null, pemFilePath), null);
+        commonspec.setRemoteSSHConnection(new RemoteSSHConnection(user, null, host, null, pemFilePath), "tunnel");
         commonspec.getRemoteSSHConnection().openSshTunnel(host, user, pemFilePath, tunnelHostIp, tunnelHostPort, tunnelLocalPort);
     }
 
     /**
-     * Close ssh tunnel for connect through calico to any component of a framework
+     * Close ssh tunnel to connect through calico to any component of a framework
      */
     @Then ("^I close the ssh tunnel")
-    public void closeSshTunnel() {
-
-        Session session = this.commonspec.getRemoteSSHConnection().getSession();
-
-        if (session != null && session.isConnected()) {
-            session.disconnect();
-
-            if (!session.isConnected()) {
-                commonspec.getLogger().info("Shh Tunnel closed");
-            }
-        }
+    public void closeSshTunnel() throws Exception {
+        closeSSHConnection("tunnel");
     }
 }
