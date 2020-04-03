@@ -822,4 +822,120 @@ public class CCTSpec extends BaseGSpec {
         DcosSpec dcosSpec = new DcosSpec(commonspec);
         dcosSpec.checkResources(serviceName);
     }
+
+    @Given("^I upload rules file '(.+?)'( with priority '(.+?)')?( overriding version to '(.+?)')?")
+    public void uploadRules(String rulesPath, String priority, String version) throws Exception {
+        // Check file exists
+        File rules = new File(rulesPath);
+        Assertions.assertThat(rules.exists()).as("File: " + rulesPath + " does not exist.").isTrue();
+
+        // Obtain endpoint
+        if (ThreadProperty.get("deploy_api_id") == null) {
+            fail("deploy_api_id variable is not set. Check deploy-api is installed and @dcos annotation is working properly.");
+        }
+        String endPointUpload = "/service/" + ThreadProperty.get("deploy_api_id") + "/knowledge/upload";
+
+        // Obtain URL
+        String restURL = "https://" + commonspec.getRestHost() + commonspec.getRestPort() + endPointUpload;
+
+        // Form query parameters
+        String headers = "-H \"accept: */*\" -H \"Content-Type: multipart/form-data\"";
+        String forms = "-F \"file=@" + rulesPath + ";type=application/zip\"";
+
+        if (priority == null) {
+            priority = "0";
+        }
+        forms = forms + " -F \"priority=" + priority  + "\"";
+
+        if (version != null) {
+            forms = forms + " -F \"version=" + version + "\"";
+        }
+
+        String cookie = "-H \"Cookie:dcos-acs-auth-cookie=" + ThreadProperty.get("dcosAuthCookie") + "\"";
+        String command = "curl -X POST -k " + cookie + " \"" + restURL + "\" " + headers + " " + forms;
+
+        // Execute command
+        commonspec.runLocalCommand(command);
+
+        Assertions.assertThat(commonspec.getCommandExitStatus()).isEqualTo(0);
+        Assertions.assertThat(commonspec.getCommandResult()).as("Not possible to upload rules: " + commonspec.getCommandResult()).doesNotContain("Error");
+    }
+
+    @Given("^I upload descriptors file '(.+?)'( overriding version to '(.+?)')?")
+    public void uploadDescriptors(String descriptorsPath, String version) throws Exception {
+        String headers = "";
+        String forms = "";
+        String op = "";
+
+        // Check file exists
+        File descriptors = new File(descriptorsPath);
+        Assertions.assertThat(descriptors.exists()).as("File: " + descriptorsPath + " does not exist.").isTrue();
+
+        // Obtain endpoint
+        if (ThreadProperty.get("deploy_api_id") == null && ThreadProperty.get("cct-universe_id") == null) {
+            fail("deploy_api_id variable and cct-universe_id are not set. Check deploy-api or cct-universe are installed and @dcos annotation is working properly.");
+        }
+
+        // Obtain cookie
+        String cookie = "-H \"Cookie:dcos-acs-auth-cookie=" + ThreadProperty.get("dcosAuthCookie") + "\"";
+
+        String endPointUpload = "";
+        if (ThreadProperty.get("cct-universe_id") != null) {
+            endPointUpload = "/service/" + ThreadProperty.get("cct-universe_id") + "/v1/descriptors";
+            headers = "-H \"accept: application/json\" -H \"Content-Type: multipart/form-data\"";
+            forms = "-F \"file=@" + descriptorsPath + ";type=application/zip\"";
+            op = "PUT";
+        } else {
+            endPointUpload = "/service/" + ThreadProperty.get("deploy_api_id") + "/universe/upload";
+            headers = "-H \"Content-Type: multipart/form-data\"";
+            forms = "-F \"file=@" + descriptorsPath + "\"";
+
+            if (version != null) {
+                forms = forms + " -F \"version=" + version + "\"";
+            }
+            op = "POST";
+        }
+
+        // Obtain URL
+        String restURL = "https://" + commonspec.getRestHost() + commonspec.getRestPort() + endPointUpload;
+
+        // Form query
+        String command = "curl -X " + op + " -k " + cookie + " \"" + restURL + "\" " + headers + " " + forms;
+
+        // Execute command
+        commonspec.runLocalCommand(command);
+
+        String result = commonspec.getCommandResult();
+
+        Assertions.assertThat(commonspec.getCommandExitStatus()).isEqualTo(0);
+
+        if (ThreadProperty.get("cct-universe_id") != null) {
+            String accepted = commonspec.getJSONPathString(result, "$.accepted", null);
+            String rejected = commonspec.getJSONPathString(result, "$.rejected", null);
+
+            if ("[]".equals(accepted)) {
+                fail("No descriptors have been uploaded correctly: " + result);
+            }
+
+            if (!"[]".equals(rejected)) {
+                fail("There are descriptors that have been rejected: " + rejected);
+            }
+        } else {
+            String added = commonspec.getJSONPathString(result, "$.added", null);
+            String error = commonspec.getJSONPathString(result, "$.error", null);
+            String existing = commonspec.getJSONPathString(result, "$.existing", null);
+
+            if ("[]".equals(added)) {
+                fail("No descriptors have been uploaded correctly: " + result);
+            }
+
+            if (!"[]".equals(error)) {
+                fail("There are descriptors that have been rejected: " + result);
+            }
+
+            if (!"[]".equals(existing)) {
+                fail("There are descriptors that already exist: " + result);
+            }
+        }
+    }
 }
