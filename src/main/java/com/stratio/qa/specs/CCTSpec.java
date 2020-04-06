@@ -749,7 +749,13 @@ public class CCTSpec extends BaseGSpec {
      */
     @Given("^I install service '(.+?)' with model '(.+?)' and version '(.+?)' and instance name '(.+?)' in tenant '(.+?)' using json '(.+?)'$")
     public void installServiceFromMarathonJson(String service, String model, String version, String name, String tenant, String jsonFile) throws Exception {
-        String endPoint = "/service/" + ThreadProperty.get("deploy_api_id") + "/deploy/" + service + "/" + model + "/" + version + "/schema?tenantId=" + tenant;
+        String tenantCommand = "";
+
+        if (ThreadProperty.get("cct-deploy-api_version").startsWith("1.")) {
+            tenantCommand = "?tenantId=" + tenant;
+        }
+
+        String endPoint = "/service/" + ThreadProperty.get("deploy_api_id") + "/deploy/" + service + "/" + model + "/" + version + "/schema" + tenantCommand;
         String data = this.commonspec.retrieveData(jsonFile, "json");
 
         Future<Response> response = commonspec.generateRequest("POST", true, null, null, endPoint, data, "json");
