@@ -346,7 +346,12 @@ public class RestSpec extends BaseGSpec {
                     if (commonspec.getResponse().getStatusCode() == 409) {
                         commonspec.getLogger().warn("The resource {} already exists", resourceId);
                     } else {
-                        assertThat(commonspec.getResponse().getStatusCode()).isEqualTo(expectedStatusCreate);
+                        try {
+                            assertThat(commonspec.getResponse().getStatusCode()).isEqualTo(expectedStatusCreate);
+                        } catch (Exception e) {
+                            commonspec.getLogger().warn("Error deleting Resource {}: {}", resourceId, commonspec.getResponse().getResponse());
+                            throw e;
+                        }
                         commonspec.getLogger().warn("Resource {} created", resourceId);
                     }
                 } catch (Exception e) {
