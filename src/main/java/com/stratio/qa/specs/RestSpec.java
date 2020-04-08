@@ -629,17 +629,27 @@ public class RestSpec extends BaseGSpec {
         Integer expectedLength = sExpectedLength != null ? Integer.parseInt(sExpectedLength) : null;
         if (expectedLength != null || expectedText != null) {
             if (expectedLength != null) {
-                assertThat(Optional.of(commonspec.getResponse())).hasValueSatisfying(r -> {
-                    assertThat(r.getStatusCode()).isEqualTo(expectedStatus);
-                    assertThat((new JSONArray(r.getResponse())).length()).isEqualTo(expectedLength);
-                });
+                try {
+                    assertThat(Optional.of(commonspec.getResponse())).hasValueSatisfying(r -> {
+                        assertThat(r.getStatusCode()).isEqualTo(expectedStatus);
+                        assertThat((new JSONArray(r.getResponse())).length()).isEqualTo(expectedLength);
+                    });
+                } catch (AssertionError e) {
+                    commonspec.getLogger().warn("Response: {}", commonspec.getResponse().getResponse());
+                    throw e;
+                }
             }
             if (expectedText != null) {
                 Pattern pattern = CommonG.matchesOrContains(expectedText);
-                assertThat(Optional.of(commonspec.getResponse())).hasValueSatisfying(r -> {
-                    assertThat(r.getStatusCode()).isEqualTo(expectedStatus);
-                    assertThat(r.getResponse()).containsPattern(pattern);
-                });
+                try {
+                    assertThat(Optional.of(commonspec.getResponse())).hasValueSatisfying(r -> {
+                        assertThat(r.getStatusCode()).isEqualTo(expectedStatus);
+                        assertThat(r.getResponse()).containsPattern(pattern);
+                    });
+                } catch (AssertionError e) {
+                    commonspec.getLogger().warn("Response: {}", commonspec.getResponse().getResponse());
+                    throw e;
+                }
             }
         } else {
             try {
