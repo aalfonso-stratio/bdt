@@ -4,6 +4,8 @@ Only listing significant user-visible, not internal code cleanups and minor bug 
 
 ## 0.15.0 (upcoming)
 
+* [PIT-474] Download log file from service
+* [PIT-464] Check content of stdout/stderr
 * [GS-1872] TestAT refactor for Gosec steps
 * [QATM-3200] update zookeeper client
 * [PIT-460] Teardown service from CCT(deploy-api)
