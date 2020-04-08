@@ -349,7 +349,7 @@ public class RestSpec extends BaseGSpec {
                         try {
                             assertThat(commonspec.getResponse().getStatusCode()).isEqualTo(expectedStatusCreate);
                         } catch (Exception e) {
-                            commonspec.getLogger().warn("Error deleting Resource {}: {}", resourceId, commonspec.getResponse().getResponse());
+                            commonspec.getLogger().warn("Error creating Resource {}: {}", resourceId, commonspec.getResponse().getResponse());
                             throw e;
                         }
                         commonspec.getLogger().warn("Resource {} created", resourceId);
