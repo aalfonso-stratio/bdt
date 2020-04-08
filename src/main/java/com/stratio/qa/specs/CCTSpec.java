@@ -28,6 +28,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
@@ -50,6 +54,205 @@ public class CCTSpec extends BaseGSpec {
     public CCTSpec(CommonG spec) {
         this.commonspec = spec;
     }
+
+    /**
+     * Download last lines from logs of a service/framework
+     * @param logType
+     * @param service
+     * @param taskType
+     * @throws Exception
+     */
+    @Given("^I want to download '(stdout|stderr)' last '(\\d+)' lines of service '(.+?)'( with task type '(.+?)')?")
+    public void downLoadLogsFromService(String logType, Integer lastLinesToRead, String service, String taskType) throws Exception {
+        String fileOutputName = service.replace('/', '_') + taskType + logType;
+        String endPoint;
+        if (ThreadProperty.get("cct-marathon-services_id") == null) {
+            endPoint = "/service/" + ThreadProperty.get("deploy_api_id") + " /deployments/service?instanceName=" + service;
+        } else {
+            endPoint = "/service/cct-marathon-services/v1/services/" + service;
+        }
+        Future<Response> response = null;
+        commonspec.getLogger().debug("Trying to send http request to: " + endPoint);
+        response = commonspec.generateRequest("GET", false, null, null, endPoint, "", null);
+        if (response.get().getStatusCode() != 200) {
+            throw new Exception("Request failed to endpoint: " + endPoint + " with status code: " + commonspec.getResponse().getStatusCode());
+        }
+        commonspec.setResponse(endPoint, response.get());
+        ArrayList<String> mesosTaskId = obtainMesosTaskInfo(commonspec.getResponse().getResponse(), null, "id");
+        ArrayList<String> mesosTaskName = obtainMesosTaskInfo(commonspec.getResponse().getResponse(), null, "name");
+        boolean contained = false;
+        if (mesosTaskId.size() > 1) {
+            for (int i = 0; i < mesosTaskName.size() && !contained; i++) {
+                if (mesosTaskName.get(i).contains(taskType)) {
+                    contained = true;
+                    taskType = mesosTaskId.get(i);
+                }
+            }
+        } else {
+            contained = true;
+            taskType = mesosTaskId.get(0);
+        }
+        if (!contained) {
+            fail("The mesos task type does not exists");
+        }
+
+        String endpointTask;
+        if (ThreadProperty.get("cct-marathon-services_id") == null) {
+            endpointTask = "/service/" + ThreadProperty.get("deploy_api_id") + "/deployments/logs/" + taskType;
+        } else {
+            endpointTask = "/service/cct-marathon-services/v1/services/tasks/" + taskType + "/logs";
+        }
+        commonspec.getLogger().debug("Trying to send http request to: " + endpointTask);
+        response = commonspec.generateRequest("GET", false, null, null, endpointTask, "", null);
+        if (response.get().getStatusCode() != 200) {
+            throw new Exception("Request failed to endpoint: " + endPoint + " with status code: " + commonspec.getResponse().getStatusCode());
+        }
+        commonspec.setResponse("GET", response.get());
+        commonspec.getLogger().debug("Trying to obtain mesos logs path");
+        String path = obtainLogsPath(commonspec.getResponse().getResponse(), logType, "READ") + "/" +  logType;
+        String logOfTask = readLogsFromMesos(path, lastLinesToRead);
+        Files.write(Paths.get(System.getProperty("user.dir") + "/target/test-classes/" + fileOutputName), logOfTask.getBytes());
+    }
+
+     /**
+     * Read last lines from logs of a service/framework
+     * @param logType
+     * @param service
+     * @param taskType
+     * @param logToCheck
+     * @param lastLinesToRead
+     * @throws Exception
+     */
+    @Given("^The '(stdout|stderr)' of service '(.+?)'( with task type '(.+?)')? contains '(.+?)' in the last '(\\d+)' lines$")
+    public void readLogsFromService(String logType, String service, String taskType, String logToCheck, Integer lastLinesToRead) throws Exception {
+        commonspec.getLogger().debug("Start process of read " + lastLinesToRead + " from the mesos log");
+        String endPoint;
+        if (ThreadProperty.get("cct-marathon-services_id") == null) {
+            endPoint = "/service/" + ThreadProperty.get("deploy_api_id") + " /deployments/service?instanceName=" + service;
+        } else {
+            endPoint = "/service/cct-marathon-services/v1/services/" + service;
+        }
+        Future<Response> response = null;
+        commonspec.getLogger().debug("Trying to send http request to: " + endPoint);
+        response = commonspec.generateRequest("GET", false, null, null, endPoint, "", null);
+        if (response.get().getStatusCode() != 200) {
+            throw new Exception("Request failed to endpoint: " + endPoint + " with status code: " + commonspec.getResponse().getStatusCode());
+        }
+        commonspec.setResponse(endPoint, response.get());
+        ArrayList<String> mesosTaskId = obtainMesosTaskInfo(commonspec.getResponse().getResponse(), taskType, "id");
+        commonspec.getLogger().info("Mesos Task Ids obtained successfully");
+        commonspec.getLogger().debug("Mesos task ids: "  + Arrays.toString(mesosTaskId.toArray()));
+        boolean contained = false;
+        for (int i = 0; i < mesosTaskId.size() && !contained; i++) {
+            String endpointTask;
+            if (ThreadProperty.get("cct-marathon-services_id") == null) {
+                endpointTask = "/service/" + ThreadProperty.get("deploy_api_id") + "/deployments/logs/" + taskType;
+            } else {
+                endpointTask = "/service/cct-marathon-services/v1/services/tasks/" + taskType + "/logs";
+            }
+            commonspec.getLogger().debug("Trying to send http request to: " + endpointTask);
+            response = commonspec.generateRequest("GET", false, null, null, endpointTask, "", null);
+            if (response.get().getStatusCode() != 200) {
+                throw new Exception("Request failed to endpoint: " + endPoint + " with status code: " + commonspec.getResponse().getStatusCode());
+            }
+            commonspec.setResponse("GET", response.get());
+            commonspec.getLogger().debug("Trying to obtain mesos logs path");
+            String path = obtainLogsPath(commonspec.getResponse().getResponse(), logType, "READ") + "/" +  logType;
+            commonspec.getLogger().debug("Trying to read mesos logs");
+            String logOfTask = readLogsFromMesos(path, lastLinesToRead);
+            if (logOfTask.contains(logToCheck)) {
+                contained = true;
+            }
+        }
+        if (!contained) {
+            fail("The log " + logToCheck + " is not contaided in the task logs");
+        }
+    }
+
+    /**
+     * Read log from mesos
+     * @param path
+     * @param lastLines
+     * @return
+     * @throws Exception
+     */
+    public String readLogsFromMesos(String path, Integer lastLines) throws Exception {
+        //obtain last offset
+        Future<Response> response = null;
+        response = commonspec.generateRequest("GET", false, null, null, path, "", null);
+        if (response.get().getStatusCode() != 200) {
+            throw new Exception("Request failed to endpoint: " + path + " with status code: " + commonspec.getResponse().getStatusCode());
+        }
+        JSONObject offSetJson = new JSONObject(response.get().getResponseBody());
+
+        Integer offSet = offSetJson.getInt("offset");
+        //Read 1000 bytes
+        String logs = "";
+        Integer lineCount = 0;
+        for (int i = offSet; (i >= 0) && (lineCount <= lastLines); i = i - 1000) {
+            String endPoint = path + "&offset=" + (i - 1000) + "&length=" + i;
+            if (i < 1000) {
+                endPoint = path + "&offset=0&length=" + i;
+
+            }
+            response = commonspec.generateRequest("GET", false, null, null, endPoint, "", null);
+            if (response.get().getStatusCode() != 200) {
+                throw new Exception("Request failed to endpoint: " + path + " with status code: " + commonspec.getResponse().getStatusCode());
+            }
+            commonspec.setResponse("GET", response.get());
+            JSONObject cctJsonResponse = new JSONObject(commonspec.getResponse().getResponse());
+            logs = cctJsonResponse.getString("data") + logs;
+            lineCount = logs.split("\n").length + lineCount;
+        }
+        return logs;
+    }
+
+    /**
+     * Obtain logs path from JSON
+     * @param response
+     * @param logType
+     * @param action
+     * @return path
+     */
+    public String obtainLogsPath(String response, String logType, String action) {
+        String path = null;
+        JSONObject cctJsonResponse = new JSONObject(response);
+        JSONArray arrayOfPaths = (JSONArray) cctJsonResponse.get("content");
+        for (int i = 0; i < arrayOfPaths.length(); i++) {
+            if (arrayOfPaths.getJSONObject(i).getString("name").equalsIgnoreCase(logType) && arrayOfPaths.getJSONObject(i).getString("action").equalsIgnoreCase(action)) {
+                path = arrayOfPaths.getJSONObject(i).getString("path");
+            }
+        }
+        return path;
+    }
+
+    /**
+     * Obtain info about task type from json
+     * @param response
+     * @param taskType
+     * @param info
+     * @return
+     */
+    public ArrayList<String> obtainMesosTaskInfo (String response, String taskType, String info) {
+        ArrayList<String> result = new ArrayList<String>();
+        JSONObject cctJsonResponse = new JSONObject(response);
+        JSONArray arrayOfTasks = (JSONArray) cctJsonResponse.get("tasks");
+        if (arrayOfTasks.length() == 1 || taskType == null) {
+            result.add((arrayOfTasks.getJSONObject(0).getString(info)));
+        }
+        String regex_name = ".*";
+        if (taskType != null) {
+            regex_name = ".[" + taskType + "]*";
+        }
+        for (int i = 0; i < arrayOfTasks.length(); i++) {
+            JSONObject task = arrayOfTasks.getJSONObject(i);
+            if (task.getString("name").matches(regex_name)) {
+                result.add((task.getString(info)));
+            }
+        }
+        return result;
+    }
+
 
     /**
      * TearDown a service with deploy-api
