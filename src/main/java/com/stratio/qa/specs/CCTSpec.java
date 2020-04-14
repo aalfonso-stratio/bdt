@@ -1047,13 +1047,16 @@ public class CCTSpec extends BaseGSpec {
         RestSpec restSpec = new RestSpec(commonspec);
 
         String endPointStatus;
+        String key;
         if (ThreadProperty.get("cct-marathon-services_id") == null) {
             endPointStatus = "/service/" + ThreadProperty.get("deploy_api_id") + "/deploy/status/all";
+            key = "\"serviceName\"";
         } else {
             endPointStatus = "/service/" + ThreadProperty.get("cct-marathon-services_id") + "/v1/services?tenant=" + tenant;
+            key = "\"id\"";
         }
 
-        restSpec.sendRequestTimeout(200, 20, "GET", endPointStatus, "does not", serviceName);
+        restSpec.sendRequestTimeout(200, 20, "GET", endPointStatus, "does not", key + ":" + "\"" + serviceName + "\"");
         // Check all resources have been freed
         DcosSpec dcosSpec = new DcosSpec(commonspec);
         dcosSpec.checkResources(serviceName);
