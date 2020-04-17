@@ -1065,6 +1065,14 @@ public class CCTSpec extends BaseGSpec {
         dcosSpec.checkResources(serviceName);
     }
 
+    /**
+     * Upload rules
+     *
+     * @param rulesPath   path to rules zip file
+     * @param priority    (optional) priority to assign to the rules
+     * @param version     (optional) version to use for rules
+     * @throws Exception
+     */
     @Given("^I upload rules file '(.+?)'( with priority '(.+?)')?( overriding version to '(.+?)')?")
     public void uploadRules(String rulesPath, String priority, String version) throws Exception {
         // Check file exists
@@ -1103,6 +1111,13 @@ public class CCTSpec extends BaseGSpec {
         Assertions.assertThat(commonspec.getCommandResult()).as("Not possible to upload rules: " + commonspec.getCommandResult()).doesNotContain("Error");
     }
 
+    /**
+     * Upload descriptors
+     *
+     * @param descriptorsPath   path to descriptors zip file
+     * @param version     (optional) version to use for rules
+     * @throws Exception
+     */
     @Given("^I upload descriptors file '(.+?)'( overriding version to '(.+?)')?")
     public void uploadDescriptors(String descriptorsPath, String version) throws Exception {
         String headers = "";
@@ -1181,8 +1196,22 @@ public class CCTSpec extends BaseGSpec {
         }
     }
 
+    /**
+     * Update a deployed service
+     *
+     * @param serviceName       name of the service to be updated
+     * @param folder            (optional) name of the folder where service is deployed
+     * @param tenant            tenant where service is deployed
+     * @param version           version of the deployed service
+     * @param modifications     modifications to perform in the deployed json
+     * @throws Exception
+     */
     @Given("^I update service '(.+?)'( in folder '(.+?)')? in tenant '(.+?)' based on version '(.+?)' with:$")
     public void updateCCTService(String serviceName, String folder, String tenant, String version, DataTable modifications) throws Exception {
+        if (ThreadProperty.get("deploy_api_id") == null) {
+            fail("deploy_api_id variable is not set. Check deploy-api is installed and @dcos annotation is working properly.");
+        }
+
         // obtain service name
         if (folder != null && folder.startsWith("/")) {
             folder = folder.substring(1);
@@ -1233,6 +1262,120 @@ public class CCTSpec extends BaseGSpec {
             logger.error("Request to endpoint: " + endpointUpdate + " failed with status code: " + commonspec.getResponse().getStatusCode() + " and response: " + commonspec.getResponse().getResponse());
             throw new Exception("Request to endpoint: " + endpointUpdate + " failed with status code: " + commonspec.getResponse().getStatusCode() + " and response: " + commonspec.getResponse().getResponse());
         }
-
     }
+
+
+    /**
+     * Upload a descriptor
+     *
+     * @param service           name of the descriptor to be updated
+     * @param model             model of the descriptor
+     * @param version           version of the descriptor
+     * @param originalJson      base descriptor json
+     * @param modifications     modifications to perform in the descriptor json
+     * @throws Exception
+     */
+    @Given("^I upload descriptor for service '(.+?)', model '(.+?)' version '(.+?)' based on '(.+?)' with:$")
+    public void uploadCCTDescriptor(String service, String model, String version, String originalJson, DataTable modifications) throws Exception {
+        // Obtain endpoint
+        if (ThreadProperty.get("deploy_api_id") == null && ThreadProperty.get("cct-universe_id") == null) {
+            fail("deploy_api_id variable and cct-universe_id are not set. Check deploy-api or cct-universe are installed and @dcos annotation is working properly.");
+        }
+
+        String endpoint;
+        String op;
+        if (ThreadProperty.get("cct-universe_id") != null) {
+            endpoint = "/service/" + ThreadProperty.get("cct-universe_id") + "/v1/descriptors/" + service + "/" + model + "/" + version;
+            op = "PUT";
+        } else {
+            endpoint = "/service/" + ThreadProperty.get("deploy_api_id") + "/universe/" + service + "/" + model + "/" + version + "/descriptor";
+            op = "POST";
+        }
+
+        // Retrieve data
+        String retrievedData = commonspec.retrieveData(originalJson, "json");
+        // Modify json
+        String modifiedData = commonspec.modifyData(retrievedData, "json", modifications);
+
+        // Upload new descriptor
+        Future<Response> responseUpdate = commonspec.generateRequest(op, true, null, null, endpoint, modifiedData, "json");
+        commonspec.setResponse(op, responseUpdate.get());
+
+        if (commonspec.getResponse().getStatusCode() != 200 && commonspec.getResponse().getStatusCode() != 201) {
+            logger.error("Upload descriptor: " + endpoint + " failed with status code: " + commonspec.getResponse().getStatusCode() + " and response: " + commonspec.getResponse().getResponse());
+            throw new Exception("Upload descriptor: " + endpoint + " failed with status code: " + commonspec.getResponse().getStatusCode() + " and response: " + commonspec.getResponse().getResponse());
+        }
+    }
+
+    /**
+     * Update a descriptor
+     *
+     * @param service           name of the descriptor to be updated
+     * @param model             model of the descriptor
+     * @param version           version of the descriptor
+     * @param originalJson      base descriptor json
+     * @param modifications     modifications to perform in the descriptor json
+     * @throws Exception
+     */
+    @Given("^I update descriptor for service '(.+?)', model '(.+?)' version '(.+?)' based on '(.+?)' with:$")
+    public void updateCCTDescriptor(String service, String model, String version, String originalJson, DataTable modifications) throws Exception {
+        // Obtain endpoint
+        if (ThreadProperty.get("deploy_api_id") == null && ThreadProperty.get("cct-universe_id") == null) {
+            fail("deploy_api_id variable and cct-universe_id are not set. Check deploy-api or cct-universe are installed and @dcos annotation is working properly.");
+        }
+
+        String endpoint;
+        if (ThreadProperty.get("cct-universe_id") != null) {
+            endpoint = "/service/" + ThreadProperty.get("cct-universe_id") + "/v1/descriptors/" + service + "/" + model + "/" + version;
+        } else {
+            endpoint = "/service/" + ThreadProperty.get("deploy_api_id") + "/universe/" + service + "/" + model + "/" + version + "/descriptor";
+        }
+
+        // Retrieve data
+        String retrievedData = commonspec.retrieveData(originalJson, "json");
+        // Modify json
+        String modifiedData = commonspec.modifyData(retrievedData, "json", modifications);
+
+        // Update descriptor
+        Future<Response> responseUpdate = commonspec.generateRequest("PUT", true, null, null, endpoint, modifiedData, "json");
+        commonspec.setResponse("PUT", responseUpdate.get());
+
+        if (commonspec.getResponse().getStatusCode() != 200 && commonspec.getResponse().getStatusCode() != 201) {
+            logger.error("Update descriptor: " + endpoint + " failed with status code: " + commonspec.getResponse().getStatusCode() + " and response: " + commonspec.getResponse().getResponse());
+            throw new Exception("Update descriptor: " + endpoint + " failed with status code: " + commonspec.getResponse().getStatusCode() + " and response: " + commonspec.getResponse().getResponse());
+        }
+    }
+
+    /**
+     * Delete a descriptor
+     *
+     * @param service           name of the descriptor to be updated
+     * @param model             model of the descriptor
+     * @param version           version of the descriptor
+     * @throws Exception
+     */
+    @Given("^I delete descriptor for service '(.+?)', model '(.+?)' version '(.+?)'$")
+    public void deleteCCTDescriptor(String service, String model, String version) throws Exception {
+        // Obtain endpoint
+        if (ThreadProperty.get("deploy_api_id") == null && ThreadProperty.get("cct-universe_id") == null) {
+            fail("deploy_api_id variable and cct-universe_id are not set. Check deploy-api or cct-universe are installed and @dcos annotation is working properly.");
+        }
+
+        String endpoint;
+        if (ThreadProperty.get("cct-universe_id") != null) {
+            endpoint = "/service/" + ThreadProperty.get("cct-universe_id") + "/v1/descriptors/" + service + "/" + model + "/" + version;
+        } else {
+            endpoint = "/service/" + ThreadProperty.get("deploy_api_id") + "/universe/" + service + "/" + model + "/" + version + "/descriptor";
+        }
+
+        // Delete descriptor
+        Future<Response> responseUpdate = commonspec.generateRequest("DELETE", true, null, null, endpoint, "", "json");
+        commonspec.setResponse("DELETE", responseUpdate.get());
+
+        if (commonspec.getResponse().getStatusCode() != 200 && commonspec.getResponse().getStatusCode() != 201 && commonspec.getResponse().getStatusCode() != 204) {
+            logger.error("Delete descriptor: " + endpoint + " failed with status code: " + commonspec.getResponse().getStatusCode() + " and response: " + commonspec.getResponse().getResponse());
+            throw new Exception("Delete descriptor: " + endpoint + " failed with status code: " + commonspec.getResponse().getStatusCode() + " and response: " + commonspec.getResponse().getResponse());
+        }
+    }
+
 }
