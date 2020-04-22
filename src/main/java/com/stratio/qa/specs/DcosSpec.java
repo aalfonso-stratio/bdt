@@ -1330,7 +1330,7 @@ public class DcosSpec extends BaseGSpec {
             if (oApp instanceof JSONObject) {
                 JSONObject jsonApp = (JSONObject) oApp;
                 try {
-                    String serviceName = jsonApp.getString("id");
+                    String serviceName = jsonApp.getString("id").replace("/command-center/", "");
                     String dockerImage = jsonApp.getJSONObject("container").getJSONObject("docker").getString("image");
                     String dockerImageName = dockerImage.substring(dockerImage.lastIndexOf("/") + 1, dockerImage.lastIndexOf(":"));
                     String dockerImageVersion = dockerImage.substring(dockerImage.lastIndexOf(":") + 1);
@@ -1339,19 +1339,19 @@ public class DcosSpec extends BaseGSpec {
                         commonspec.getLogger().debug(dockerImageName + " - " + dockerImageVersion);
                         switch (dockerImageName) {
                             case "cct-marathon-services":
-                                ThreadProperty.set("cct-marathon-services_id", serviceName.replace("/command-center/", ""));
+                                ThreadProperty.set("cct-marathon-services_id", serviceName);
                                 break;
                             case "cct-universe":
-                                ThreadProperty.set("cct-universe_id", serviceName.replace("/command-center/", ""));
+                                ThreadProperty.set("cct-universe_id", serviceName);
                                 break;
                             case "cct-deploy-api":
-                                ThreadProperty.set("deploy_api_id", serviceName.replace("/command-center/", ""));
+                                ThreadProperty.set("deploy_api_id", serviceName);
                                 break;
                             case "command-center":
-                                ThreadProperty.set("cct_ui_id", serviceName.replace("/command-center/", ""));
+                                ThreadProperty.set("cct_ui_id", serviceName);
                                 break;
                             case "cct-configuration-api":
-                                ThreadProperty.set("configuration_api_id", serviceName.replace("/command-center/", ""));
+                                ThreadProperty.set("configuration_api_id", serviceName);
                                 break;
                             default:
                                 break;
