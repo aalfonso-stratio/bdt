@@ -67,13 +67,13 @@ public class RestTest {
         commong.setRestHost("jenkins.int.stratio.com");
         commong.setRestPort(":80");
 
-        Future<Response> response = commong.generateRequest("GET", false, null, null, "/job/AI/job/Nightly/", null, "string");
+        Future<Response> response = commong.generateRequest("GET", false, null, null, "/job/AI/job/NightlyForward/", null, "string");
         commong.setResponse("GET", (Response) response.get());
 
         RestSpec rest = new RestSpec(commong);
         rest.saveResponseInEnvironmentVariableFile("envVar", "file.txt");
 
-        assertThat(ThreadProperty.get("envVar")).as("Unexpected content in thread variable").contains("Responsibles: QA, Pedro Bedia");
+        assertThat(ThreadProperty.get("envVar")).as("Unexpected content in thread variable").contains("Responsibles: QA");
 
         File tempDirectory = new File(String.valueOf(System.getProperty("user.dir") + "/target/test-classes/"));
         String absolutePathFile = tempDirectory.getAbsolutePath() + "/file.txt";
@@ -90,13 +90,13 @@ public class RestTest {
         commong.setRestHost("jenkins.int.stratio.com");
         commong.setRestPort(":80");
 
-        Future<Response> response = commong.generateRequest("GET", false, null, null, "/job/AI/job/Nightly/", null, "string");
+        Future<Response> response = commong.generateRequest("GET", false, null, null, "/job/AI/job/NightlyForward/", null, "string");
         commong.setResponse("GET", (Response) response.get());
 
         RestSpec rest = new RestSpec(commong);
         rest.saveResponseInEnvironmentVariableFile("envVar", null);
 
-        assertThat(ThreadProperty.get("envVar")).as("Unexpected content in thread variable").contains("Responsibles: QA, Pedro Bedia");
+        assertThat(ThreadProperty.get("envVar")).as("Unexpected content in thread variable").contains("Responsibles: QA");
 
         File tempDirectory = new File(String.valueOf(System.getProperty("user.dir") + "/target/test-classes/"));
         String absolutePathFile = tempDirectory.getAbsolutePath() + "/file.txt";
