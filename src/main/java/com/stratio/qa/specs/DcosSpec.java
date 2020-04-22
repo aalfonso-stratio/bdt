@@ -29,6 +29,8 @@ import cucumber.api.java.en.When;
 import org.assertj.core.api.Assertions;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -38,6 +40,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.stratio.qa.assertions.Assertions.assertThat;
+import static org.testng.Assert.fail;
 
 /**
  * Generic DC/OS Specs.
@@ -45,6 +48,8 @@ import static com.stratio.qa.assertions.Assertions.assertThat;
  * @see <a href="DcosSpec-annotations.html">DCOS Steps &amp; Matching Regex</a>
  */
 public class DcosSpec extends BaseGSpec {
+
+    private final Logger logger = LoggerFactory.getLogger(DcosSpec.class);
 
     String descriptorPath = "/stratio_volume/descriptor.json";
 
@@ -882,6 +887,140 @@ public class DcosSpec extends BaseGSpec {
 
     }
 
+    public void obtainBasicInfoFromETCD() throws Exception {
+        String localVaultResponseFile;
+        String localVaultResponseFilePath;
+        String localCaTrustFilePath;
+
+        String bootstrap_ip = System.getProperty("BOOTSTRAP_IP");
+        String bootstrap_user;
+        String bootstrap_pem;
+
+        // Check if needed parameters have been passed
+        if (bootstrap_ip == null) {
+            throw new Exception("BOOTSTRAP_IP variable needs to be provided in order to obtain information from system.");
+        } else {
+            bootstrap_user = System.getProperty("REMOTE_USER");
+            if (bootstrap_user == null) {
+                throw new Exception("REMOTE_USER variable needs to be provided in order to obtain information from system.");
+            } else {
+                bootstrap_pem = (System.getProperty("PEM_FILE_PATH"));
+                if (bootstrap_pem == null) {
+                    throw new Exception("PEM_FILE_PATH variable needs to be provided in order to obtain information from system.");
+                }
+            }
+
+            localVaultResponseFile = "vault_response_" + bootstrap_ip;
+            localVaultResponseFilePath = "./target/test-classes/" + localVaultResponseFile;
+            localCaTrustFilePath = "./target/test-classes/ca_test.crt";
+        }
+
+        // Open connection to bootstrap
+        commonspec.getLogger().debug("Openning connection to bootstrap to obtain descriptor file: " + descriptorPath);
+        commonspec.setRemoteSSHConnection(new RemoteSSHConnection(bootstrap_user, null, bootstrap_ip, "22", bootstrap_pem), "bootstrap_connection");
+
+        // Make local copy of vault response file
+        commonspec.getLogger().debug("Copying vault_response file to: " + localVaultResponseFilePath);
+        commonspec.getRemoteSSHConnection().copyFrom(vaultResponsePath, localVaultResponseFilePath);
+
+        // Make local copy of CA
+        String caTrust = (System.getProperty("EOS_CA_TRUST") != null) ? System.getProperty("EOS_CA_TRUST") : "/stratio_volume/cas_trusted/ca.crt";
+        commonspec.getLogger().debug("Copying ca_trust file to: " + localCaTrustFilePath);
+        commonspec.getRemoteSSHConnection().copyFrom(caTrust, localCaTrustFilePath);
+
+        // Close connection to bootstrap system
+        commonspec.getRemoteSSHConnection().closeConnection();
+        RemoteSSHConnectionsUtil.getRemoteSSHConnectionsMap().remove("bootstrap_connection");
+        RemoteSSHConnectionsUtil.setLastRemoteSSHConnectionId(null);
+        RemoteSSHConnectionsUtil.setLastRemoteSSHConnection(null);
+
+        // Save content of vault response file in memory to speed up process
+        String response = commonspec.retrieveData(localVaultResponseFile, "json");
+
+        if (ThreadProperty.get("configuration_api_id") == null) {
+            fail("configuration_api_id variable is not set. Check configuratio-api is installed and @dcos annotation is working properly.");
+        }
+
+        // Set sso token
+        setGoSecSSOCookie(null, null, ThreadProperty.get("EOS_ACCESS_POINT"), ThreadProperty.get("DCOS_USER"), System.getProperty("DCOS_PASSWORD"), ThreadProperty.get("DCOS_TENANT"), null);
+        // Securely send requests
+        commonspec.setRestProtocol("https://");
+        commonspec.setRestHost(ThreadProperty.get("EOS_ACCESS_POINT"));
+        commonspec.setRestPort(":443");
+
+        // Obtain configuration-api endpoint
+        String path = "/dcs/v1/fabric";
+        String endpoint = "/service/" + ThreadProperty.get("configuration_api_id") + "/etcd?path=" + path;
+
+        Future<Response> responseETCD = commonspec.generateRequest("GET", false, null, null, endpoint, "", null);
+        commonspec.setResponse("GET", responseETCD.get());
+
+        if (commonspec.getResponse().getStatusCode() != 200) {
+            logger.error("Obtain info from ETCD: " + endpoint + " failed with status code: " + commonspec.getResponse().getStatusCode() + " and response: " + commonspec.getResponse().getResponse());
+            throw new Exception("Obtain info from ETCD: " + endpoint + " failed with status code: " + commonspec.getResponse().getStatusCode() + " and response: " + commonspec.getResponse().getResponse());
+        }
+
+        String etcdInfo = commonspec.getResponse().getResponse();
+
+        obtainJSONInfoAndExpose(etcdInfo, "$.eos.internalDomain", "EOS_INTERNAL_DOMAIN", null);
+        obtainJSONInfoAndExpose(etcdInfo, "$.eos.dockerRegistry", "DOCKER_REGISTRY", null);
+        obtainJSONInfoAndExpose(etcdInfo, "$.eos.externalDockerRegistry", "EXTERNAL_DOCKER_REGISTRY", null);
+        obtainJSONInfoAndExpose(etcdInfo, "$.eos.artifactRepository", "ARTIFACT_REPOSITORY", null);
+        obtainJSONInfoAndExpose(etcdInfo, "$.eos.proxyAccessPointURL", "EOS_ACCESS_POINT", null);
+        obtainJSONInfoAndExpose(etcdInfo, "$.globals.sso.ssoTenantDefault", "DCOS_TENANT", null);
+        obtainJSONInfoAndExpose(etcdInfo, "$.globals.vault.vaultHost", "EOS_VAULT_HOST", null);
+        obtainJSONInfoAndExpose(etcdInfo, "$.globals.kerberos.realm", "EOS_REALM", null);
+        obtainJSONInfoAndExpose(etcdInfo, "$.globals.ldap.adminUserUuid", "DCOS_USER", null);
+        obtainJSONInfoAndExpose(etcdInfo, "$.globals.ldap.url", "LDAP_URL", null);
+        obtainJSONInfoAndExpose(etcdInfo, "$.globals.ldap.port", "LDAP_PORT", null);
+        obtainJSONInfoAndExpose(etcdInfo, "$.globals.ldap.userDn", "LDAP_USER_DN", null);
+        obtainJSONInfoAndExpose(etcdInfo, "$.globals.ldap.groupDN", "LDAP_GROUP_DN", null);
+        obtainJSONInfoAndExpose(etcdInfo, "$.globals.ldap.ldapBase", "LDAP_BASE", null);
+        obtainJSONInfoAndExpose(etcdInfo, "$.globals.ldap.adminrouterAuthorizedGroup", "LDAP_ADMIN_GROUP", null);
+
+        String[] schemaVersion = ThreadProperty.get("EOS_SCHEMA_VERSION").split("\\.");
+        if (Integer.parseInt(schemaVersion[0]) > 0) {
+            obtainJSONInfoAndExpose(etcdInfo, "$.cluster_info.descriptor.name", "EOS_CLUSTER_ID", null);
+            obtainJSONInfoAndExpose(etcdInfo, "$.cluster_info.descriptor.dnsSearch", "EOS_DNS_SEARCH", null);
+            obtainJSONInfoAndExpose(etcdInfo, "$.cluster_info.descriptor.nodes[?(@.role == \"master\")].networking[0].ip", "DCOS_IP", "0");
+            obtainJSONInfoAndExpose(etcdInfo, "$.cluster_info.descriptor.nodes[?(@.role == \"agent\" && @.public == true)].networking[0].ip", "PUBLIC_NODE", "0");
+            obtainJSONInfoAndExpose(etcdInfo, "$.globals.overlayNetwork.addressPool", "ADDRESS_POOL", null);
+        }
+
+        obtainJSONInfo(response, "ROOT_TOKEN", "VAULT_TOKEN");
+
+    }
+
+    public void obtainJSONInfoAndExpose(String json, String jqExpression, String envVar, String position) {
+        String value = "";
+        try {
+            value = commonspec.getJSONPathString(json, jqExpression, position).replaceAll("\\[", "").replaceAll("\\]", "").replaceAll("\"", "");
+        } catch (Exception e) {
+            if (envVar == "PUBLIC_NODE" || envVar == "DCOS_TENANT") {
+                value = null;
+            } else {
+                throw e;
+            }
+        }
+
+        switch (envVar) {
+            case "DCOS_TENANT":
+                if (value == null) {
+                    value = "NONE";
+                }
+                break;
+            case "ACCESS_POINT":
+                value = value.replaceAll("https://", "");
+                break;
+            default:
+                break;
+        }
+
+        if (!(envVar == "PUBLIC_NODE" && value == null)) {
+            ThreadProperty.set(envVar, value);
+        }
+    }
+
 
     /**
      * Obtains basic information for tests from descriptor file:
@@ -900,6 +1039,7 @@ public class DcosSpec extends BaseGSpec {
 
         // General values
         String varClusterID = "EOS_CLUSTER_ID";
+        String varSchemaVersion = "EOS_SCHEMA_VERSION";
         String varClusterDomain = "EOS_DNS_SEARCH";
         String varInternalDomain = "EOS_INTERNAL_DOMAIN";
         String varIp = "DCOS_IP";
@@ -988,6 +1128,7 @@ public class DcosSpec extends BaseGSpec {
             String response = commonspec.retrieveData(localVaultResponseFile, "json");
 
             obtainJSONInfo(descriptor, "ID", varClusterID);
+            obtainJSONInfo(descriptor, "SCHEMA_VERSION", varSchemaVersion);
             obtainJSONInfo(descriptor, "DNS_SEARCH", varClusterDomain);
             obtainJSONInfo(descriptor, "INTERNAL_DOMAIN", varInternalDomain);
             obtainJSONInfo(descriptor, "IP", varIp);
@@ -1048,6 +1189,9 @@ public class DcosSpec extends BaseGSpec {
                 break;
             case "ID":
                 jqExpression = "$.id";
+                break;
+            case "SCHEMA_VERSION":
+                jqExpression = "$.schemaVersion";
                 break;
             case "DNS_SEARCH":
                 jqExpression = "$.dnsSearch";
@@ -1186,48 +1330,38 @@ public class DcosSpec extends BaseGSpec {
             if (oApp instanceof JSONObject) {
                 JSONObject jsonApp = (JSONObject) oApp;
                 try {
+                    String serviceName = jsonApp.getString("id");
                     String dockerImage = jsonApp.getJSONObject("container").getJSONObject("docker").getString("image");
                     String dockerImageName = dockerImage.substring(dockerImage.lastIndexOf("/") + 1, dockerImage.lastIndexOf(":"));
                     String dockerImageVersion = dockerImage.substring(dockerImage.lastIndexOf(":") + 1);
                     if (appsToSaveVersion.contains(dockerImageName)) {
                         ThreadProperty.set(dockerImageName + "_version", dockerImageVersion);
                         commonspec.getLogger().debug(dockerImageName + " - " + dockerImageVersion);
+                        switch (dockerImageName) {
+                            case "cct-marathon-services":
+                                ThreadProperty.set("cct-marathon-services_id", serviceName.replace("/command-center/", ""));
+                                break;
+                            case "cct-universe":
+                                ThreadProperty.set("cct-universe_id", serviceName.replace("/command-center/", ""));
+                                break;
+                            case "cct-deploy-api":
+                                ThreadProperty.set("deploy_api_id", serviceName.replace("/command-center/", ""));
+                                break;
+                            case "command-center":
+                                ThreadProperty.set("cct_ui_id", serviceName.replace("/command-center/", ""));
+                                break;
+                            case "cct-configuration-api":
+                                ThreadProperty.set("configuration_api_id", serviceName.replace("/command-center/", ""));
+                                break;
+                            default:
+                                break;
+                        }
                     }
                 } catch (Exception e) {
                     if (jsonApp.get("id") != JSONObject.NULL) {
                         commonspec.getLogger().debug("Error obtaining container in service with id: " + jsonApp.getString("id"));
                     }
                 }
-            }
-        }
-        // Save variables
-        if (ThreadProperty.get("cct-marathon-services_version") != null) {
-            ThreadProperty.set("cct-marathon-services_id", "cct-marathon-services");
-        }
-        if (ThreadProperty.get("cct-universe_version") != null) {
-            ThreadProperty.set("cct-universe_id", "cct-universe");
-        }
-        if (ThreadProperty.get("cct-deploy-api_version") != null && ThreadProperty.get("cct-deploy-api_version").startsWith("1.")) {
-            ThreadProperty.set("deploy_api_id", "cct-deploy-api");
-        } else {
-            ThreadProperty.set("deploy_api_id", "deploy-api");
-        }
-        if (ThreadProperty.get("command-center_version") != null && ThreadProperty.get("command-center_version").startsWith("1.")) {
-            ThreadProperty.set("cct_ui_id", "cct-ui");
-        } else {
-            ThreadProperty.set("cct_ui_id", "cctui");
-        }
-
-        if (ThreadProperty.get("cct-configuration-api_version") != null) {
-            try {
-                String[] version = ThreadProperty.get("cct-configuration-api_version").split("\\.");
-                if (Integer.parseInt(version[0]) < 1 || (Integer.parseInt(version[0]) == 1 && (Integer.parseInt(version[1]) < 4 || (Integer.parseInt(version[1]) == 4 && Integer.parseInt(version[2]) == 0)))) {
-                    ThreadProperty.set("configuration_api_id", "configuration-api");
-                } else {
-                    ThreadProperty.set("configuration_api_id", "cct-configuration-api");
-                }
-            } catch (NumberFormatException e) {
-                ThreadProperty.set("configuration_api_id", "cct-configuration-api");
             }
         }
 

@@ -285,6 +285,7 @@ public class HookGSpec extends BaseGSpec {
         MiscSpec miscspec = new MiscSpec(commonspec);
         dcosSpec.obtainBasicInfoFromDescriptor(null);
         dcosSpec.getServicesInfoFromMarathon();
+        dcosSpec.obtainBasicInfoFromETCD();
         miscspec.setGosecVariables();
     }
 
