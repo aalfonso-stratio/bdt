@@ -968,7 +968,6 @@ public class DcosSpec extends BaseGSpec {
         obtainJSONInfoAndExpose(etcdInfo, "$.eos.artifactRepository", "ARTIFACT_REPOSITORY", null);
         obtainJSONInfoAndExpose(etcdInfo, "$.eos.proxyAccessPointURL", "EOS_ACCESS_POINT", null);
         obtainJSONInfoAndExpose(etcdInfo, "$.globals.sso.ssoTenantDefault", "DCOS_TENANT", null);
-        obtainJSONInfoAndExpose(etcdInfo, "$.globals.vault.vaultHost", "EOS_VAULT_HOST", null);
         obtainJSONInfoAndExpose(etcdInfo, "$.globals.kerberos.realm", "EOS_REALM", null);
         obtainJSONInfoAndExpose(etcdInfo, "$.globals.ldap.adminUserUuid", "DCOS_USER", null);
         obtainJSONInfoAndExpose(etcdInfo, "$.globals.ldap.url", "LDAP_URL", null);
@@ -984,6 +983,7 @@ public class DcosSpec extends BaseGSpec {
             obtainJSONInfoAndExpose(etcdInfo, "$.cluster_info.descriptor.dnsSearch", "EOS_DNS_SEARCH", null);
             obtainJSONInfoAndExpose(etcdInfo, "$.cluster_info.descriptor.nodes[?(@.role == \"master\")].networking[0].ip", "DCOS_IP", "0");
             obtainJSONInfoAndExpose(etcdInfo, "$.cluster_info.descriptor.nodes[?(@.role == \"agent\" && @.public == true)].networking[0].ip", "PUBLIC_NODE", "0");
+            obtainJSONInfoAndExpose(etcdInfo, "$.cluster_info.descriptor.nodes[?(@.role == \"gosec\")].networking[0].ip", "EOS_VAULT_HOST", "0");
             obtainJSONInfoAndExpose(etcdInfo, "$.globals.overlayNetwork.addressPool", "ADDRESS_POOL", null);
         }
 
