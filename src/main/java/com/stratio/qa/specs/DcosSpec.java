@@ -1009,7 +1009,7 @@ public class DcosSpec extends BaseGSpec {
                     value = "NONE";
                 }
                 break;
-            case "ACCESS_POINT":
+            case "EOS_ACCESS_POINT":
                 value = value.replaceAll("https://", "");
                 break;
             default:
