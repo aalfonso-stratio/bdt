@@ -979,8 +979,8 @@ public class DcosSpec extends BaseGSpec {
         obtainJSONInfoAndExpose(etcdInfo, "$.globals.vault.vaultHost", "EOS_VAULT_HOST_INTERNAL", null);
 
         String[] schemaVersion = ThreadProperty.get("EOS_SCHEMA_VERSION").split("\\.");
-        if (Integer.parseInt(schemaVersion[0]) > 0) {
-            obtainJSONInfoAndExpose(etcdInfo, "$.cluster_info.descriptor.name", "EOS_CLUSTER_ID", null);
+        if (Integer.parseInt(schemaVersion[0]) > 0 && Integer.parseInt(schemaVersion[1]) > 3) {
+            obtainJSONInfoAndExpose(etcdInfo, "$.cluster_info.descriptor.id", "EOS_CLUSTER_ID", null);
             obtainJSONInfoAndExpose(etcdInfo, "$.cluster_info.descriptor.dnsSearch", "EOS_DNS_SEARCH", null);
             obtainJSONInfoAndExpose(etcdInfo, "$.cluster_info.descriptor.nodes[?(@.role == \"master\")].networking[0].ip", "DCOS_IP", "0");
             obtainJSONInfoAndExpose(etcdInfo, "$.cluster_info.descriptor.nodes[?(@.role == \"agent\" && @.public == true)].networking[0].ip", "PUBLIC_NODE", "0");
