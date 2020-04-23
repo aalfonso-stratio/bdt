@@ -20,6 +20,7 @@ import com.ning.http.client.Response;
 import com.stratio.qa.assertions.Assertions;
 import com.stratio.qa.utils.ThreadProperty;
 import cucumber.api.java.en.Given;
+import cucumber.api.java.en.When;
 import io.cucumber.datatable.DataTable;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -1409,6 +1410,41 @@ public class CCTSpec extends BaseGSpec {
             logger.error("Delete descriptor: " + endpoint + " failed with status code: " + commonspec.getResponse().getStatusCode() + " and response: " + commonspec.getResponse().getResponse());
             throw new Exception("Delete descriptor: " + endpoint + " failed with status code: " + commonspec.getResponse().getStatusCode() + " and response: " + commonspec.getResponse().getResponse());
         }
+    }
+
+    /**
+     * Read value from centralized configuration path
+     *
+     * @param path      path to read value from (separated with '/')
+     * @param envVar    environment variable where to store the read value
+     * @throws Exception
+     */
+    @When("^I read value in path '(.+?)' from central configuration and save it in environment variable '(.+?)'$")
+    public void readValueCentralConfig(String path, String envVar) throws Exception {
+        if (ThreadProperty.get("configuration_api_id") == null) {
+            fail("configuration_api_id variable is not set. Check configuratio-api is installed and @dcos annotation is working properly.");
+        }
+
+        // Set sso token
+        DcosSpec dcosSpec = new DcosSpec(commonspec);
+        dcosSpec.setGoSecSSOCookie(null, null, ThreadProperty.get("EOS_ACCESS_POINT"), ThreadProperty.get("DCOS_USER"), System.getProperty("DCOS_PASSWORD"), ThreadProperty.get("DCOS_TENANT"), null);
+        // Securely send requests
+        commonspec.setRestProtocol("https://");
+        commonspec.setRestHost(ThreadProperty.get("EOS_ACCESS_POINT"));
+        commonspec.setRestPort(":443");
+
+        String fullPath = "/dcs/v1/fabric" + path;
+        String endpoint = "/service/" + ThreadProperty.get("configuration_api_id") + "/etcd?path=" + fullPath;
+
+        Future<Response> responseETCD = commonspec.generateRequest("GET", false, null, null, endpoint, "", null);
+        commonspec.setResponse("GET", responseETCD.get());
+
+        if (commonspec.getResponse().getStatusCode() != 200) {
+            logger.error("Obtain info from ETCD: " + endpoint + " failed with status code: " + commonspec.getResponse().getStatusCode() + " and response: " + commonspec.getResponse().getResponse());
+            throw new Exception("Obtain info from ETCD: " + endpoint + " failed with status code: " + commonspec.getResponse().getStatusCode() + " and response: " + commonspec.getResponse().getResponse());
+        }
+
+        ThreadProperty.set(envVar, commonspec.getResponse().getResponse());
     }
 
 }
