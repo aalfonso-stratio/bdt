@@ -976,6 +976,7 @@ public class DcosSpec extends BaseGSpec {
         obtainJSONInfoAndExpose(etcdInfo, "$.globals.ldap.groupDN", "LDAP_GROUP_DN", null);
         obtainJSONInfoAndExpose(etcdInfo, "$.globals.ldap.ldapBase", "LDAP_BASE", null);
         obtainJSONInfoAndExpose(etcdInfo, "$.globals.ldap.adminrouterAuthorizedGroup", "LDAP_ADMIN_GROUP", null);
+        obtainJSONInfoAndExpose(etcdInfo, "$.globals.vault.vaultHost", "EOS_VAULT_HOST_INTERNAL", null);
 
         String[] schemaVersion = ThreadProperty.get("EOS_SCHEMA_VERSION").split("\\.");
         if (Integer.parseInt(schemaVersion[0]) > 0) {
