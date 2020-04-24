@@ -47,6 +47,9 @@ import static org.testng.Assert.fail;
 public class CCTSpec extends BaseGSpec {
 
     private final Logger logger = LoggerFactory.getLogger(CCTSpec.class);
+
+    RestSpec restSpec;
+
     /**
      * Generic constructor.
      *
@@ -54,6 +57,7 @@ public class CCTSpec extends BaseGSpec {
      */
     public CCTSpec(CommonG spec) {
         this.commonspec = spec;
+        restSpec = new RestSpec(spec);
     }
 
     /**
@@ -1445,6 +1449,129 @@ public class CCTSpec extends BaseGSpec {
         }
 
         ThreadProperty.set(envVar, commonspec.getResponse().getResponse());
+    }
+
+    @When("^I( force)? create '(certificate|keytab|password|password_nouser)' '(.+?)' using deploy-api (with|without) parameters( path '(.+?)')?( cn '(.+?)')?( name '(.+?)')?( alt '(.+?)')?( organization '(.+?)')?( principal '(.+?)')?( realm '(.+?)')?( user '(.+?)')?( password '(.+?)')?$")
+    public void createSecret(String force, String secretType, String secret, String withOrWithout, String path, String cn, String name, String alt, String organizationName, String principal, String realm, String user, String password) throws Exception {
+        String baseUrl = "/service/" + ThreadProperty.get("deploy_api_id") + "/secrets";
+        String secretTypeAux;
+        String urlParams;
+        switch (secretType) {
+            case "certificate":
+                urlParams = getCertificateUrlParams(secret, path, cn, name, alt, organizationName);
+                secretTypeAux = "certificates";
+                break;
+            case "keytab":
+                urlParams = getKeytabUrlParams(secret, path, name, principal, realm);
+                secretTypeAux = "kerberos";
+                break;
+            case "password":
+                urlParams = getPasswordUrlParams(secret, path, name, user, password);
+                secretTypeAux = "passwords";
+                break;
+            default:
+                urlParams = "";
+                secretTypeAux = "default";
+        }
+        if (force != null) {
+            String pathAux = path != null ? path.replaceAll("/", "%2F") + secret : "%2Fuserland%2F" + secretTypeAux + "%2F" + secret;
+            restSpec.sendRequestNoDataTable("DELETE", baseUrl + "?path=" + pathAux, null, null, null);
+        }
+        if (!secretType.equals("password_nouser")) {
+            restSpec.sendRequestNoDataTable("POST", baseUrl + "/" + secretType + urlParams, null, null, null);
+        } else {
+            String pathAux = (path != null ? path.replaceAll("/", "%2F") + secret : "%2Fuserland%2Fpasswords%2F" + secret) + "%2F" + (name != null ? name : secret);
+            String filePath = createCustomSecretFile(password != null ? password : secret);
+            restSpec.sendRequestNoDataTable("POST", baseUrl + "/custom?path=" + pathAux, null, filePath, "json");
+        }
+    }
+
+    private String createCustomSecretFile(String password) throws IOException {
+        File tempDirectory = new File(System.getProperty("user.dir") + "/target/test-classes/");
+        String fileName = System.currentTimeMillis() + ".json";
+        String absolutePathFile = tempDirectory.getAbsolutePath() + "/" + fileName;
+        commonspec.getLogger().debug("Creating file {} in 'target/test-classes'", absolutePathFile);
+        // Note that this Writer will delete the file if it exists
+        Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(absolutePathFile), StandardCharsets.UTF_8));
+        try {
+            out.write("{\"pass\": \"" + password + "\"}");
+        } catch (Exception e) {
+            commonspec.getLogger().error("Custom file {} hasn't been created:\n{}", absolutePathFile, e.toString());
+        } finally {
+            out.close();
+        }
+        return fileName;
+    }
+
+    @When("^I delete '(certificate|keytab|password)' '(.+?)'( located in path '(.+?)')?$")
+    public void removeSecret(String secretType, String secret, String path) throws Exception {
+        String baseUrl = "/service/" + ThreadProperty.get("deploy_api_id") + "/secrets";
+        String secretTypeAux;
+        switch (secretType) {
+            case "certificate":
+                secretTypeAux = "certificates";
+                break;
+            case "keytab":
+                secretTypeAux = "kerberos";
+                break;
+            case "password":
+                secretTypeAux = "passwords";
+                break;
+            default:
+                secretTypeAux = "default";
+        }
+        String pathAux = path != null ? path.replaceAll("/", "%2F") + secret : "%2Fuserland%2F" + secretTypeAux + "%2F" + secret;
+        restSpec.sendRequestNoDataTable("DELETE", baseUrl + "?path=" + pathAux, null, null, null);
+        restSpec.sendRequestNoDataTable("GET", baseUrl + "?path=" + pathAux, null, null, null);
+        restSpec.assertResponseStatusLength(404, null, null);
+    }
+
+    private String getCertificateUrlParams(String secret, String path, String cn, String name, String alt, String organizationName) {
+        String pathAux = path != null ? path.replaceAll("/", "%2F") + secret : "%2Fuserland%2Fcertificates%2F" + secret;
+        String cnAux = cn != null ? cn : secret;
+        String nameAux = name != null ? name : secret;
+        String urlParams = "?path=" + pathAux + "&cn=" + cnAux + "&name=" + nameAux;
+        if (alt != null) {
+            urlParams = urlParams + "&alt=" + alt;
+        }
+        if (organizationName != null) {
+            urlParams = urlParams + "&organizationName=" + organizationName;
+        }
+        return urlParams;
+    }
+
+    private String getKeytabUrlParams(String secret, String path, String name, String principal, String realm) throws Exception {
+        String pathAux = path != null ? path.replaceAll("/", "%2F") + secret : "%2Fuserland%2Fkerberos%2F" + secret;
+        String principalAux = principal != null ? principal : secret;
+        String nameAux = name != null ? name : secret;
+        String realmAux = realm != null ? realm : ThreadProperty.get("EOS_REALM");
+        if (realmAux == null) {
+            throw new Exception("Realm is mandatory to generate keytab");
+        }
+        return "?path=" + pathAux + "&principal=" + principalAux + "&name=" + nameAux + "&realm=" + realmAux;
+    }
+
+    private String getPasswordUrlParams(String secret, String path, String name, String user, String password) {
+        String pathAux = path != null ? path.replaceAll("/", "%2F") + secret : "%2Fuserland%2Fpasswords%2F" + secret;
+        String nameAux = name != null ? name : secret;
+        String userAux = user != null ? user : secret;
+        String passwordAux = password != null ? password : secret;
+        return "?path=" + pathAux + "&name=" + nameAux + "&password=" + passwordAux + "&user=" + userAux;
+    }
+
+    @When("^I login to '(.+?)' based on '([^:]+?)' as '(json|string)'$")
+    public void loginUser(String endPoint, String baseData, String type) throws Exception {
+        restSpec.sendRequestNoDataTable("POST", endPoint, null, baseData, type);
+    }
+
+    @When("^I login to '(.+?)' based on '([^:]+?)' as '(json|string)' with:$")
+    public void loginUser(String endPoint, String baseData, String type, DataTable modifications) throws Exception {
+        restSpec.sendRequest("POST", endPoint, null, baseData, type, modifications);
+    }
+
+    @When("^I logout from '(.+?)'$")
+    public void logoutUser(String endPoint) throws Exception {
+        restSpec.sendRequestNoDataTable("GET", endPoint, null, "", "");
     }
 
 }
