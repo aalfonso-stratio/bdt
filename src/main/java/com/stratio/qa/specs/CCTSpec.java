@@ -33,6 +33,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
@@ -347,7 +349,7 @@ public class CCTSpec extends BaseGSpec {
                 commonspec.setResponse(endPoint, response.get());
                 statusService = checkServiceStatusInResponse(expectedStatus, commonspec.getResponse().getResponse(), numTasks, taskType);
             } catch (Exception e) {
-                commonspec.getLogger().debug("Error in request " + endPoint + " - " + e.toString());
+                commonspec.getLogger().warn("Error in request " + endPoint + " - " + e.toString());
             }
             if (i < timeout) {
                 Thread.sleep(wait * 1000);
@@ -395,18 +397,30 @@ public class CCTSpec extends BaseGSpec {
             return res;
         }
         String regex_name = ".[" + name + "]*";
+        HashMap<String, Long> taskTimestampMap = new HashMap<>();
+        HashMap<String, String> taskStatusMap = new HashMap<>();
         for (int i = 0; i < arrayOfTasks.length(); i++) {
             JSONObject task = arrayOfTasks.getJSONObject(i);
             if (task.getString("name").matches(regex_name)) {
-                task_counter++;
-                if (!task.getString(key).equalsIgnoreCase(expectedStatus)) {
-                    commonspec.getLogger().warn("The status of " + task.getString("name") + " is " + task.getString(key));
-                    commonspec.getLogger().warn(" Expected status of " + task.getString("name") + " is " + expectedStatus);
-                    return false;
+                if (taskTimestampMap.get(task.getString("name")) != null) {
+                    if (taskTimestampMap.get(task.getString("name")) < task.getLong("timestamp")) {
+                        taskTimestampMap.put(task.getString("name"), task.getLong("timestamp"));
+                        taskStatusMap.put(task.getString("name"), task.getString(key));
+                    }
+                } else {
+                    taskTimestampMap.put(task.getString("name"), task.getLong("timestamp"));
+                    taskStatusMap.put(task.getString("name"), task.getString(key));
                 }
             }
         }
-        if (task_counter == tasks) {
+        for (Map.Entry taskStatus : taskStatusMap.entrySet()) {
+            if (!((String) taskStatus.getValue()).equalsIgnoreCase(expectedStatus)) {
+                commonspec.getLogger().warn("The status of " + taskStatus.getKey() + " is " + taskStatus.getValue());
+                commonspec.getLogger().warn(" Expected status of " + taskStatus.getKey() + " is " + expectedStatus);
+                return false;
+            }
+        }
+        if (taskStatusMap.size() == tasks) {
             return true;
         }
         commonspec.getLogger().error("The number of tasks deployed: " + task_counter + " are not the expected ones: " + tasks);
