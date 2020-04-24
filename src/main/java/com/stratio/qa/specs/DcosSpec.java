@@ -1365,7 +1365,6 @@ public class DcosSpec extends BaseGSpec {
                 }
             }
         }
-
         ThreadProperty.set("marathonVariables", "true");
     }
 }
