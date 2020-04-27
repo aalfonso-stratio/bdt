@@ -20,6 +20,7 @@ import com.ning.http.client.Response;
 import com.stratio.qa.assertions.Assertions;
 import com.stratio.qa.utils.ThreadProperty;
 import cucumber.api.java.en.Given;
+import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import io.cucumber.datatable.DataTable;
 import org.json.JSONArray;
@@ -71,6 +72,9 @@ public class CCTSpec extends BaseGSpec {
      */
     @Given("^I want to download '(stdout|stderr)' last '(\\d+)' lines of service '(.+?)'( with task type '(.+?)')?")
     public void downLoadLogsFromService(String logType, Integer lastLinesToRead, String service, String taskType) throws Exception {
+        // Set REST connection
+        commonspec.setCCTConnection();
+
         String fileOutputName = service.replace('/', '_') + taskType + logType;
         String endPoint;
         if (ThreadProperty.get("cct-marathon-services_id") == null) {
@@ -132,6 +136,9 @@ public class CCTSpec extends BaseGSpec {
      */
     @Given("^The '(stdout|stderr)' of service '(.+?)'( with task type '(.+?)')? contains '(.+?)' in the last '(\\d+)' lines$")
     public void readLogsFromService(String logType, String service, String taskType, String logToCheck, Integer lastLinesToRead) throws Exception {
+        // Set REST connection
+        commonspec.setCCTConnection();
+
         commonspec.getLogger().debug("Start process of read " + lastLinesToRead + " from the mesos log");
         String endPoint;
         if (ThreadProperty.get("cct-marathon-services_id") == null) {
@@ -184,6 +191,9 @@ public class CCTSpec extends BaseGSpec {
      * @throws Exception
      */
     public String readLogsFromMesos(String path, Integer lastLines) throws Exception {
+        // Set REST connection
+        commonspec.setCCTConnection();
+
         //obtain last offset
         Future<Response> response = null;
         response = commonspec.generateRequest("GET", false, null, null, path, "", null);
@@ -268,6 +278,9 @@ public class CCTSpec extends BaseGSpec {
      */
     @Given("^I teardown the service '(.+?)' of tenant '(.+?)'")
     public void tearDownService(String service, String tenant) throws Exception {
+        // Set REST connection
+        commonspec.setCCTConnection();
+
         if (ThreadProperty.get("deploy_api_id") == null) {
             fail("deploy_api_id variable is not set. Check deploy-api is installed and @dcos annotation is working properly.");
         }
@@ -299,8 +312,7 @@ public class CCTSpec extends BaseGSpec {
         restSpec.sendRequestTimeout(200, 20, "GET", endPointStatus, "does not", key + ":" + "\"" + serviceName + "\"");
 
         // Check all resources have been freed
-        DcosSpec dcosSpec = new DcosSpec(commonspec);
-        dcosSpec.checkResources(serviceName);
+        this.checkResources(serviceName);
     }
 
     /**
@@ -311,6 +323,9 @@ public class CCTSpec extends BaseGSpec {
      */
     @Given("^I scale service '(.+?)' to '(\\d+)' instances")
     public void scaleService(String service, Integer instances) throws Exception {
+        // Set REST connection
+        commonspec.setCCTConnection();
+
         if (ThreadProperty.get("deploy_api_id") == null) {
             fail("deploy_api_id variable is not set. Check deploy-api is installed and @dcos annotation is working properly.");
         }
@@ -338,6 +353,9 @@ public class CCTSpec extends BaseGSpec {
      */
     @Given("^in less than '(\\d+)' seconds, checking each '(\\d+)' seconds, I check that the service '(.+?)' in CCT with '(\\d+)' tasks of type '(.+?)' is in '(healthy|unhealthy|running|stopped)' status")
     public void checkServiceStatus(Integer timeout, Integer wait, String service, Integer numTasks, String taskType, String expectedStatus) throws Exception {
+        // Set REST connection
+        commonspec.setCCTConnection();
+
         String endPoint = "/service/deploy-api/deployments/service?instanceName=" + service;
         if (ThreadProperty.get("cct-marathon-services_id") != null) {
             endPoint = "/service/cct-marathon-services/v1/services/" + service;
@@ -439,6 +457,9 @@ public class CCTSpec extends BaseGSpec {
      */
     @Given("^in less than '(\\d+)' seconds, checking each '(\\d+)' seconds, I check in CCT that the service '(.+?)'( with number of tasks '(\\d+)')? is in '(healthy|unhealthy|running|stopped)' status$")
     public void checkServiceStatus(Integer timeout, Integer wait, String service, Integer numTasks, String expectedStatus) throws Exception {
+        // Set REST connection
+        commonspec.setCCTConnection();
+
         String endPoint = "/service/deploy-api/deployments/service?instanceName=" + service;
         boolean useMarathonServices = false;
         if (ThreadProperty.get("cct-marathon-services_id") != null) {
@@ -548,6 +569,8 @@ public class CCTSpec extends BaseGSpec {
      */
     @Given("^I get info from global config with path '(.*?)'( and save it in environment variable '(.*?)')?( and save it in file '(.*?)')?$")
     public void infoFromGlobalConfig(String path, String envVar, String fileName) throws Exception {
+        // Set REST connection
+        commonspec.setCCTConnection();
 
         String endPoint = "/service/" + ThreadProperty.get("configuration_api_id") + "/central";
         Future<Response> response;
@@ -583,6 +606,8 @@ public class CCTSpec extends BaseGSpec {
      */
     @Given("^I get global configuration( and save it in environment variable '(.*?)')?( and save it in file '(.*?)')?$")
     public void getGlobalConfig(String envVar, String fileName) throws Exception {
+        // Set REST connection
+        commonspec.setCCTConnection();
 
         String endPoint = "/service/" + ThreadProperty.get("configuration_api_id") + "/central/config";
         Future<Response> response;
@@ -615,6 +640,8 @@ public class CCTSpec extends BaseGSpec {
      */
     @Given("^I get schema from global configuration( and save it in environment variable '(.*?)')?( and save it in file '(.*?)')?$")
     public void getSchemaGlobalConfig(String envVar, String fileName) throws Exception {
+        // Set REST connection
+        commonspec.setCCTConnection();
 
         String endPoint = "/service/" + ThreadProperty.get("configuration_api_id") + "/central/schema";
         Future<Response> response;
@@ -648,6 +675,8 @@ public class CCTSpec extends BaseGSpec {
      */
     @Given("^I get network '(.*?)'( and save it in environment variable '(.*?)')?( and save it in file '(.*?)')?$")
     public void getNetworkById(String networkId, String envVar, String fileName) throws Exception {
+        // Set REST connection
+        commonspec.setCCTConnection();
 
         String endPoint = "/service/" + ThreadProperty.get("configuration_api_id") + "/network/" + networkId;
         Future<Response> response;
@@ -680,6 +709,8 @@ public class CCTSpec extends BaseGSpec {
      */
     @Given("^I get all networks( and save it in environment variable '(.*?)')?( and save it in file '(.*?)')?$")
     public void getAllNetworks(String envVar, String fileName) throws Exception {
+        // Set REST connection
+        commonspec.setCCTConnection();
 
         String endPoint = "/service/" + ThreadProperty.get("configuration_api_id") + "/network/all";
         Future<Response> response;
@@ -713,6 +744,8 @@ public class CCTSpec extends BaseGSpec {
      */
     @Given("^I get path '(.*?)' from Mesos configuration( and save it in environment variable '(.*?)')?( and save it in file '(.*?)')?$")
     public void getMesosConfiguration(String path, String envVar, String fileName) throws Exception {
+        // Set REST connection
+        commonspec.setCCTConnection();
 
         Future<Response> response;
 
@@ -765,6 +798,8 @@ public class CCTSpec extends BaseGSpec {
      */
     @Given("^(in less than '(\\d+)' seconds,)?( checking each '(\\d+)' seconds, )?I (create|update) calico network '(.+?)' so that the response( does not)? contains '(.+?)' based on '([^:]+?)'( as '(json|string|gov)')? with:$")
     public void calicoNetworkTimeout(Integer timeout, Integer wait, String operation, String networkId, String contains, String responseVal, String baseData, String type, DataTable modifications) throws Exception {
+        // Set REST connection
+        commonspec.setCCTConnection();
 
         // Retrieve data
         String retrievedData = commonspec.retrieveData(baseData, type);
@@ -853,6 +888,10 @@ public class CCTSpec extends BaseGSpec {
         if (force == null && (networkId.equals("logs") || networkId.equals("stratio") || networkId.equals("metrics") || networkId.equals("stratio-shared"))) {
             throw new Exception("It is not possible deleting networks stratio, metrics, logs or stratio-shared");
         }
+
+        // Set REST connection
+        commonspec.setCCTConnection();
+
         String endPoint = "/service/" + ThreadProperty.get("configuration_api_id") + "/network/" + networkId;
         String requestType = "DELETE";
 
@@ -933,6 +972,9 @@ public class CCTSpec extends BaseGSpec {
     @Given("^I get schema( with level '(\\d+)')? from service '(.+?)' with model '(.+?)' and version '(.+?)'( and save it in environment variable '(.*?)')?( and save it in file '(.*?)')?$")
     public void getServiceSchema(Integer level, String service, String model, String version, String envVar, String fileName) throws Exception {
 
+        // Set REST connection
+        commonspec.setCCTConnection();
+
         if (level == null) {
             level = 1;
         }
@@ -987,6 +1029,9 @@ public class CCTSpec extends BaseGSpec {
      */
     @Given("^I install service '(.+?)'( in folder '(.+?)')? with model '(.+?)' and version '(.+?)' and instance name '(.+?)' in tenant '(.+?)' using json '(.+?)'$")
     public void installServiceFromMarathonJson(String service, String folder, String model, String version, String name, String tenant, String jsonFile) throws Exception {
+        // Set REST connection
+        commonspec.setCCTConnection();
+
         String endPoint = "/service/" + ThreadProperty.get("deploy_api_id") + "/deploy/" + service + "/" + model + "/" + version + "/schema?tenantId=" + tenant;
         String data = this.commonspec.retrieveData(jsonFile, "json");
 
@@ -1056,6 +1101,9 @@ public class CCTSpec extends BaseGSpec {
             }
         }
 
+        // Set REST connection
+        commonspec.setCCTConnection();
+
         String endPoint = "/service/" + ThreadProperty.get("deploy_api_id") + "/deploy/uninstall?app=" + serviceName;
         Future<Response> response = commonspec.generateRequest("DELETE", true, null, null, endPoint, "", "json");
         commonspec.setResponse("DELETE", response.get());
@@ -1080,8 +1128,7 @@ public class CCTSpec extends BaseGSpec {
 
         restSpec.sendRequestTimeout(200, 20, "GET", endPointStatus, "does not", key + ":" + "\"" + serviceName + "\"");
         // Check all resources have been freed
-        DcosSpec dcosSpec = new DcosSpec(commonspec);
-        dcosSpec.checkResources(serviceName);
+        this.checkResources(serviceName);
     }
 
     /**
@@ -1097,6 +1144,9 @@ public class CCTSpec extends BaseGSpec {
         // Check file exists
         File rules = new File(rulesPath);
         Assertions.assertThat(rules.exists()).as("File: " + rulesPath + " does not exist.").isTrue();
+
+        // Set REST connection
+        commonspec.setCCTConnection();
 
         // Obtain endpoint
         if (ThreadProperty.get("deploy_api_id") == null) {
@@ -1151,6 +1201,9 @@ public class CCTSpec extends BaseGSpec {
         if (ThreadProperty.get("deploy_api_id") == null && ThreadProperty.get("cct-universe_id") == null) {
             fail("deploy_api_id variable and cct-universe_id are not set. Check deploy-api or cct-universe are installed and @dcos annotation is working properly.");
         }
+
+        // Set REST connection
+        commonspec.setCCTConnection();
 
         // Obtain cookie
         String cookie = "-H \"Cookie:dcos-acs-auth-cookie=" + ThreadProperty.get("dcosAuthCookie") + "\"";
@@ -1264,6 +1317,9 @@ public class CCTSpec extends BaseGSpec {
             throw new Exception("Version or json file must be defined (but NOT both)");
         }
 
+        // Set REST connection
+        commonspec.setCCTConnection();
+
         if (version != null) {
             // Obtain deployed service json
             String endpointJson = "/service/" + ThreadProperty.get("deploy_api_id") + "/update/" + service + "?version=" + version;
@@ -1334,6 +1390,9 @@ public class CCTSpec extends BaseGSpec {
             fail("deploy_api_id variable and cct-universe_id are not set. Check deploy-api or cct-universe are installed and @dcos annotation is working properly.");
         }
 
+        // Set REST connection
+        commonspec.setCCTConnection();
+
         String endpoint;
         String op;
         if (ThreadProperty.get("cct-universe_id") != null) {
@@ -1376,6 +1435,9 @@ public class CCTSpec extends BaseGSpec {
             fail("deploy_api_id variable and cct-universe_id are not set. Check deploy-api or cct-universe are installed and @dcos annotation is working properly.");
         }
 
+        // Set REST connection
+        commonspec.setCCTConnection();
+
         String endpoint;
         if (ThreadProperty.get("cct-universe_id") != null) {
             endpoint = "/service/" + ThreadProperty.get("cct-universe_id") + "/v1/descriptors/" + service + "/" + model + "/" + version;
@@ -1413,6 +1475,9 @@ public class CCTSpec extends BaseGSpec {
             fail("deploy_api_id variable and cct-universe_id are not set. Check deploy-api or cct-universe are installed and @dcos annotation is working properly.");
         }
 
+        // Set REST connection
+        commonspec.setCCTConnection();
+
         String endpoint;
         if (ThreadProperty.get("cct-universe_id") != null) {
             endpoint = "/service/" + ThreadProperty.get("cct-universe_id") + "/v1/descriptors/" + service + "/" + model + "/" + version;
@@ -1440,16 +1505,11 @@ public class CCTSpec extends BaseGSpec {
     @When("^I read value in path '(.+?)' from central configuration and save it in environment variable '(.+?)'$")
     public void readValueCentralConfig(String path, String envVar) throws Exception {
         if (ThreadProperty.get("configuration_api_id") == null) {
-            fail("configuration_api_id variable is not set. Check configuratio-api is installed and @dcos annotation is working properly.");
+            fail("configuration_api_id variable is not set. Check configuration-api is installed and @dcos annotation is working properly.");
         }
 
-        // Set sso token
-        DcosSpec dcosSpec = new DcosSpec(commonspec);
-        dcosSpec.setGoSecSSOCookie(null, null, ThreadProperty.get("EOS_ACCESS_POINT"), ThreadProperty.get("DCOS_USER"), System.getProperty("DCOS_PASSWORD"), ThreadProperty.get("DCOS_TENANT"), null);
-        // Securely send requests
-        commonspec.setRestProtocol("https://");
-        commonspec.setRestHost(ThreadProperty.get("EOS_ACCESS_POINT"));
-        commonspec.setRestPort(":443");
+        // Set REST connection
+        commonspec.setCCTConnection();
 
         String fullPath = "/dcs/v1/fabric" + path;
         String endpoint = "/service/" + ThreadProperty.get("configuration_api_id") + "/etcd?path=" + fullPath;
@@ -1470,6 +1530,10 @@ public class CCTSpec extends BaseGSpec {
         String baseUrl = "/service/" + ThreadProperty.get("deploy_api_id") + "/secrets";
         String secretTypeAux;
         String urlParams;
+
+        // Set REST connection
+        commonspec.setCCTConnection();
+
         switch (secretType) {
             case "certificate":
                 urlParams = getCertificateUrlParams(secret, path, cn, name, alt, organizationName);
@@ -1521,6 +1585,10 @@ public class CCTSpec extends BaseGSpec {
     public void removeSecret(String secretType, String secret, String path) throws Exception {
         String baseUrl = "/service/" + ThreadProperty.get("deploy_api_id") + "/secrets";
         String secretTypeAux;
+
+        // Set REST connection
+        commonspec.setCCTConnection();
+
         switch (secretType) {
             case "certificate":
                 secretTypeAux = "certificates";
@@ -1586,6 +1654,137 @@ public class CCTSpec extends BaseGSpec {
     @When("^I logout from '(.+?)'$")
     public void logoutUser(String endPoint) throws Exception {
         restSpec.sendRequestNoDataTable("GET", endPoint, null, "", "");
+    }
+
+    /**
+     * Check service status has value specified
+     *
+     * @param service name of the service to be checked
+     * @param cluster URI of the cluster
+     * @param status  status expected
+     * @throws Exception exception     *
+     */
+    @Then("^service '(.+?)' status in cluster '(.+?)' is '(suspended|running|deploying)'( in less than '(\\d+)')?( seconds checking every '(\\d+)' seconds)?")
+    public void serviceStatusCheck(String service, String cluster, String status, String sTotalWait, String sInterval) throws Exception {
+        Integer totalWait = sTotalWait != null ? Integer.parseInt(sTotalWait) : null;
+        Integer interval = sInterval != null ? Integer.parseInt(sInterval) : null;
+        String response;
+        Integer i = 0;
+        boolean matched;
+
+        response = commonspec.retrieveServiceStatus(service, cluster);
+
+        if (totalWait != null && interval != null) {
+            matched = status.matches(response);
+            while (!matched && i < totalWait) {
+                this.commonspec.getLogger().info("Service status not found yet after " + i + " seconds");
+                i = i + interval;
+                response = commonspec.retrieveServiceStatus(service, cluster);
+                matched = status.matches(response);
+            }
+        }
+
+        assertThat(status).as("Expected status: " + status + " doesn't match obtained one: " + response).matches(response);
+    }
+
+    /**
+     * Check service health status has value specified
+     *
+     * @param service name of the service to be checked
+     * @param cluster URI of the cluster
+     * @param status  health status expected
+     * @throws Exception exception     *
+     */
+    @Then("^service '(.+?)' health status in cluster '(.+?)' is '(unhealthy|healthy|unknown)'( in less than '(\\d+)')?( seconds checking every '(\\d+)' seconds)?")
+    public void serviceHealthStatusCheck(String service, String cluster, String status, String sTotalWait, String sInterval) throws Exception {
+        Integer totalWait = sTotalWait != null ? Integer.parseInt(sTotalWait) : null;
+        Integer interval = sInterval != null ? Integer.parseInt(sInterval) : null;
+        String response;
+        Integer i = 0;
+        boolean matched;
+
+        response = commonspec.retrieveHealthServiceStatus(service, cluster);
+
+        if (totalWait != null && interval != null) {
+            matched = status.matches(response);
+            while (!matched && i < totalWait) {
+                this.commonspec.getLogger().info("Service health status not found yet after " + i + " seconds");
+                i = i + interval;
+                response = commonspec.retrieveHealthServiceStatus(service, cluster);
+                matched = status.matches(response);
+            }
+        }
+
+        assertThat(status).as("Expected status: " + status + " doesn't match obtained one: " + response).matches(response);
+    }
+
+    /**
+     * Get service status
+     *
+     * @param service name of the service to be checked
+     * @param cluster URI of the cluster
+     * @param envVar  environment variable where to store result
+     * @throws Exception exception     *
+     */
+    @Given("^I get service '(.+?)' status in cluster '(.+?)' and save it in variable '(.+?)'")
+    public void getServiceStatus(String service, String cluster, String envVar) throws Exception {
+        String status = commonspec.retrieveServiceStatus(service, cluster);
+
+        ThreadProperty.set(envVar, status);
+    }
+
+    /**
+     * Get service health status
+     *
+     * @param service name of the service to be checked
+     * @param cluster URI of the cluster
+     * @param envVar  environment variable where to store result
+     * @throws Exception exception     *
+     */
+    @Given("^I get service '(.+?)' health status in cluster '(.+?)' and save it in variable '(.+?)'")
+    public void getServiceHealthStatus(String service, String cluster, String envVar) throws Exception {
+        String health = commonspec.retrieveHealthServiceStatus(service, cluster);
+
+        ThreadProperty.set(envVar, health);
+    }
+
+    /**
+     * Destroy specified service
+     *
+     * @param service name of the service to be destroyed
+     * @param cluster URI of the cluster
+     * @throws Exception exception     *
+     */
+    @Given("^I destroy service '(.+?)' in cluster '(.+?)'")
+    public void destroyService(String service, String cluster) throws Exception {
+        String endPoint = "/service/deploy-api/deploy/uninstall?app=" + service;
+        Future response;
+
+        this.commonspec.setRestProtocol("https://");
+        this.commonspec.setRestHost(cluster);
+        this.commonspec.setRestPort(":443");
+
+        response = this.commonspec.generateRequest("DELETE", true, null, null, endPoint, null, "json");
+
+        this.commonspec.setResponse("DELETE", (Response) response.get());
+        assertThat(this.commonspec.getResponse().getStatusCode()).as("It hasn't been possible to destroy service: " + service).isIn(Arrays.asList(200, 202));
+    }
+
+    /**
+     * Check if resources are released after uninstall and framework doesn't appear as inactive on mesos
+     *
+     * @param service service
+     * @throws Exception exception
+     */
+    @When("^All resources from service '(.+?)' have been freed$")
+    public void checkResources(String service) throws Exception {
+        Future<Response> response = commonspec.generateRequest("GET", true, null, null, "/mesos/state-summary", null, null);
+
+        String json = "[" + response.get().getResponseBody() + "]";
+        String parsedElement = "$..frameworks[?(@.active==false)].name";
+        String value = commonspec.getJSONPathString(json, parsedElement, null);
+
+        org.assertj.core.api.Assertions.assertThat(value).as("Inactive services").doesNotContain(service);
     }
 
 }

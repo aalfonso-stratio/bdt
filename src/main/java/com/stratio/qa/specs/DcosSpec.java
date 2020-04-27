@@ -322,75 +322,6 @@ public class DcosSpec extends BaseGSpec {
     }
 
     /**
-     * Get service status
-     *
-     * @param service name of the service to be checked
-     * @param cluster URI of the cluster
-     * @param envVar  environment variable where to store result
-     * @throws Exception exception     *
-     */
-    @Given("^I get service '(.+?)' status in cluster '(.+?)' and save it in variable '(.+?)'")
-    public void getServiceStatus(String service, String cluster, String envVar) throws Exception {
-        String status = commonspec.retrieveServiceStatus(service, cluster);
-
-        ThreadProperty.set(envVar, status);
-    }
-
-    /**
-     * Get service health status
-     *
-     * @param service name of the service to be checked
-     * @param cluster URI of the cluster
-     * @param envVar  environment variable where to store result
-     * @throws Exception exception     *
-     */
-    @Given("^I get service '(.+?)' health status in cluster '(.+?)' and save it in variable '(.+?)'")
-    public void getServiceHealthStatus(String service, String cluster, String envVar) throws Exception {
-        String health = commonspec.retrieveHealthServiceStatus(service, cluster);
-
-        ThreadProperty.set(envVar, health);
-    }
-
-    /**
-     * Destroy specified service
-     *
-     * @param service name of the service to be destroyed
-     * @param cluster URI of the cluster
-     * @throws Exception exception     *
-     */
-    @Given("^I destroy service '(.+?)' in cluster '(.+?)'")
-    public void destroyService(String service, String cluster) throws Exception {
-        String endPoint = "/service/deploy-api/deploy/uninstall?app=" + service;
-        Future response;
-
-        this.commonspec.setRestProtocol("https://");
-        this.commonspec.setRestHost(cluster);
-        this.commonspec.setRestPort(":443");
-
-        response = this.commonspec.generateRequest("DELETE", true, null, null, endPoint, null, "json");
-
-        this.commonspec.setResponse("DELETE", (Response) response.get());
-        assertThat(this.commonspec.getResponse().getStatusCode()).as("It hasn't been possible to destroy service: " + service).isIn(Arrays.asList(200, 202));
-    }
-
-    /**
-     * Check if resources are released after uninstall and framework doesn't appear as inactive on mesos
-     *
-     * @param service service
-     * @throws Exception exception
-     */
-    @When("^All resources from service '(.+?)' have been freed$")
-    public void checkResources(String service) throws Exception {
-        Future<Response> response = commonspec.generateRequest("GET", true, null, null, "/mesos/state-summary", null, null);
-
-        String json = "[" + response.get().getResponseBody() + "]";
-        String parsedElement = "$..frameworks[?(@.active==false)].name";
-        String value = commonspec.getJSONPathString(json, parsedElement, null);
-
-        Assertions.assertThat(value).as("Inactive services").doesNotContain(service);
-    }
-
-    /**
      * A PUT request over the body value.
      *
      * @param key
@@ -447,67 +378,6 @@ public class DcosSpec extends BaseGSpec {
         commonspec.setCommandExitStatus(commonspec.getRemoteSSHConnection().getExitStatus());
     }
 
-    /**
-     * Check service status has value specified
-     *
-     * @param service name of the service to be checked
-     * @param cluster URI of the cluster
-     * @param status  status expected
-     * @throws Exception exception     *
-     */
-    @Then("^service '(.+?)' status in cluster '(.+?)' is '(suspended|running|deploying)'( in less than '(\\d+)')?( seconds checking every '(\\d+)' seconds)?")
-    public void serviceStatusCheck(String service, String cluster, String status, String sTotalWait, String sInterval) throws Exception {
-        Integer totalWait = sTotalWait != null ? Integer.parseInt(sTotalWait) : null;
-        Integer interval = sInterval != null ? Integer.parseInt(sInterval) : null;
-        String response;
-        Integer i = 0;
-        boolean matched;
-
-        response = commonspec.retrieveServiceStatus(service, cluster);
-
-        if (totalWait != null && interval != null) {
-            matched = status.matches(response);
-            while (!matched && i < totalWait) {
-                this.commonspec.getLogger().info("Service status not found yet after " + i + " seconds");
-                i = i + interval;
-                response = commonspec.retrieveServiceStatus(service, cluster);
-                matched = status.matches(response);
-            }
-        }
-
-        assertThat(status).as("Expected status: " + status + " doesn't match obtained one: " + response).matches(response);
-    }
-
-    /**
-     * Check service health status has value specified
-     *
-     * @param service name of the service to be checked
-     * @param cluster URI of the cluster
-     * @param status  health status expected
-     * @throws Exception exception     *
-     */
-    @Then("^service '(.+?)' health status in cluster '(.+?)' is '(unhealthy|healthy|unknown)'( in less than '(\\d+)')?( seconds checking every '(\\d+)' seconds)?")
-    public void serviceHealthStatusCheck(String service, String cluster, String status, String sTotalWait, String sInterval) throws Exception {
-        Integer totalWait = sTotalWait != null ? Integer.parseInt(sTotalWait) : null;
-        Integer interval = sInterval != null ? Integer.parseInt(sInterval) : null;
-        String response;
-        Integer i = 0;
-        boolean matched;
-
-        response = commonspec.retrieveHealthServiceStatus(service, cluster);
-
-        if (totalWait != null && interval != null) {
-            matched = status.matches(response);
-            while (!matched && i < totalWait) {
-                this.commonspec.getLogger().info("Service health status not found yet after " + i + " seconds");
-                i = i + interval;
-                response = commonspec.retrieveHealthServiceStatus(service, cluster);
-                matched = status.matches(response);
-            }
-        }
-
-        assertThat(status).as("Expected status: " + status + " doesn't match obtained one: " + response).matches(response);
-    }
 
     @Then("^I obtain metabase id for user '(.+?)' and password '(.+?)' in endpoint '(.+?)' and save in context cookies$")
     public void saveMetabaseCookie(String user, String password, String url) throws Exception {
@@ -938,7 +808,7 @@ public class DcosSpec extends BaseGSpec {
         String response = commonspec.retrieveData(localVaultResponseFile, "json");
 
         if (ThreadProperty.get("configuration_api_id") == null) {
-            fail("configuration_api_id variable is not set. Check configuratio-api is installed and @dcos annotation is working properly.");
+            fail("configuration_api_id variable is not set. Check configuration-api is installed and @dcos annotation is working properly.");
         }
 
         // Set sso token

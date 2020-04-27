@@ -19,7 +19,6 @@ package com.stratio.qa.specs;
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
@@ -61,7 +60,6 @@ import org.slf4j.LoggerFactory;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.lang.management.ManagementFactory;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
@@ -2493,6 +2491,20 @@ public class CommonG {
             // re-throw the exception
             throw se;
         }
+    }
+
+    public void setCCTConnection() throws Exception {
+        if (ThreadProperty.get("EOS_ACCESS_POINT") == null) {
+            fail("EOS_ACCESS_POINT variable is not set. Check @dcos annotation is working properly.");
+        }
+
+        // Set sso token
+        DcosSpec dcosSpec = new DcosSpec(this);
+        dcosSpec.setGoSecSSOCookie(null, null, ThreadProperty.get("EOS_ACCESS_POINT"), ThreadProperty.get("DCOS_USER"), System.getProperty("DCOS_PASSWORD"), ThreadProperty.get("DCOS_TENANT"), null);
+        // Securely send requests
+        this.setRestProtocol("https://");
+        this.setRestHost(ThreadProperty.get("EOS_ACCESS_POINT"));
+        this.setRestPort(":443");
     }
 
     public Map<String, List<String>> getPreviousSqlResult() {

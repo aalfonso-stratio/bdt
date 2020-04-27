@@ -38,6 +38,11 @@ import java.util.concurrent.Future;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
+/**
+ * Generic Gosec Specs.
+ *
+ * @see <a href="GosecSpec-annotations.html">Gosec Steps &amp; Matching Regex</a>
+ */
 public class GosecSpec extends BaseGSpec {
 
     private final Logger logger = LoggerFactory.getLogger(GosecSpec.class);
@@ -88,6 +93,9 @@ public class GosecSpec extends BaseGSpec {
         List<List<String>> newModifications;
         newModifications = convertDataTableToModifiableList(modifications);
         Boolean addSourceType = false;
+
+        // Set REST connection
+        commonspec.setCCTConnection();
 
         if (endPoint != null) {
             endPointResource = endPoint + resourceId;
@@ -219,6 +227,9 @@ public class GosecSpec extends BaseGSpec {
         String endPointPolicy = "/service/gosecmanagement" + ThreadProperty.get("API_POLICY");
         String endPointPolicies = "/service/gosecmanagement" + ThreadProperty.get("API_POLICIES");
 
+        // Set REST connection
+        commonspec.setCCTConnection();
+
         if (endPoint != null) {
             endPointResource = endPoint + resourceId;
         } else {
@@ -289,6 +300,9 @@ public class GosecSpec extends BaseGSpec {
             endPoint = "/service/gosecmanagement" + ThreadProperty.get("API_TAGS");
         }
 
+        // Set REST connection
+        commonspec.setCCTConnection();
+
         assertThat(commonspec.getRestHost().isEmpty() || commonspec.getRestPort().isEmpty());
         restSpec.sendRequestNoDataTable("GET", endPoint, null, null, null);
         if (commonspec.getResponse().getStatusCode() == 200) {
@@ -310,6 +324,9 @@ public class GosecSpec extends BaseGSpec {
 
     @When("^I create tenant '(.+?)' if it does not exist based on '([^:]+?)'( as '(json|string|gov)')? with:$")
     public void createTenant(String tenantId, String baseData, String type, DataTable modifications) throws Exception {
+        // Set REST connection
+        commonspec.setCCTConnection();
+
         String endPoint = "/service/gosec-identities-daas/identities/tenants";
         String endPointResource = endPoint + "/" + tenantId;
         Integer expectedStatus = 201;
@@ -330,6 +347,9 @@ public class GosecSpec extends BaseGSpec {
 
     @When("^I delete tenant '(.+?)' if it exists$")
     public void deleteTenant(String tenantId) throws Exception {
+        // Set REST connection
+        commonspec.setCCTConnection();
+
         String endPoint = "/service/gosec-identities-daas/identities/tenants";
         String endPointResource = endPoint + "/" + tenantId;
         Integer expectedStatus = 204;
@@ -358,11 +378,16 @@ public class GosecSpec extends BaseGSpec {
         String uidOrGid = "uid";
         String uidOrGidTenant = "uids";
         String endPointGosec = endPointGetAllUsers;
+
         if (resource.equals("group")) {
             uidOrGid = "gid";
             uidOrGidTenant = "gids";
             endPointGosec = endPointGetAllGroups;
         }
+
+        // Set REST connection
+        commonspec.setCCTConnection();
+
         restSpec.sendRequestNoDataTable("GET", endPointGosec, null, null, null);
         if (commonspec.getResponse().getStatusCode() == 200) {
             if (commonspec.getResponse().getResponse().contains("\"" + uidOrGid + "\":\"" + resourceId + "\"")) {
@@ -394,6 +419,9 @@ public class GosecSpec extends BaseGSpec {
     public void getProfiled(String profileName, String envVar) throws Exception {
         String endPoint = "/service/gosec-identities-daas/identities/profiles";
 
+        // Set REST connection
+        commonspec.setCCTConnection();
+
         assertThat(commonspec.getRestHost().isEmpty() || commonspec.getRestPort().isEmpty());
         restSpec.sendRequestNoDataTable("GET", endPoint, null, null, null);
         if (commonspec.getResponse().getStatusCode() == 200) {
@@ -420,6 +448,10 @@ public class GosecSpec extends BaseGSpec {
             errorMessage = "api/policies/tags";
             errorMessage2 = "api/policy/tag";
         }
+
+        // Set REST connection
+        commonspec.setCCTConnection();
+
         assertThat(commonspec.getRestHost().isEmpty() || commonspec.getRestPort().isEmpty());
         restSpec.sendRequestNoDataTable("GET", endPoint, null, null, null);
         if (commonspec.getResponse().getStatusCode() == 200) {
@@ -510,6 +542,9 @@ public class GosecSpec extends BaseGSpec {
         String roles = "roles";
         Boolean content = false;
 
+        // Set REST connection
+        commonspec.setCCTConnection();
+
         assertThat(commonspec.getRestHost().isEmpty() || commonspec.getRestPort().isEmpty());
 
         restSpec.sendRequestNoDataTable("GET", endPointGetGroup, null, null, null);
@@ -595,6 +630,9 @@ public class GosecSpec extends BaseGSpec {
         String endPoint = "";
         String endPointResource = "";
 
+        // Set REST connection
+        commonspec.setCCTConnection();
+
         if (resource.equals("policy")) {
             endPoint = "/service/gosecmanagement" + ThreadProperty.get("API_POLICY");
         } else {
@@ -679,6 +717,10 @@ public class GosecSpec extends BaseGSpec {
             uidOrGidTenant = "gids";
             endPointGosec = endPointGetAllGroups;
         }
+
+        // Set REST connection
+        commonspec.setCCTConnection();
+
         restSpec.sendRequestNoDataTable("GET", endPointGosec, null, null, null);
         if (commonspec.getResponse().getStatusCode() == 200) {
             if (commonspec.getResponse().getResponse().contains("\"" + uidOrGid + "\":\"" + resourceId + "\"")) {
