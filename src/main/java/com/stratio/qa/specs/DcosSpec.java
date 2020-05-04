@@ -81,10 +81,10 @@ public class DcosSpec extends BaseGSpec {
     /**
      * Authenticate in a DCOS cluster
      *
-     * @param remoteHost remote host
-     * @param email      email for JWT singing
-     * @param user       remote user
-     * @param pemFile    (required if password null)
+     * @param remoteHost : remote host
+     * @param email      : email for JWT singing
+     * @param user       : remote user
+     * @param pemFile    : (required if password null)
      * @throws Exception exception
      */
     @Given("^I authenticate to DCOS cluster '(.+?)' using email '(.+?)' with user '(.+?)' and pem file '(.+?)'( over SSH port '(.+?)')?$")
@@ -95,11 +95,11 @@ public class DcosSpec extends BaseGSpec {
     /**
      * Authenticate in a DCOS cluster
      *
-     * @param remoteHost remote host
-     * @param email      email for JWT singing
-     * @param user       remote user
-     * @param password   (required if pemFile null)
-     * @param pemFile    (required if password null)
+     * @param remoteHost : remote host
+     * @param email      : email for JWT singing
+     * @param user       : remote user
+     * @param password   : (required if pemFile null)
+     * @param pemFile    : (required if password null)
      * @throws Exception exception
      */
     private void authenticateDCOS(String remoteHost, String email, String user, String password, String pemFile, String remotePort) throws Exception {
@@ -109,6 +109,12 @@ public class DcosSpec extends BaseGSpec {
         setDCOSCookie(DCOSsecret, email);
     }
 
+    /**
+     * Set DCOS cookie for future requests
+     * @param DCOSsecret    : DCOS secret to be used
+     * @param email         : email to log in DCOS
+     * @throws Exception
+     */
     public void setDCOSCookie(String DCOSsecret, String email) throws Exception {
         final JWTSigner signer = new JWTSigner(DCOSsecret);
         final HashMap<String, Object> claims = new HashMap();
@@ -124,9 +130,9 @@ public class DcosSpec extends BaseGSpec {
     /**
      * Generate token to authenticate in gosec SSO
      *
-     * @param ssoHost  current sso host
-     * @param userName username
-     * @param passWord password
+     * @param ssoHost  : current sso host
+     * @param userName : username
+     * @param passWord : password
      * @throws Exception exception
      */
     @Given("^I( do not)? set sso( governance)? token using host '(.+?)' with user '(.+?)' and password '(.+?)'( and tenant '(.+?)')?( without host name verification)?$")
@@ -158,6 +164,12 @@ public class DcosSpec extends BaseGSpec {
         }
     }
 
+    /**
+     * Obtain cookies from previous request
+     * @param ssoCookies
+     * @param tokenList
+     * @return
+     */
     public List<com.ning.http.client.cookie.Cookie> addSsoToken(HashMap<String, String> ssoCookies, String[] tokenList) {
         List<com.ning.http.client.cookie.Cookie> cookiesAttributes = new ArrayList<>();
 
@@ -173,8 +185,8 @@ public class DcosSpec extends BaseGSpec {
      * Checks if there are any unused nodes in the cluster and returns the IP of one of them.
      * REQUIRES A PREVIOUSLY-ESTABLISHED SSH CONNECTION TO DCOS-CLI TO WORK
      *
-     * @param hosts:  list of IPs that will be investigated
-     * @param envVar: environment variable name
+     * @param hosts     : list of IPs that will be investigated
+     * @param envVar    : environment variable name
      * @throws Exception
      */
     @Given("^I save the IP of an unused node in hosts '(.+?)' in the in environment variable '(.+?)'?$")
@@ -201,7 +213,7 @@ public class DcosSpec extends BaseGSpec {
     /**
      * Check if all task of a service are correctly distributed in all datacenters of the cluster
      *
-     * @param serviceList all task deployed in the cluster separated by a semicolumn.
+     * @param serviceList : all task deployed in the cluster separated by a semicolumn.
      * @throws Exception
      */
     @Given("^services '(.*?)' are splitted correctly in datacenters$")
@@ -215,8 +227,8 @@ public class DcosSpec extends BaseGSpec {
     /**
      * Check if all task of a service are correctly distributed in all datacenters of the cluster
      *
-     * @param serviceList    all task deployed in the cluster separated by a semicolumn.
-     * @param dataCentersIps all ips of the datacenters to be checked
+     * @param serviceList    : all task deployed in the cluster separated by a semicolumn.
+     * @param dataCentersIps : all ips of the datacenters to be checked
      *                       Example: ip_1_dc1, ip_2_dc1;ip_3_dc2,ip_4_dc2
      * @throws Exception
      */
@@ -254,6 +266,12 @@ public class DcosSpec extends BaseGSpec {
         assertThat(sum).as("There are less services: " + sum + " than expected: " + serviceListArray.length).isEqualTo(serviceListArray.length);
     }
 
+    /**
+     * Obtain datacenters avaialable in cluster
+     *
+     * @param jsonString : json where to look for datacenters
+     * @return
+     */
     public String obtainsDataCenters(String jsonString) {
         Map<String, String> datacentersDistribution = new HashMap<String, String>();
         JSONArray jsonArray = new JSONArray(jsonString);
@@ -280,8 +298,8 @@ public class DcosSpec extends BaseGSpec {
     /**
      * Convert jsonSchema to json
      *
-     * @param jsonSchema jsonSchema to be converted to json
-     * @param envVar     environment variable where to store json
+     * @param jsonSchema : jsonSchema to be converted to json
+     * @param envVar     : environment variable where to store json
      * @throws Exception exception     *
      */
     @Given("^I convert jsonSchema '(.+?)' to json( and save it in variable '(.+?)')?( and save it in file '(.+?)')?")
@@ -309,8 +327,8 @@ public class DcosSpec extends BaseGSpec {
     /**
      * Check if json is validated against a schema
      *
-     * @param json   json to be validated against schema
-     * @param schema schema to be validated against
+     * @param json   : json to be validated against schema
+     * @param schema : schema to be validated against
      * @throws Exception exception     *
      */
     @Given("^json (.+?) matches schema (.+?)$")
@@ -322,80 +340,11 @@ public class DcosSpec extends BaseGSpec {
     }
 
     /**
-     * Get service status
-     *
-     * @param service name of the service to be checked
-     * @param cluster URI of the cluster
-     * @param envVar  environment variable where to store result
-     * @throws Exception exception     *
-     */
-    @Given("^I get service '(.+?)' status in cluster '(.+?)' and save it in variable '(.+?)'")
-    public void getServiceStatus(String service, String cluster, String envVar) throws Exception {
-        String status = commonspec.retrieveServiceStatus(service, cluster);
-
-        ThreadProperty.set(envVar, status);
-    }
-
-    /**
-     * Get service health status
-     *
-     * @param service name of the service to be checked
-     * @param cluster URI of the cluster
-     * @param envVar  environment variable where to store result
-     * @throws Exception exception     *
-     */
-    @Given("^I get service '(.+?)' health status in cluster '(.+?)' and save it in variable '(.+?)'")
-    public void getServiceHealthStatus(String service, String cluster, String envVar) throws Exception {
-        String health = commonspec.retrieveHealthServiceStatus(service, cluster);
-
-        ThreadProperty.set(envVar, health);
-    }
-
-    /**
-     * Destroy specified service
-     *
-     * @param service name of the service to be destroyed
-     * @param cluster URI of the cluster
-     * @throws Exception exception     *
-     */
-    @Given("^I destroy service '(.+?)' in cluster '(.+?)'")
-    public void destroyService(String service, String cluster) throws Exception {
-        String endPoint = "/service/deploy-api/deploy/uninstall?app=" + service;
-        Future response;
-
-        this.commonspec.setRestProtocol("https://");
-        this.commonspec.setRestHost(cluster);
-        this.commonspec.setRestPort(":443");
-
-        response = this.commonspec.generateRequest("DELETE", true, null, null, endPoint, null, "json");
-
-        this.commonspec.setResponse("DELETE", (Response) response.get());
-        assertThat(this.commonspec.getResponse().getStatusCode()).as("It hasn't been possible to destroy service: " + service).isIn(Arrays.asList(200, 202));
-    }
-
-    /**
-     * Check if resources are released after uninstall and framework doesn't appear as inactive on mesos
-     *
-     * @param service service
-     * @throws Exception exception
-     */
-    @When("^All resources from service '(.+?)' have been freed$")
-    public void checkResources(String service) throws Exception {
-        Future<Response> response = commonspec.generateRequest("GET", true, null, null, "/mesos/state-summary", null, null);
-
-        String json = "[" + response.get().getResponseBody() + "]";
-        String parsedElement = "$..frameworks[?(@.active==false)].name";
-        String value = commonspec.getJSONPathString(json, parsedElement, null);
-
-        Assertions.assertThat(value).as("Inactive services").doesNotContain(service);
-    }
-
-    /**
      * A PUT request over the body value.
      *
-     * @param key
-     * @param value
-     * @param service
+     * @param key       : key to be added
+     * @param value     : value to be added
+     * @param service   : service to add key-value pair to
      * @throws Exception
      */
     @Then("^I add a new DCOS label with key '(.+?)' and value '(.+?)' to the service '(.+?)'?$")
@@ -427,9 +376,9 @@ public class DcosSpec extends BaseGSpec {
     /**
      * Set a environment variable in marathon and deploy again.
      *
-     * @param key
-     * @param value
-     * @param service
+     * @param key       : key to be added
+     * @param value     : value to be added
+     * @param service   : service to add key-value pair to
      * @throws Exception
      */
     @Then("^I modify marathon environment variable '(.+?)' with value '(.+?)' for service '(.+?)'?$")
@@ -448,67 +397,12 @@ public class DcosSpec extends BaseGSpec {
     }
 
     /**
-     * Check service status has value specified
-     *
-     * @param service name of the service to be checked
-     * @param cluster URI of the cluster
-     * @param status  status expected
-     * @throws Exception exception     *
+     * Obtain metabase id for user
+     * @param user      : user to obtain metabase id from
+     * @param password  : password for user
+     * @param url       : endpoint to retrieve info from
+     * @throws Exception
      */
-    @Then("^service '(.+?)' status in cluster '(.+?)' is '(suspended|running|deploying)'( in less than '(\\d+)')?( seconds checking every '(\\d+)' seconds)?")
-    public void serviceStatusCheck(String service, String cluster, String status, String sTotalWait, String sInterval) throws Exception {
-        Integer totalWait = sTotalWait != null ? Integer.parseInt(sTotalWait) : null;
-        Integer interval = sInterval != null ? Integer.parseInt(sInterval) : null;
-        String response;
-        Integer i = 0;
-        boolean matched;
-
-        response = commonspec.retrieveServiceStatus(service, cluster);
-
-        if (totalWait != null && interval != null) {
-            matched = status.matches(response);
-            while (!matched && i < totalWait) {
-                this.commonspec.getLogger().info("Service status not found yet after " + i + " seconds");
-                i = i + interval;
-                response = commonspec.retrieveServiceStatus(service, cluster);
-                matched = status.matches(response);
-            }
-        }
-
-        assertThat(status).as("Expected status: " + status + " doesn't match obtained one: " + response).matches(response);
-    }
-
-    /**
-     * Check service health status has value specified
-     *
-     * @param service name of the service to be checked
-     * @param cluster URI of the cluster
-     * @param status  health status expected
-     * @throws Exception exception     *
-     */
-    @Then("^service '(.+?)' health status in cluster '(.+?)' is '(unhealthy|healthy|unknown)'( in less than '(\\d+)')?( seconds checking every '(\\d+)' seconds)?")
-    public void serviceHealthStatusCheck(String service, String cluster, String status, String sTotalWait, String sInterval) throws Exception {
-        Integer totalWait = sTotalWait != null ? Integer.parseInt(sTotalWait) : null;
-        Integer interval = sInterval != null ? Integer.parseInt(sInterval) : null;
-        String response;
-        Integer i = 0;
-        boolean matched;
-
-        response = commonspec.retrieveHealthServiceStatus(service, cluster);
-
-        if (totalWait != null && interval != null) {
-            matched = status.matches(response);
-            while (!matched && i < totalWait) {
-                this.commonspec.getLogger().info("Service health status not found yet after " + i + " seconds");
-                i = i + interval;
-                response = commonspec.retrieveHealthServiceStatus(service, cluster);
-                matched = status.matches(response);
-            }
-        }
-
-        assertThat(status).as("Expected status: " + status + " doesn't match obtained one: " + response).matches(response);
-    }
-
     @Then("^I obtain metabase id for user '(.+?)' and password '(.+?)' in endpoint '(.+?)' and save in context cookies$")
     public void saveMetabaseCookie(String user, String password, String url) throws Exception {
         String command = "curl -X POST -k -H \"Content-Type: application/json\" -d '{\"username\": \"" + user + "\", \"password\": \"" + password + "\"}' " + url;
@@ -528,10 +422,10 @@ public class DcosSpec extends BaseGSpec {
     /**
      * Check if a role of a service complies the established constraints
      *
-     * @param role        name of role of a service or scheduler
-     * @param service     name of service of exhibitor
-     * @param instance    name of instance of a service, for scheduler is id
-     * @param constraints all stablished contraints separated by a semicolumn.
+     * @param role        : name of role of a service or scheduler
+     * @param service     : name of service of exhibitor
+     * @param instance    : name of instance of a service, for scheduler is id
+     * @param constraints : all stablished contraints separated by a semicolumn.
      *                    Example: constraint1,constraint2,...
      * @throws Exception
      */
@@ -540,6 +434,15 @@ public class DcosSpec extends BaseGSpec {
         checkComponentConstraint(role, service, instance, constraints.split(","));
     }
 
+    /***
+     * Check contraint in component
+     *
+     * @param role          : role
+     * @param service       : service name
+     * @param instance      : instance name
+     * @param constraints   : expected constraints
+     * @throws Exception
+     */
     public void checkComponentConstraint(String role, String service, String instance, String[] constraints) throws Exception {
         for (int i = 0; i < constraints.length; i++) {
             String[] elements = constraints[i].split(":");
@@ -557,6 +460,16 @@ public class DcosSpec extends BaseGSpec {
         }
     }
 
+    /**
+     *
+     * @param role          : role
+     * @param service       : service name
+     * @param instance      : instance name
+     * @param tag           : tag
+     * @param constraint    : expected contraint
+     * @param value         : value
+     * @throws Exception
+     */
     public void checkConstraint(String role, String service, String instance, String tag, String constraint, String value) throws Exception {
         RestSpec restspec = new RestSpec(commonspec);
         MiscSpec miscspec = new MiscSpec(commonspec);
@@ -597,9 +510,9 @@ public class DcosSpec extends BaseGSpec {
     }
 
     /**
-     * @param role   name of role of a service
-     * @param IP     Ip of the machine from which you want to save the nodes
-     * @param envVar environment variable where store nodes
+     * @param role   : name of role of a service
+     * @param IP     : Ip of the machine from which you want to save the nodes
+     * @param envVar : environment variable where to store nodes
      * @throws Exception
      */
     @When("^I save nodes '(.+?)' that are in machine '(.+?)' in environment variable '(.+?)'$")
@@ -608,14 +521,14 @@ public class DcosSpec extends BaseGSpec {
     }
 
     /**
-     * @param role        name of role of a service
-     * @param envVar      environment variable where before you save nodes
-     * @param envVar2     environment variable when you want to check slave nodes
-     * @param sTimeout    Same RestSpec.sendRequest
-     * @param sWait       Same RestSpec.sendRequest
-     * @param requestType Same RestSpec.sendRequest
-     * @param endPoint    Same RestSpec.sendRequest
-     * @param status      Same RestSpec.sendRequest
+     * @param role        : name of role of a service
+     * @param envVar      : environment variable where before you save nodes
+     * @param envVar2     : environment variable when you want to check slave nodes
+     * @param sTimeout    : Same RestSpec.sendRequest
+     * @param sWait       : Same RestSpec.sendRequest
+     * @param requestType : Same RestSpec.sendRequest
+     * @param endPoint    : Same RestSpec.sendRequest
+     * @param status      : Same RestSpec.sendRequest
      * @throws Exception
      */
     @Then("^I check status of nodes '(.+?)' using environment variable '(.+?)'(,'(.+?)')? in less than '(\\d+?)' seconds, checking each '(\\d+?)' seconds, I send a '(.+?)' request to '(.+?)' checking status '(.+?)' of nodes$")
@@ -654,17 +567,42 @@ public class DcosSpec extends BaseGSpec {
         }
     }
 
+    /**
+     *
+     * @param role
+     * @param service
+     * @param element
+     * @param elementValue
+     * @param envValue
+     * @throws Exception
+     */
     public void selectElements(String role, String service, String element, String elementValue, String envValue) throws Exception {
         CommandExecutionSpec commandexecutionspec = new CommandExecutionSpec(commonspec);
         commandexecutionspec.executeLocalCommand("echo '" + ThreadProperty.get("exhibitor_answer") + "' | jq '.phases[] | .[] | .steps[] | .[] | select(.role==\"" + role + "\") | select(.status==\"RUNNING\") | select(." + element + "==\"" + elementValue + "\").name' | sed 's/\"//g'", "0", envValue);
     }
 
-
+    /**
+     *
+     * @param role
+     * @param service
+     * @param element
+     * @throws Exception
+     */
     public void selectElements(String role, String service, String element) throws Exception {
         CommandExecutionSpec commandexecutionspec = new CommandExecutionSpec(commonspec);
         commandexecutionspec.executeLocalCommand("echo '" + ThreadProperty.get("exhibitor_answer") + "' | jq '.phases[] | .[] | .steps[] | .[] | select(.role==\"" + role + "\") | select(.status==\"RUNNING\")." + element + "' | sed 's/\"//g'", "0", "elementsConstraint");
     }
 
+    /**
+     *
+     * @param role
+     * @param instance
+     * @param tag
+     * @param constraint
+     * @param value
+     * @param elements
+     * @throws Exception
+     */
     public void checkConstraintType(String role, String instance, String tag, String constraint, String value, String[] elements) throws Exception {
         Pattern p = value != null ? Pattern.compile(value) : null;
         Matcher m;
@@ -742,6 +680,16 @@ public class DcosSpec extends BaseGSpec {
         }
     }
 
+    /**
+     *
+     * @param role
+     * @param instance
+     * @param tag
+     * @param constraint
+     * @param value
+     * @param elements
+     * @throws Exception
+     */
     public void checkConstraintClusterValueIs(String role, String instance, String tag, String constraint, String value, String[] elements) throws Exception {
         for (int i = 0; i < elements.length; i++) {
             for (int j = i + 1; j < elements.length; j++) {
@@ -754,9 +702,9 @@ public class DcosSpec extends BaseGSpec {
     /**
      * Obtains info from file passed as a parameter based on the jq expression passed as a parameter
      *
-     * @param jqExpression    jq expression to retrieve required information
-     * @param absolutPathFile absolut path to file to retrieve information from
-     * @param envVar          environment variable where to store retrieved information
+     * @param jqExpression    : jq expression to retrieve required information
+     * @param absolutPathFile : absolut path to file to retrieve information from
+     * @param envVar          : environment variable where to store retrieved information
      * @throws Exception
      */
     @Given("^I obtain '(.+?)' from json file '(.+?)' and save it in environment variable '(.+?)'$")
@@ -792,8 +740,8 @@ public class DcosSpec extends BaseGSpec {
     /**
      * Obtains required information from descriptor file
      *
-     * @param info   information required from descriptor.json in bootstrap system
-     * @param envVar environment variable where to store retrieved information
+     * @param info   : information required from descriptor.json in bootstrap system
+     * @param envVar : environment variable where to store retrieved information
      * @throws Exception
      */
     @Given("^I obtain '(MASTERS|NODES|PRIV_NODES|PUBLIC_NODES|PUBLIC_NODE|GOSEC_NODES|ID|DNS_SEARCH|INTERNAL_DOMAIN|ARTIFACT_REPO|DOCKER_REGISTRY|EXTERNAL_DOCKER_REGISTRY|REALM|KRB_HOST|LDAP_HOST|VAULT_HOST|IP|ADMIN_USER|TENANT|ACCESS_POINT|LDAP_URL|LDAP_PORT|LDAP_USER_DN|LDAP_GROUP_DN|LDAP_BASE|LDAP_ADMIN_GROUP)' from descriptor and save it in environment variable '(.+?)'$")
@@ -887,6 +835,11 @@ public class DcosSpec extends BaseGSpec {
 
     }
 
+    /**
+     * Obtain info from ETCD
+     *
+     * @throws Exception
+     */
     public void obtainBasicInfoFromETCD() throws Exception {
         String localVaultResponseFile;
         String localVaultResponseFilePath;
@@ -938,7 +891,7 @@ public class DcosSpec extends BaseGSpec {
         String response = commonspec.retrieveData(localVaultResponseFile, "json");
 
         if (ThreadProperty.get("configuration_api_id") == null) {
-            fail("configuration_api_id variable is not set. Check configuratio-api is installed and @dcos annotation is working properly.");
+            fail("configuration_api_id variable is not set. Check configuration-api is installed and @dcos annotation is working properly.");
         }
 
         // Set sso token
@@ -992,6 +945,14 @@ public class DcosSpec extends BaseGSpec {
 
     }
 
+    /**
+     * Obtain info from json and expose in thread variable
+     *
+     * @param json          : json to look for info in
+     * @param jqExpression  : jq expression to obtain specific info from json
+     * @param envVar        : thread variable where to expose value
+     * @param position      : position in value obtained with jq
+     */
     public void obtainJSONInfoAndExpose(String json, String jqExpression, String envVar, String position) {
         String value = "";
         try {
@@ -1160,9 +1121,9 @@ public class DcosSpec extends BaseGSpec {
     /**
      * Obtains info from a json stored in a variable and expose it in a thread variable
      *
-     * @param json  json where to get info from
-     * @param info  info to be obtained from json
-     * @param envVar    thread environment variable where to expose obtained info
+     * @param json      : json where to get info from
+     * @param info      : info to be obtained from json
+     * @param envVar    : thread environment variable where to expose obtained info
      */
     public void obtainJSONInfo(String json, String info, String envVar) {
         String jqExpression = "";
@@ -1293,7 +1254,11 @@ public class DcosSpec extends BaseGSpec {
 
     }
 
-
+    /**
+     * Obtain service info from marathon
+     *
+     * @throws Exception
+     */
     @Given("^I get services info from marathon")
     public void getServicesInfoFromMarathon() throws Exception {
         if (ThreadProperty.get("marathonVariables") == null) {

@@ -38,6 +38,11 @@ import java.util.concurrent.Future;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
+/**
+ * Generic Gosec Specs.
+ *
+ * @see <a href="GosecSpec-annotations.html">Gosec Steps &amp; Matching Regex</a>
+ */
 public class GosecSpec extends BaseGSpec {
 
     private final Logger logger = LoggerFactory.getLogger(GosecSpec.class);
@@ -54,31 +59,61 @@ public class GosecSpec extends BaseGSpec {
         restSpec = new RestSpec(spec);
     }
 
-    @When("^I create '(policy|user|group)' '(.+?)'( using API service path '(.+?)')?( with user and password '(.+:.+?)')? based on '([^:]+?)'( as '(json|string|gov)')? with:$")
-    public void createResource(String resource, String resourceId, String endPoint, String loginInfo, String baseData, String type, DataTable modifications) throws Exception {
-        createResourceIfNotExist(resource, resourceId, endPoint, loginInfo, false, baseData, type, modifications);
+    /**
+     * Create resource in Gosec
+     *
+     * @param resource          : type of resource (enum value)
+     * @param resourceId        : name of the resource to be created
+     * @param tenantOrig        : tenant where resource is gonna be created (OPTIONAL)
+     * @param tenantLoginInfo   : user and password to log into tenant (OPTIONAL)
+     * @param endPoint          : endpoint to send request to (OPTIONAL)
+     * @param loginInfo         : user and password to log in service (OPTIONAL)
+     * @param baseData          : base information to use for request
+     * @param type              : type of data (enum value) (OPTIONAL)
+     * @param modifications     : modifications to perform oven base data
+     * @throws Exception
+     */
+    @When("^I create '(policy|user|group)' '(.+?)'( in tenant '(.+?)')?( with tenant user and tenant password '(.+:.+?)')?( with user '(.+?)' and password '(.+?)')?( using API service path '(.+?)')?( with user and password '(.+:.+?)')? based on '([^:]+?)'( as '(json|string|gov)')? with:$")
+    public void createResource(String resource, String resourceId, String tenantOrig, String tenantLoginInfo, String userOrig, String passwordOrig, String endPoint, String loginInfo, String baseData, String type, DataTable modifications) throws Exception {
+        createResourceIfNotExist(resource, resourceId, tenantOrig, tenantLoginInfo, endPoint, loginInfo, false, baseData, type, modifications);
 
     }
 
-    @When("^I create '(policy|user|group)' '(.+?)'( using API service path '(.+?)')?( with user and password '(.+:.+?)')? if it does not exist based on '([^:]+?)'( as '(json|string|gov)')? with:$")
-    public void createResourceIfNotExist(String resource, String resourceId, String endPoint, String loginInfo, String baseData, String type, DataTable modifications) throws Exception {
-        createResourceIfNotExist(resource, resourceId, endPoint, loginInfo, true, baseData, type, modifications);
+    /**
+     * Create resource in Gosec if it doesn exist already
+     *
+     * @param resource          : type of resource (enum value)
+     * @param resourceId        : name of the resource to be created
+     * @param tenantOrig        : tenant where resource is gonna be created (OPTIONAL)
+     * @param tenantLoginInfo   : user and password to log into tenant (OPTIONAL)
+     * @param endPoint          : endpoint to send request to (OPTIONAL)
+     * @param loginInfo         : user and password to log in service (OPTIONAL)
+     * @param baseData          : base information to use for request
+     * @param type              : type of data (enum value) (OPTIONAL)
+     * @param modifications     : modifications to perform oven base data
+     * @throws Exception
+     */
+    @When("^I create '(policy|user|group)' '(.+?)'( in tenant '(.+?)')?( with tenant user and tenant password '(.+:.+?)')?( using API service path '(.+?)')?( with user and password '(.+:.+?)')? if it does not exist based on '([^:]+?)'( as '(json|string|gov)')? with:$")
+    public void createResourceIfNotExist(String resource, String resourceId, String tenantOrig, String tenantLoginInfo, String endPoint, String loginInfo, String baseData, String type, DataTable modifications) throws Exception {
+        createResourceIfNotExist(resource, resourceId, tenantOrig, tenantLoginInfo, endPoint, loginInfo, true, baseData, type, modifications);
     }
 
     /**
      * Creates a custom resource in gosec management if the resource doesn't exist
      *
-     * @param resource
-     * @param resourceId    (userId, groupId or policyId)
-     * @param endPoint
-     * @param loginInfo
-     * @param doesNotExist  (if 'empty', creation is forced deleting the previous policy if exists)
-     * @param baseData
-     * @param type
-     * @param modifications
+     * @param resource          : type of resource (enum value)
+     * @param resourceId        : name of the resource to be created
+     * @param tenantOrig        : tenant where resource is gonna be created
+     * @param tenantLoginInfo   : user and password to log into tenant
+     * @param endPoint          : endpoint to send request to
+     * @param loginInfo         : user and password to log in service
+     * @param doesNotExist      : (if 'empty', creation is forced deleting the previous policy if exists)
+     * @param baseData          : base information to use for request
+     * @param type              : type of data (enum value)
+     * @param modifications     : modifications to perform oven base data
      * @throws Exception
      */
-    private void createResourceIfNotExist(String resource, String resourceId, String endPoint, String loginInfo, boolean doesNotExist, String baseData, String type, DataTable modifications) throws Exception {
+    private void createResourceIfNotExist(String resource, String resourceId, String tenantOrig, String tenantLoginInfo, String endPoint, String loginInfo, boolean doesNotExist, String baseData, String type, DataTable modifications) throws Exception {
         Integer expectedStatusCreate = 201;
         Integer expectedStatusDelete = 200;
         String endPointResource = "";
@@ -89,6 +124,11 @@ public class GosecSpec extends BaseGSpec {
         List<List<String>> newModifications;
         newModifications = convertDataTableToModifiableList(modifications);
         Boolean addSourceType = false;
+
+        if (tenantOrig != null) {
+            // Set REST connection
+            commonspec.setCCTConnection(tenantOrig, tenantLoginInfo);
+        }
 
         if (endPoint != null) {
             endPointResource = endPoint + resourceId;
@@ -194,7 +234,7 @@ public class GosecSpec extends BaseGSpec {
                             commonspec.getLogger().warn("Error deleting Policy {}: {}", resourceId, commonspec.getResponse().getResponse());
                             throw e;
                         }
-                        createResourceIfNotExist(resource, resourceId, endPoint, loginInfo, doesNotExist, baseData, type, modifications);
+                        createResourceIfNotExist(resource, resourceId, endPoint, tenantOrig, tenantLoginInfo, loginInfo, doesNotExist, baseData, type, modifications);
                     }
                 }
             }
@@ -207,18 +247,25 @@ public class GosecSpec extends BaseGSpec {
     /**
      * Deletes a resource in gosec management if the resourceId exists previously.
      *
-     * @param resource
-     * @param resourceId
-     * @param endPoint
-     * @param loginInfo
+     * @param resource          : type of resource (enum value)
+     * @param resourceId        : name of the resource to be created
+     * @param tenantOrig        : tenant resource is gonna be deleted from (OPTIONAL)
+     * @param tenantLoginInfo   : user and password to log into tenant (OPTIONAL)
+     * @param endPoint          : endpoint to send request to (OPTIONAL)
+     * @param loginInfo         : user and password to log in service (OPTIONAL)
      * @throws Exception
      */
-    @When("^I delete '(policy|user|group)' '(.+?)'( using API service path '(.+?)')?( with user and password '(.+:.+?)')? if it exists$")
-    public void deleteUserIfExists(String resource, String resourceId, String endPoint, String loginInfo) throws Exception {
+    @When("^I delete '(policy|user|group)' '(.+?)'( from tenant '(.+?)')?( with tenant user and tenant password '(.+:.+?)')?( using API service path '(.+?)')?( with user and password '(.+:.+?)')? if it exists$")
+    public void deleteUserIfExists(String resource, String resourceId, String tenantOrig, String tenantLoginInfo, String endPoint, String loginInfo) throws Exception {
         Integer[] expectedStatusDelete = {200, 204};
         String endPointResource = "";
         String endPointPolicy = "/service/gosecmanagement" + ThreadProperty.get("API_POLICY");
         String endPointPolicies = "/service/gosecmanagement" + ThreadProperty.get("API_POLICIES");
+
+        if (tenantOrig != null) {
+            // Set REST connection
+            commonspec.setCCTConnection(tenantOrig, tenantLoginInfo);
+        }
 
         if (endPoint != null) {
             endPointResource = endPoint + resourceId;
@@ -282,12 +329,27 @@ public class GosecSpec extends BaseGSpec {
         }
     }
 
-    @When("^I get id from( tag)? policy with name '(.+?)' and save it in environment variable '(.+?)'$")
-    public void getPolicyId(String tag, String policyName, String envVar) throws Exception {
+    /**
+     * Retrieve id from policy
+     *
+     * @param tag               : whether it is a tag policy or not (OPTIONAL)
+     * @param policyName        : policy name to obtain id from
+     * @param tenantOrig        : tenant where policy lives (OPTIONAL)
+     * @param tenantLoginInfo   : user and password to log into tenant (OPTIONAL)
+     * @param envVar            : thread variable where to store result
+     * @throws Exception
+     */
+    @When("^I get id from( tag)? policy with name '(.+?)'( in tenant '(.+?)')?( with tenant user and tenant password '(.+:.+?)')?( with user and password '(.+:.+?)')? and save it in environment variable '(.+?)'$")
+    public void getPolicyId(String tag, String policyName, String tenantOrig, String tenantLoginInfo, String loginInfo, String envVar) throws Exception {
         String endPoint = "/service/gosecmanagement" + ThreadProperty.get("API_POLICIES");
 
         if (tag != null) {
             endPoint = "/service/gosecmanagement" + ThreadProperty.get("API_TAGS");
+        }
+
+        if (tenantOrig != null) {
+            // Set REST connection
+            commonspec.setCCTConnection(tenantOrig, tenantLoginInfo);
         }
 
         assertThat(commonspec.getRestHost().isEmpty() || commonspec.getRestPort().isEmpty());
@@ -309,8 +371,20 @@ public class GosecSpec extends BaseGSpec {
         }
     }
 
+    /**
+     * Create tenant in cluster
+     *
+     * @param tenantId      : name of the tenant to be created
+     * @param baseData      : base information to use for request
+     * @param type          : type of base info (enum value) (OPTIONAL)
+     * @param modifications : modifications to perform over base data
+     * @throws Exception
+     */
     @When("^I create tenant '(.+?)' if it does not exist based on '([^:]+?)'( as '(json|string|gov)')? with:$")
     public void createTenant(String tenantId, String baseData, String type, DataTable modifications) throws Exception {
+        // Set REST connection
+        commonspec.setCCTConnection(null, null);
+
         String endPoint = "/service/gosec-identities-daas/identities/tenants";
         String endPointResource = endPoint + "/" + tenantId;
         Integer expectedStatus = 201;
@@ -329,8 +403,18 @@ public class GosecSpec extends BaseGSpec {
         }
     }
 
+    /**
+     * Delete tenant
+     *
+     * @param tenantId  : tenant to be deleted
+     * @throws Exception
+     */
+
     @When("^I delete tenant '(.+?)' if it exists$")
     public void deleteTenant(String tenantId) throws Exception {
+        // Set REST connection
+        commonspec.setCCTConnection(null, null);
+
         String endPoint = "/service/gosec-identities-daas/identities/tenants";
         String endPointResource = endPoint + "/" + tenantId;
         Integer expectedStatus = 204;
@@ -350,6 +434,14 @@ public class GosecSpec extends BaseGSpec {
         }
     }
 
+    /**
+     * Include resource in tenant
+     *
+     * @param resource      : resource type to be included (enum value)
+     * @param resourceId    : resource name
+     * @param tenantId      : tenant where to store resource in
+     * @throws Exception
+     */
     @When("^I include '(user|group)' '(.+?)' in tenant '(.+?)'$")
     public void includeResourceInTenant(String resource, String resourceId, String tenantId) throws Exception {
         String endPointGetAllUsers = "/service/gosec-identities-daas/identities/users";
@@ -359,11 +451,16 @@ public class GosecSpec extends BaseGSpec {
         String uidOrGid = "uid";
         String uidOrGidTenant = "uids";
         String endPointGosec = endPointGetAllUsers;
+
         if (resource.equals("group")) {
             uidOrGid = "gid";
             uidOrGidTenant = "gids";
             endPointGosec = endPointGetAllGroups;
         }
+
+        // Set REST connection
+        commonspec.setCCTConnection(null, null);
+
         restSpec.sendRequestNoDataTable("GET", endPointGosec, null, null, null);
         if (commonspec.getResponse().getStatusCode() == 200) {
             if (commonspec.getResponse().getResponse().contains("\"" + uidOrGid + "\":\"" + resourceId + "\"")) {
@@ -391,11 +488,25 @@ public class GosecSpec extends BaseGSpec {
         }
     }
 
-    @When("^I get id from profile with name '(.+?)'( in tenant '(.+?)')? and save it in environment variable '(.+?)'$")
-    public void getProfiled(String profileName, String tenant, String envVar) throws Exception {
+    /**
+     * Obtain id from profile
+     *
+     * @param profileName       : profile to obtain id from
+     * @param tenantOrig        : tenant where policy lives (OPTIONAL)
+     * @param tenantLoginInfo   : user and password to log into tenant (OPTIONAL)
+     * @param envVar            : thread variable where to store result
+     * @throws Exception
+     */
+    @When("^I get id from profile with name '(.+?)'( in tenant '(.+?)')?( with tenant user and tenant password '(.+:.+?)')? and save it in environment variable '(.+?)'$")
+    public void getProfiled(String profileName, String tenantOrig, String tenantLoginInfo, String envVar) throws Exception {
         String endPoint = "/service/gosec-identities-daas/identities/profiles";
-        if (tenant != null) {
-            endPoint = "/service/gosec-identities-daas/identities/profiles?tid=" + tenant;
+        if (tenantOrig != null) {
+            endPoint = "/service/gosec-identities-daas/identities/profiles?tid=" + tenantOrig;
+        }
+
+        if (tenantOrig != null) {
+            // Set REST connection
+            commonspec.setCCTConnection(tenantOrig, tenantLoginInfo);
         }
 
         assertThat(commonspec.getRestHost().isEmpty() || commonspec.getRestPort().isEmpty());
@@ -411,8 +522,19 @@ public class GosecSpec extends BaseGSpec {
         }
     }
 
-    @When("^I get json from( tag)? policy with name '(.+?)' and save it( in environment variable '(.*?)')?( in file '(.*?)')?$")
-    public void getPolicyJson(String tag, String policyName, String envVar, String fileName) throws Exception {
+    /**
+     * Obtain json from policy
+     *
+     * @param tag               : whether it is a tag policy or not (OPTIONAL)
+     * @param policyName        : policy name to obtain json from
+     * @param tenantOrig        : tenant where policy lives (OPTIONAL)
+     * @param tenantLoginInfo   : user and password to log into tenant (OPTIONAL)
+     * @param envVar            : thread variable where to store result (OPTIONAL)
+     * @param fileName          : file name where to store result (OPTIONAL)
+     * @throws Exception
+     */
+    @When("^I get json from( tag)? policy with name '(.+?)'( in tenant '(.+?)')?( with tenant user and tenant password '(.+:.+?)')?( with user and password '(.+:.+?)')? and save it( in environment variable '(.*?)')?( in file '(.*?)')?$")
+    public void getPolicyJson(String tag, String policyName, String tenantOrig, String tenantLoginInfo, String loginInfo, String envVar, String fileName) throws Exception {
         String endPoint = "/service/gosecmanagement/api/policy";
         String newEndPoint = "/service/gosecmanagement/api/policies";
         String errorMessage = "api/policies";
@@ -424,6 +546,12 @@ public class GosecSpec extends BaseGSpec {
             errorMessage = "api/policies/tags";
             errorMessage2 = "api/policy/tag";
         }
+
+        if (tenantOrig != null) {
+            // Set REST connection
+            commonspec.setCCTConnection(tenantOrig, tenantLoginInfo);
+        }
+
         assertThat(commonspec.getRestHost().isEmpty() || commonspec.getRestPort().isEmpty());
         restSpec.sendRequestNoDataTable("GET", endPoint, null, null, null);
         if (commonspec.getResponse().getStatusCode() == 200) {
@@ -504,8 +632,16 @@ public class GosecSpec extends BaseGSpec {
         }
     }
 
-    @When("^I include group '(.+?)' in profile '(.+?)'$")
-    public void includeGroupInProfile(String groupId, String profileId) throws Exception {
+    /**
+     * Include group inside profile
+     * @param groupId           : id of the group to be included in profile
+     * @param profileId         : id of the profile where to include group
+     * @param tenantOrig        : tenant where profile lives (OPTIONAL)
+     * @param tenantLoginInfo   : user and password to log into tenant (OPTIONAL)
+     * @throws Exception
+     */
+    @When("^I include group '(.+?)' in profile '(.+?)'( in tenant '(.+?)')?( with tenant user and tenant password '(.+:.+?)')?( with user and password '(.+:.+?)')?$")
+    public void includeGroupInProfile(String groupId, String profileId, String tenantOrig, String tenantLoginInfo, String loginInfo) throws Exception {
         String endPointGetGroup = "/service/gosecmanagement/api/group?id=" + groupId;
         String endPointGetProfile = "/service/gosecmanagement/api/profile?id=" + profileId;
         String groups = "groups";
@@ -513,6 +649,11 @@ public class GosecSpec extends BaseGSpec {
         String id = "id";
         String roles = "roles";
         Boolean content = false;
+
+        if (tenantOrig != null) {
+            // Set REST connection
+            commonspec.setCCTConnection(tenantOrig, tenantLoginInfo);
+        }
 
         assertThat(commonspec.getRestHost().isEmpty() || commonspec.getRestPort().isEmpty());
 
@@ -567,6 +708,12 @@ public class GosecSpec extends BaseGSpec {
         }
     }
 
+    /**
+     * Convert DataTable to modifiable list
+     *
+     * @param dataTable : DataTable data
+     * @return
+     */
     private List<List<String>> convertDataTableToModifiableList(DataTable dataTable) {
         List<List<String>> lists = dataTable.asLists(String.class);
         List<List<String>> updateableLists = new ArrayList<>();
@@ -584,20 +731,27 @@ public class GosecSpec extends BaseGSpec {
     /**
      * Updates a resource in gosec management if the resourceId exists previously.
      *
-     * @param resource      : type of resource (policy, user, group or tenant)
-     * @param resourceId    : policy name, userId, groupId or tenantId
-     * @param loginInfo     (optional)
-     * @param type          : type of data (json,string,gov)
-     * @param modifications : data to modify the resource
+     * @param resource          : type of resource (policy, user, group or tenant)
+     * @param resourceId        : policy name, userId, groupId or tenantId
+     * @param tenantOrig        : tenant where resource lives (OPTIONAL)
+     * @param tenantLoginInfo   : user and password to log into tenant (OPTIONAL)
+     * @param loginInfo         : user and password to log in service (OPTIONAL)
+     * @param type              : type of data (json,string,gov) (OPTIONAL)
+     * @param modifications     : data to modify the resource
      * @throws Exception if the resource does not exists or the request fails
      */
-    @When("^I update '(policy|user|group|tenant)' '(.+?)'( with user and password '(.+:.+?)')? based on '([^:]+?)'( as '(json|string|gov)')? with:$")
-    public void updateResource(String resource, String resourceId, String loginInfo, String baseData, String type, DataTable modifications) throws Exception {
+    @When("^I update '(policy|user|group|tenant)' '(.+?)'( in tenant '(.+?)')?( with tenant user and tenant password '(.+:.+?)')?( with user and password '(.+:.+?)')? based on '([^:]+?)'( as '(json|string|gov)')? with:$")
+    public void updateResource(String resource, String resourceId, String tenantOrig, String tenantLoginInfo, String loginInfo, String baseData, String type, DataTable modifications) throws Exception {
         Integer[] expectedStatusUpdate = {200, 201, 204};
         String endPointPolicy = "/service/gosecmanagement" + ThreadProperty.get("API_POLICY");
         String endPointPolicies = "/service/gosecmanagement" + ThreadProperty.get("API_POLICIES");
         String endPoint = "";
         String endPointResource = "";
+
+        if (tenantOrig != null) {
+            // Set REST connection
+            commonspec.setCCTConnection(tenantOrig, tenantLoginInfo);
+        }
 
         if (resource.equals("policy")) {
             endPoint = "/service/gosecmanagement" + ThreadProperty.get("API_POLICY");
@@ -666,8 +820,9 @@ public class GosecSpec extends BaseGSpec {
     /**
      * Removes user or group from tenant if the resource exists and has been assigned previously
      *
-     * @param resource   : type of resource (user or group)
-     * @param resourceId : userId or groupId
+     * @param resource      : type of resource (user or group)
+     * @param resourceId    : userId or groupId
+     * @param tenantId      : tenant to remove resource from
      * @throws Exception if the resource does not exists or the request fails
      */
     @When("^I remove '(user|group)' '(.+?)' from tenant '(.+?)'$")
@@ -684,6 +839,10 @@ public class GosecSpec extends BaseGSpec {
             uidOrGidTenant = "gids";
             endPointGosec = endPointGetAllGroups;
         }
+
+        // Set REST connection
+        commonspec.setCCTConnection(null, null);
+
         restSpec.sendRequestNoDataTable("GET", endPointGosec, null, null, null);
         if (commonspec.getResponse().getStatusCode() == 200) {
             if (commonspec.getResponse().getResponse().contains("\"" + uidOrGid + "\":\"" + resourceId + "\"")) {
