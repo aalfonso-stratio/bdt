@@ -73,8 +73,8 @@ public class GosecSpec extends BaseGSpec {
      * @param modifications     : modifications to perform oven base data
      * @throws Exception
      */
-    @When("^I create '(policy|user|group)' '(.+?)'( in tenant '(.+?)')?( with tenant user and tenant password '(.+:.+?)')?( with user '(.+?)' and password '(.+?)')?( using API service path '(.+?)')?( with user and password '(.+:.+?)')? based on '([^:]+?)'( as '(json|string|gov)')? with:$")
-    public void createResource(String resource, String resourceId, String tenantOrig, String tenantLoginInfo, String userOrig, String passwordOrig, String endPoint, String loginInfo, String baseData, String type, DataTable modifications) throws Exception {
+    @When("^I create '(policy|user|group)' '(.+?)'( in tenant '(.+?)')?( with tenant user and tenant password '(.+:.+?)')?( using API service path '(.+?)')?( with user and password '(.+:.+?)')? based on '([^:]+?)'( as '(json|string|gov)')? with:$")
+    public void createResource(String resource, String resourceId, String tenantOrig, String tenantLoginInfo, String endPoint, String loginInfo, String baseData, String type, DataTable modifications) throws Exception {
         createResourceIfNotExist(resource, resourceId, tenantOrig, tenantLoginInfo, endPoint, loginInfo, false, baseData, type, modifications);
 
     }
