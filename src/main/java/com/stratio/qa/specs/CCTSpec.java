@@ -1082,7 +1082,12 @@ public class CCTSpec extends BaseGSpec {
         if (ThreadProperty.get("cct-marathon-services_id") == null) {
             endPointStatus = "/service/" + ThreadProperty.get("deploy_api_id") + "/deploy/status/all";
         } else {
-            endPointStatus = "/service/" + ThreadProperty.get("cct-marathon-services_id") + "/v1/services?tenant=" + tenant;
+            String[] installer_version = ThreadProperty.get("EOS_SCHEMA_VERSION").split("\\.");
+            if (Integer.parseInt(installer_version[0]) < 1) {
+                endPointStatus = "/service/" + ThreadProperty.get("cct-marathon-services_id") + "/v1/services";
+            } else {
+                endPointStatus = "/service/" + ThreadProperty.get("cct-marathon-services_id") + "/v1/services?tenant=" + tenant;
+            }
         }
 
         if (folder != null && folder.startsWith("/")) {
