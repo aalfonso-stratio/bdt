@@ -19,7 +19,6 @@ Testing runtime to rule over Stratio's acceptance tests
 [Javadoc always live](http://stratiodocs.s3.amazonaws.com/bdt/index.html)
 
 
-
 ## EXECUTION
 
 These tests are suposed to be executed as follows:
