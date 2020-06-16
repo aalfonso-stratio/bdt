@@ -1661,13 +1661,13 @@ public class CCTSpec extends BaseGSpec {
                 secretTypeAux = "default";
         }
         if (force != null) {
-            String pathAux = path != null ? path.replaceAll("/", "%2F") + secret : "%2Fuserland%2F" + secretTypeAux + "%2F" + secret;
+            String pathAux = path != null ? path.replaceAll("/", "%2F") + "%2F" + secret : "%2Fuserland%2F" + secretTypeAux + "%2F" + secret;
             restSpec.sendRequestNoDataTable("DELETE", baseUrl + "?path=" + pathAux, null, null, null);
         }
         if (!secretType.equals("password_nouser")) {
             restSpec.sendRequestNoDataTable("POST", baseUrl + "/" + secretType + urlParams, null, null, null);
         } else {
-            String pathAux = (path != null ? path.replaceAll("/", "%2F") + secret : "%2Fuserland%2Fpasswords%2F" + secret) + "%2F" + (name != null ? name : secret);
+            String pathAux = (path != null ? path.replaceAll("/", "%2F") + "%2F" + secret : "%2Fuserland%2Fpasswords%2F" + secret) + "%2F" + (name != null ? name : secret);
             String filePath = createCustomSecretFile(password != null ? password : secret);
             restSpec.sendRequestNoDataTable("POST", baseUrl + "/custom?path=" + pathAux, null, filePath, "json");
         }
@@ -1726,7 +1726,7 @@ public class CCTSpec extends BaseGSpec {
             default:
                 secretTypeAux = "default";
         }
-        String pathAux = path != null ? path.replaceAll("/", "%2F") + secret : "%2Fuserland%2F" + secretTypeAux + "%2F" + secret;
+        String pathAux = path != null ? path.replaceAll("/", "%2F") + "%2F" + secret : "%2Fuserland%2F" + secretTypeAux + "%2F" + secret;
         restSpec.sendRequestNoDataTable("DELETE", baseUrl + "?path=" + pathAux, null, null, null);
         restSpec.sendRequestNoDataTable("GET", baseUrl + "?path=" + pathAux, null, null, null);
         restSpec.assertResponseStatusLength(404, null, null);
