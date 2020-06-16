@@ -2,6 +2,10 @@
 
 Only listing significant user-visible, not internal code cleanups and minor bug fixes.
 
+## 0.17.2 (upcoming)
+
+* [PIT-568] Fix secrets creation/deletion when passing path
+
 ## 0.17.1 (May 26, 2020)
 
 * [QATM-3284] Fix loop replacement in datatables
