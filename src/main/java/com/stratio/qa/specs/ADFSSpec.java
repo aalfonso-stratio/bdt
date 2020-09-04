@@ -86,9 +86,6 @@ public class ADFSSpec extends BaseGSpec {
         commonspec.runLocalCommand(command);
         assertThat(commonspec.getCommandResult()).as("Contains " + expectedResult + ".").contains(expectedResult);
 
-//        // Obtain CA
-//        cctSpec.getCA();
-
         // Retrieve data
         String retrievedData = commonspec.retrieveData(baseData, type);
         // Modify data
@@ -114,7 +111,6 @@ public class ADFSSpec extends BaseGSpec {
 
         String certPath = "/tmp/" + this.adfsCN + ".pem";
         String keyPath = "/tmp/" + this.adfsCN + ".key";
-//        String caPath = "target/test-classes/ca.crt";
         String caPath = "/opt/mesosphere/etc/pki/ca-bundle.pem";
         String commandContent = " -H \"Content-Type: application/json\" --cacert \"" + caPath + "\" --cert \"" + certPath + "\" --key \"" + keyPath + "\" -d \"" + modifiedData + "\"";
         String commandUserCreation = "sudo curl -X POST \"" + server + endPoint + "\" " + commandContent + " -v";
