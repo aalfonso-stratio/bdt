@@ -1178,6 +1178,7 @@ public class DcosSpec extends BaseGSpec {
             obtainJSONInfo(descriptor, "EXTERNAL_DOCKER_REGISTRY", varExternalDockerRegistry);
             obtainJSONInfo(descriptor, "ARTIFACT_REPOSITORY", varArtifactRepository);
             obtainJSONInfo(descriptor, "CONSUL_DATACENTER", varConsulDatacenter);
+            
             obtainJSONInfo(descriptor, "CLUSTER_SSH_USER", varClusterSSHUser);
 
             obtainJSONInfo(descriptor, "KDC_HOST", varKdcHost);
