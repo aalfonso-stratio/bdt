@@ -1070,6 +1070,7 @@ public class DcosSpec extends BaseGSpec {
         String varExternalDockerRegistry = "EXTERNAL_DOCKER_REGISTRY";
         String varArtifactRepository = "ARTIFACT_REPOSITORY";
         String varConsulDatacenter = "CONSUL_DATACENTER";
+        String varClusterSSHUser = "CLUSTER_SSH_USER";
 
         String varKdcHost = "KDC_HOST";
         String varKdcPort = "KDC_PORT";
@@ -1177,6 +1178,7 @@ public class DcosSpec extends BaseGSpec {
             obtainJSONInfo(descriptor, "EXTERNAL_DOCKER_REGISTRY", varExternalDockerRegistry);
             obtainJSONInfo(descriptor, "ARTIFACT_REPOSITORY", varArtifactRepository);
             obtainJSONInfo(descriptor, "CONSUL_DATACENTER", varConsulDatacenter);
+            obtainJSONInfo(descriptor, "CLUSTER_SSH_USER", varClusterSSHUser);
 
             obtainJSONInfo(descriptor, "KDC_HOST", varKdcHost);
             obtainJSONInfo(descriptor, "KDC_PORT", varKdcPort);
@@ -1303,6 +1305,9 @@ public class DcosSpec extends BaseGSpec {
                 break;
             case "CONSUL_DATACENTER":
                 jqExpression = "$.consulDatacenter";
+                break;
+            case "CLUSTER_SSH_USER":
+                jqExpression = "$.ansible.sshUser";
                 break;
             default:
                 break;
