@@ -233,7 +233,9 @@ public class MarathonSpec extends BaseGSpec {
     @Then("^I get (service|container) port in position '(.*)' for service with id '(.*)' and save the value in environment variable '(.+?)'$")
     public void getServicePort(String serviceOrContainer, String position, String serviceId, String envVar) throws Exception {
         AppResponse app = this.commonspec.marathonClient.getApp(serviceId);
-        Port portAux = new ArrayList<>(app.getApp().getContainer().getPortMappings()).get(Integer.parseInt(position));
+        Port portAux = app.getApp().getContainer().getPortMappings() != null ?
+                new ArrayList<>(app.getApp().getContainer().getPortMappings()).get(Integer.parseInt(position)) :
+                new ArrayList<>(app.getApp().getContainer().getDocker().getPortMappings()).get(Integer.parseInt(position));
         switch (serviceOrContainer) {
             case "service":     ThreadProperty.set(envVar, String.valueOf(portAux.getServicePort()));
                                 break;
