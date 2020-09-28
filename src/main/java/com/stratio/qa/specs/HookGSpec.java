@@ -308,6 +308,7 @@ public class HookGSpec extends BaseGSpec {
     public void dcosSetup() throws Exception {
         DcosSpec dcosSpec = new DcosSpec(commonspec);
         MiscSpec miscspec = new MiscSpec(commonspec);
+        dcosSpec.obtainBasicInfoFromWorkspace();
         dcosSpec.obtainBasicInfoFromDescriptor(null);
         dcosSpec.getServicesInfoFromMarathon();
         dcosSpec.obtainBasicInfoFromETCD();

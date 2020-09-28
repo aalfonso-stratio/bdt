@@ -876,26 +876,38 @@ public class DcosSpec extends BaseGSpec {
      * @throws Exception
      */
     public void obtainBasicInfoFromETCD() throws Exception {
-        String localVaultResponseFile;
-        String localVaultResponseFilePath;
-        String localCaTrustFilePath;
+        String localVaultResponseFile = null;
+        String localVaultResponseFilePath = null;
+        String localCaTrustFilePath = null;
 
-        String bootstrap_ip = System.getProperty("BOOTSTRAP_IP");
-        String bootstrap_user;
-        String bootstrap_pem;
+        String bootstrap_ip = ThreadProperty.get("BOOTSTRAP_IP");
+        String bootstrap_user = null;
+        String bootstrap_pem = null;
         String remotePort;
 
         // Check if needed parameters have been passed
         if (bootstrap_ip == null) {
-            throw new Exception("BOOTSTRAP_IP variable needs to be provided in order to obtain information from system.");
+            bootstrap_ip = System.getProperty("BOOTSTRAP_IP");
+
+            if (bootstrap_ip == null) {
+                throw new Exception("BOOTSTRAP_IP variable needs to be provided in order to obtain information from system.");
+            }
         } else {
-            bootstrap_user = System.getProperty("REMOTE_USER");
+            bootstrap_user = ThreadProperty.get("CLUSTER_SSH_USER");
             if (bootstrap_user == null) {
-                throw new Exception("REMOTE_USER variable needs to be provided in order to obtain information from system.");
+                bootstrap_user = System.getProperty("REMOTE_USER");
+
+                if (bootstrap_user == null) {
+                    throw new Exception("REMOTE_USER variable needs to be provided in order to obtain information from system.");
+                }
             } else {
-                bootstrap_pem = (System.getProperty("PEM_FILE_PATH"));
+                bootstrap_pem = ThreadProperty.get("CLUSTER_SSH_PEM_PATH");
                 if (bootstrap_pem == null) {
-                    throw new Exception("PEM_FILE_PATH variable needs to be provided in order to obtain information from system.");
+                    bootstrap_pem = (System.getProperty("PEM_FILE_PATH"));
+
+                    if (bootstrap_pem == null) {
+                        throw new Exception("PEM_FILE_PATH variable needs to be provided in order to obtain information from system.");
+                    }
                 }
             }
 
@@ -1036,6 +1048,50 @@ public class DcosSpec extends BaseGSpec {
 
 
     /**
+     * Obtains ssh user and pem from daedalus system:
+     * CLUSTER_SSH_USER, CLUSTER_SSH_PEM, CLUSTER_SSH_PEM_PATH
+     *
+     * @throws Exception
+     */
+    public void obtainBasicInfoFromWorkspace() throws Exception {
+
+        String clusterName = System.getProperty("EOS_CLUSTER_ID");
+        if (clusterName == null) {
+            throw new Exception("EOS_CLUSTER_ID variable needs to be provided in order to obtain information from workspace.");
+        }
+
+        String daedalusSystem = "daedalus-workspaces.int.stratio.com";
+        String workspaceName = "daedalus-workspace-" + clusterName;
+        String workspaceURL = "http://" + daedalusSystem + "/" + workspaceName + ".tgz";
+
+        // Download workspace
+        String commandWget = "wget " + workspaceURL;
+        CommandExecutionSpec commandExecutionSpec = new CommandExecutionSpec(commonspec);
+        commandExecutionSpec.executeLocalCommand(commandWget, null, null);
+//        Thread.sleep(5000);
+
+        // Untar workspace
+        String commandUntar = "tar -C ./target/test-classes/ -xvf " + workspaceName + ".tgz";
+        commandExecutionSpec.executeLocalCommand(commandUntar, null, null);
+//        Thread.sleep(5000);
+
+        // Obtain and export values
+        String daedalusJson = commonspec.retrieveData(workspaceName + "/daedalus.json", "json");
+        String varClusterSSHUser = "CLUSTER_SSH_USER";
+        obtainJSONInfo(daedalusJson, "CLUSTER_SSH_USER", varClusterSSHUser);
+
+        String varClusterBootstrapIP = "BOOTSTRAP_IP";
+        obtainJSONInfo(daedalusJson, "BOOTSTRAP_IP", varClusterBootstrapIP);
+
+        String varClusterSSHPemPath = "CLUSTER_SSH_PEM_PATH";
+        ThreadProperty.set(varClusterSSHPemPath, "./target/test-classes/" + workspaceName + "/key");
+
+        // Clean
+        String commandRmTgz = "rm " + workspaceName + ".tgz";
+        commandExecutionSpec.executeLocalCommand(commandRmTgz, null, null);
+    }
+
+    /**
      * Obtains basic information for tests from descriptor file:
      * EOS_CLUSTER_ID, EOS_DNS_SEARCH, EOS_INTERNAL_DOMAIN, DCOS_IP, DCOS_USER, DCOS_TENANT, VAULT_TOKEN
      * LDAP_URL, LDAP_PORT, LDAP_USER_DN, LDAP_GROUP_DN, LDAP_BASE, LDAP_ADMIN_GROUP
@@ -1044,11 +1100,11 @@ public class DcosSpec extends BaseGSpec {
      */
     @Given("^I( force to)? obtain basic information from bootstrap$")
     public void obtainBasicInfoFromDescriptor(String force) throws Exception {
-        String localDescriptorFile;
-        String localDescriptorFilePath;
-        String localVaultResponseFile;
-        String localVaultResponseFilePath;
-        String localCaTrustFilePath;
+        String localDescriptorFile = null;
+        String localDescriptorFilePath = null;
+        String localVaultResponseFile = null;
+        String localVaultResponseFilePath = null;
+        String localCaTrustFilePath = null;
         String remotePort;
 
         // General values
@@ -1070,7 +1126,6 @@ public class DcosSpec extends BaseGSpec {
         String varExternalDockerRegistry = "EXTERNAL_DOCKER_REGISTRY";
         String varArtifactRepository = "ARTIFACT_REPOSITORY";
         String varConsulDatacenter = "CONSUL_DATACENTER";
-        String varClusterSSHUser = "CLUSTER_SSH_USER";
 
         String varKdcHost = "KDC_HOST";
         String varKdcPort = "KDC_PORT";
@@ -1085,21 +1140,33 @@ public class DcosSpec extends BaseGSpec {
         String varLDAPbase = "LDAP_BASE";
         String varLDAPadminGroup = "LDAP_ADMIN_GROUP";
 
-        String bootstrap_ip = System.getProperty("BOOTSTRAP_IP");
-        String bootstrap_user;
-        String bootstrap_pem;
+        String bootstrap_ip = ThreadProperty.get("BOOTSTRAP_IP");
+        String bootstrap_user = null;
+        String bootstrap_pem = null;
 
         // Check if needed parameters have been passed
         if (bootstrap_ip == null) {
-            throw new Exception("BOOTSTRAP_IP variable needs to be provided in order to obtain information from system.");
+            bootstrap_ip = System.getProperty("BOOTSTRAP_IP");
+
+            if (bootstrap_ip == null) {
+                throw new Exception("BOOTSTRAP_IP variable needs to be provided in order to obtain information from system.");
+            }
         } else {
-            bootstrap_user = System.getProperty("REMOTE_USER");
+            bootstrap_user = ThreadProperty.get("CLUSTER_SSH_USER");
             if (bootstrap_user == null) {
-                throw new Exception("REMOTE_USER variable needs to be provided in order to obtain information from system.");
+                bootstrap_user = System.getProperty("REMOTE_USER");
+
+                if (bootstrap_user == null) {
+                    throw new Exception("REMOTE_USER variable needs to be provided in order to obtain information from system.");
+                }
             } else {
-                bootstrap_pem = (System.getProperty("PEM_FILE_PATH"));
+                bootstrap_pem = ThreadProperty.get("CLUSTER_SSH_PEM_PATH");
                 if (bootstrap_pem == null) {
-                    throw new Exception("PEM_FILE_PATH variable needs to be provided in order to obtain information from system.");
+                    bootstrap_pem = (System.getProperty("PEM_FILE_PATH"));
+
+                    if (bootstrap_pem == null) {
+                        throw new Exception("PEM_FILE_PATH variable needs to be provided in order to obtain information from system.");
+                    }
                 }
             }
 
@@ -1178,8 +1245,6 @@ public class DcosSpec extends BaseGSpec {
             obtainJSONInfo(descriptor, "EXTERNAL_DOCKER_REGISTRY", varExternalDockerRegistry);
             obtainJSONInfo(descriptor, "ARTIFACT_REPOSITORY", varArtifactRepository);
             obtainJSONInfo(descriptor, "CONSUL_DATACENTER", varConsulDatacenter);
-
-            obtainJSONInfo(descriptor, "CLUSTER_SSH_USER", varClusterSSHUser);
 
             obtainJSONInfo(descriptor, "KDC_HOST", varKdcHost);
             obtainJSONInfo(descriptor, "KDC_PORT", varKdcPort);
@@ -1308,7 +1373,10 @@ public class DcosSpec extends BaseGSpec {
                 jqExpression = "$.consulDatacenter";
                 break;
             case "CLUSTER_SSH_USER":
-                jqExpression = "$.ansible.sshUser";
+                jqExpression = "$.infra.ssh_user";
+                break;
+            case "BOOTSTRAP_IP":
+                jqExpression = "$.infra.bootstrap_ip";
                 break;
             default:
                 break;
