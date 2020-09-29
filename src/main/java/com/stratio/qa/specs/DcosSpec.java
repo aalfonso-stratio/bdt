@@ -1057,10 +1057,22 @@ public class DcosSpec extends BaseGSpec {
 
         // Download workspace
         String commandWget = "wget " + workspaceURL;
-        CommandExecutionSpec commandExecutionSpec = new CommandExecutionSpec(commonspec);
-        commandExecutionSpec.executeLocalCommand(commandWget, null, null);
+//        CommandExecutionSpec commandExecutionSpec = new CommandExecutionSpec(commonspec);
+//        commandExecutionSpec.executeLocalCommand(commandWget, null, null);
+        commonspec.runLocalCommand(commandWget);
+        if (commonspec.getCommandExitStatus() != 0) {
+            String bootstrap_ip = System.getProperty("BOOTSTRAP_IP");
+            String remote_user = System.getProperty("REMOTE_USER");
+            String pem_file_path = System.getProperty("PEM_FILE_PATH");
+            if (bootstrap_ip == null || remote_user == null || pem_file_path == null) {
+                throw new Exception("Not possible to download workspace tgz.");
+            }
+            logger.info("Info cannot be retrieved from workspace. Trying old way");
+            return;
+        }
 
         // Untar workspace
+        CommandExecutionSpec commandExecutionSpec = new CommandExecutionSpec(commonspec);
         String commandUntar = "tar -C ./target/test-classes/ -xvf " + workspaceName + ".tgz";
         commandExecutionSpec.executeLocalCommand(commandUntar, null, null);
 
