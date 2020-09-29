@@ -898,9 +898,19 @@ public class DcosSpec extends BaseGSpec {
         assertThat(bootstrap_user).as("REMOTE_USER variable needs to be provided in order to obtain information from system.").isNotNull();
         ThreadProperty.set("CLUSTER_SSH_USER", bootstrap_user);
 
+        String remote_user = System.getProperty("REMOTE_USER");
+        if (remote_user == null) {
+            System.setProperty("REMOTE_USER", bootstrap_user);
+        }
+
         bootstrap_pem = ThreadProperty.get("CLUSTER_SSH_PEM_PATH") != null ? ThreadProperty.get("CLUSTER_SSH_PEM_PATH") : System.getProperty("PEM_FILE_PATH");
         assertThat(bootstrap_pem).as("PEM_FILE_PATH variable needs to be provided in order to obtain information from system.").isNotNull();
         ThreadProperty.set("CLUSTER_SSH_PEM_PATH", bootstrap_pem);
+
+        String pem_file_path = System.getProperty("PEM_FILE_PATH");
+        if (pem_file_path == null){
+            System.setProperty("PEM_FILE_PATH", bootstrap_pem);
+        }
 
         localVaultResponseFile = "vault_response_" + bootstrap_ip;
         localVaultResponseFilePath = "./target/test-classes/" + localVaultResponseFile;
@@ -1057,8 +1067,6 @@ public class DcosSpec extends BaseGSpec {
 
         // Download workspace
         String commandWget = "wget " + workspaceURL;
-//        CommandExecutionSpec commandExecutionSpec = new CommandExecutionSpec(commonspec);
-//        commandExecutionSpec.executeLocalCommand(commandWget, null, null);
         commonspec.runLocalCommand(commandWget);
         if (commonspec.getCommandExitStatus() != 0) {
             String bootstrap_ip = System.getProperty("BOOTSTRAP_IP");
