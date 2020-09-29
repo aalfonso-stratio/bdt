@@ -908,7 +908,7 @@ public class DcosSpec extends BaseGSpec {
         ThreadProperty.set("CLUSTER_SSH_PEM_PATH", bootstrap_pem);
 
         String pem_file_path = System.getProperty("PEM_FILE_PATH");
-        if (pem_file_path == null){
+        if (pem_file_path == null) {
             System.setProperty("PEM_FILE_PATH", bootstrap_pem);
         }
 
@@ -1176,7 +1176,7 @@ public class DcosSpec extends BaseGSpec {
         ThreadProperty.set("CLUSTER_SSH_PEM_PATH", bootstrap_pem);
 
         String pem_file_path = System.getProperty("PEM_FILE_PATH");
-        if (pem_file_path == null){
+        if (pem_file_path == null) {
             System.setProperty("PEM_FILE_PATH", bootstrap_pem);
         }
 
