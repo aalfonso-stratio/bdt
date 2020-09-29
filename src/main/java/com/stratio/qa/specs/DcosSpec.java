@@ -893,6 +893,10 @@ public class DcosSpec extends BaseGSpec {
                 throw new Exception("BOOTSTRAP_IP variable needs to be provided in order to obtain information from system.");
             }
         }
+        String bootstrap_ipSystem = System.getProperty("BOOTSTRAP_IP");
+        if (bootstrap_ipSystem == null) {
+            System.setProperty("BOOTSTRAP_IP", bootstrap_ip);
+        }
 
         bootstrap_user = ThreadProperty.get("CLUSTER_SSH_USER") != null ? ThreadProperty.get("CLUSTER_SSH_USER") : System.getProperty("REMOTE_USER");
         assertThat(bootstrap_user).as("REMOTE_USER variable needs to be provided in order to obtain information from system.").isNotNull();
@@ -1160,6 +1164,10 @@ public class DcosSpec extends BaseGSpec {
             if (bootstrap_ip == null) {
                 throw new Exception("BOOTSTRAP_IP variable needs to be provided in order to obtain information from system.");
             }
+        }
+        String bootstrap_ipSystem = System.getProperty("BOOTSTRAP_IP");
+        if (bootstrap_ipSystem == null) {
+            System.setProperty("BOOTSTRAP_IP", bootstrap_ip);
         }
 
         bootstrap_user = ThreadProperty.get("CLUSTER_SSH_USER") != null ? ThreadProperty.get("CLUSTER_SSH_USER") : System.getProperty("REMOTE_USER");
