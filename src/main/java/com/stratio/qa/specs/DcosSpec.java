@@ -1047,7 +1047,7 @@ public class DcosSpec extends BaseGSpec {
 
         String clusterName = System.getProperty("EOS_CLUSTER_ID");
         if (clusterName == null) {
-            logger.info("Info cannot be retrieved from workspace without EOS_CLUSTER_ID. BOOTSTRAP_IP, REMOTE_USER and PEM_FILE_PATH need to be provided.");
+            commonspec.getLogger().info("Info cannot be retrieved from workspace without EOS_CLUSTER_ID. BOOTSTRAP_IP, REMOTE_USER and PEM_FILE_PATH need to be provided.");
             return;
         }
 
@@ -1067,7 +1067,7 @@ public class DcosSpec extends BaseGSpec {
             if (bootstrap_ip == null || remote_user == null || pem_file_path == null) {
                 throw new Exception("Not possible to download workspace tgz.");
             }
-            logger.info("Info cannot be retrieved from workspace. Trying old way");
+            commonspec.getLogger().info("Info cannot be retrieved from workspace. Trying old way");
             return;
         }
 
@@ -1158,9 +1158,19 @@ public class DcosSpec extends BaseGSpec {
         assertThat(bootstrap_user).as("REMOTE_USER variable needs to be provided in order to obtain information from system.").isNotNull();
         ThreadProperty.set("CLUSTER_SSH_USER", bootstrap_user);
 
+        String remote_user = System.getProperty("REMOTE_USER");
+        if (remote_user == null) {
+            System.setProperty("REMOTE_USER", bootstrap_user);
+        }
+
         bootstrap_pem = ThreadProperty.get("CLUSTER_SSH_PEM_PATH") != null ? ThreadProperty.get("CLUSTER_SSH_PEM_PATH") : System.getProperty("PEM_FILE_PATH");
         assertThat(bootstrap_pem).as("PEM_FILE_PATH variable needs to be provided in order to obtain information from system.").isNotNull();
         ThreadProperty.set("CLUSTER_SSH_PEM_PATH", bootstrap_pem);
+
+        String pem_file_path = System.getProperty("PEM_FILE_PATH");
+        if (pem_file_path == null){
+            System.setProperty("PEM_FILE_PATH", bootstrap_pem);
+        }
 
         localDescriptorFile = "descriptor_" + bootstrap_ip + ".json";
         localDescriptorFilePath = "./target/test-classes/" + localDescriptorFile;
