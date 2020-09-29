@@ -894,25 +894,13 @@ public class DcosSpec extends BaseGSpec {
             }
         }
 
-        bootstrap_user = ThreadProperty.get("CLUSTER_SSH_USER");
-        if (bootstrap_user == null) {
-            bootstrap_user = System.getProperty("REMOTE_USER");
+        bootstrap_user = ThreadProperty.get("CLUSTER_SSH_USER") != null ? ThreadProperty.get("CLUSTER_SSH_USER") : System.getProperty("REMOTE_USER");
+        assertThat(bootstrap_user).as("REMOTE_USER variable needs to be provided in order to obtain information from system.").isNotNull();
+        ThreadProperty.set("CLUSTER_SSH_USER", bootstrap_user);
 
-            if (bootstrap_user == null) {
-                throw new Exception("REMOTE_USER variable needs to be provided in order to obtain information from system.");
-            }
-            ThreadProperty.set("CLUSTER_SSH_USER", bootstrap_user);
-        }
-
-        bootstrap_pem = ThreadProperty.get("CLUSTER_SSH_PEM_PATH");
-        if (bootstrap_pem == null) {
-            bootstrap_pem = (System.getProperty("PEM_FILE_PATH"));
-
-            if (bootstrap_pem == null) {
-                throw new Exception("PEM_FILE_PATH variable needs to be provided in order to obtain information from system.");
-            }
-            ThreadProperty.set("CLUSTER_SSH_PEM_PATH", bootstrap_pem);
-        }
+        bootstrap_pem = ThreadProperty.get("CLUSTER_SSH_PEM_PATH") != null ? ThreadProperty.get("CLUSTER_SSH_PEM_PATH") : System.getProperty("PEM_FILE_PATH");
+        assertThat(bootstrap_pem).as("PEM_FILE_PATH variable needs to be provided in order to obtain information from system.").isNotNull();
+        ThreadProperty.set("CLUSTER_SSH_PEM_PATH", bootstrap_pem);
 
         localVaultResponseFile = "vault_response_" + bootstrap_ip;
         localVaultResponseFilePath = "./target/test-classes/" + localVaultResponseFile;
@@ -1154,25 +1142,13 @@ public class DcosSpec extends BaseGSpec {
             }
         }
 
-        bootstrap_user = ThreadProperty.get("CLUSTER_SSH_USER");
-        if (bootstrap_user == null) {
-            bootstrap_user = System.getProperty("REMOTE_USER");
+        bootstrap_user = ThreadProperty.get("CLUSTER_SSH_USER") != null ? ThreadProperty.get("CLUSTER_SSH_USER") : System.getProperty("REMOTE_USER");
+        assertThat(bootstrap_user).as("REMOTE_USER variable needs to be provided in order to obtain information from system.").isNotNull();
+        ThreadProperty.set("CLUSTER_SSH_USER", bootstrap_user);
 
-            if (bootstrap_user == null) {
-                throw new Exception("REMOTE_USER variable needs to be provided in order to obtain information from system.");
-            }
-            ThreadProperty.set("CLUSTER_SSH_USER", bootstrap_user);
-        }
-
-        bootstrap_pem = ThreadProperty.get("CLUSTER_SSH_PEM_PATH");
-        if (bootstrap_pem == null) {
-            bootstrap_pem = (System.getProperty("PEM_FILE_PATH"));
-
-            if (bootstrap_pem == null) {
-                throw new Exception("PEM_FILE_PATH variable needs to be provided in order to obtain information from system.");
-            }
-            ThreadProperty.set("CLUSTER_SSH_PEM_PATH", bootstrap_pem);
-        }
+        bootstrap_pem = ThreadProperty.get("CLUSTER_SSH_PEM_PATH") != null ? ThreadProperty.get("CLUSTER_SSH_PEM_PATH") : System.getProperty("PEM_FILE_PATH");
+        assertThat(bootstrap_pem).as("PEM_FILE_PATH variable needs to be provided in order to obtain information from system.").isNotNull();
+        ThreadProperty.set("CLUSTER_SSH_PEM_PATH", bootstrap_pem);
 
         localDescriptorFile = "descriptor_" + bootstrap_ip + ".json";
         localDescriptorFilePath = "./target/test-classes/" + localDescriptorFile;
