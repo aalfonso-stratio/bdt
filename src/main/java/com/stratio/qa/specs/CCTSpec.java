@@ -492,7 +492,7 @@ public class CCTSpec extends BaseGSpec {
         if (!"NONE".equals(tenant)) {
             serviceName = "/" + tenant + "/" + tenant + "-" + service;
         }
-        restSpec.sendRequestTimeout(200, 20, "GET", endPointStatus, "does not", key + ":" + "\"" + serviceName + "\"");
+        restSpec.sendRequestTimeout(200, 20, "GET", endPointStatus, null, "does not", key + ":" + "\"" + serviceName + "\"");
 
         // Check all resources have been freed
         this.checkResources(serviceName);
@@ -1248,7 +1248,7 @@ public class CCTSpec extends BaseGSpec {
             }
         }
 
-        restSpec.sendRequestTimeout(200, 20, "GET", endPointStatus, null, serviceName);
+        restSpec.sendRequestTimeout(200, 20, "GET", endPointStatus, null, null, serviceName);
     }
 
     /**
@@ -1303,7 +1303,7 @@ public class CCTSpec extends BaseGSpec {
             key = "\"id\"";
         }
 
-        restSpec.sendRequestTimeout(200, 20, "GET", endPointStatus, "does not", key + ":" + "\"" + serviceName + "\"");
+        restSpec.sendRequestTimeout(200, 20, "GET", endPointStatus, null, "does not", key + ":" + "\"" + serviceName + "\"");
         // Check all resources have been freed
         this.checkResources(serviceName);
     }
@@ -1864,7 +1864,7 @@ public class CCTSpec extends BaseGSpec {
      * @return
      */
     private String getPasswordUrlParams(String secret, String path, String name, String user, String password) throws UnsupportedEncodingException {
-        String pathAux = path != null ? path.replaceAll("/", "%2F") + secret : "%2Fuserland%2Fpasswords%2F" + secret;
+        String pathAux = path != null ? path.replaceAll("/", "%2F") : "%2Fuserland%2Fpasswords%2F" + secret;
         String nameAux = name != null ? name : secret;
         String userAux = user != null ? user : secret;
         String passwordAux = password != null ? password : secret;
