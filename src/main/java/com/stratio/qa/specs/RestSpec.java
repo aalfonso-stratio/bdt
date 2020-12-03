@@ -277,7 +277,6 @@ public class RestSpec extends BaseGSpec {
     @When("^in less than '(\\d+)' seconds, checking each '(\\d+)' seconds, I send a '(.+?)' request to '(.+?)'( as '(json|string|gov|scim)')? so that the response( does not)? contains '(.+?)'$")
     public void sendRequestTimeout(Integer timeout, Integer wait, String requestType, String endPoint, String type, String contains, String responseVal) throws Exception {
         AssertionError ex = null;
-//        String type = "";
         Future<Response> response;
 
         if (responseVal != null) {
