@@ -322,12 +322,7 @@ public class MarathonSpec extends BaseGSpec {
         VersionedAppResponse app = this.commonspec.marathonClient.getApp(appId);
         assertThat(app.getHttpStatus()).as("No marathon app found by id: " + appId).isEqualTo(200);
 
-        // Modify envs
-        List<Fetchable> fetchSection = app.getApp().getFetch();
-
-        if (fetchSection == null) {
-            fetchSection = new ArrayList<Fetchable>();
-        }
+        List fetchSection = app.getApp().getFetch() == null ? new ArrayList() : app.getApp().getFetch();
 
         Fetchable fetch = new Fetchable();
         fetch.setUri(uri);
