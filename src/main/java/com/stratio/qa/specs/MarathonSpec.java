@@ -314,7 +314,7 @@ public class MarathonSpec extends BaseGSpec {
 
 
     @When("^I update Marathon fetch section of service with id '(.+?)' with uri '(.+?)'$")
-    public void updateAppEnvs(String appId, String uri) throws Exception {
+    public void updateAppFetch(String appId, String uri) throws Exception {
         // Set REST connection
         commonspec.setCCTConnection(null, null);
 
@@ -347,7 +347,7 @@ public class MarathonSpec extends BaseGSpec {
 
 
     @When("^I update Marathon service with id '(.+?)' with environment variables:$")
-    public void updateAppFecth(String appId, DataTable modifications) throws Exception {
+    public void updateAppEnvs(String appId, DataTable modifications) throws Exception {
         // Set REST connection
         commonspec.setCCTConnection(null, null);
 
