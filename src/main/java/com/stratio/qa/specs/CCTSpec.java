@@ -1218,7 +1218,7 @@ public class CCTSpec extends BaseGSpec {
         // Set REST connection
         commonspec.setCCTConnection(null, null);
 
-        String endPoint = ThreadProperty.get("KEOS_CCT_UNIVERSE_SERVICE_INGRESS_PATH") + "/v1/descriptors/" + service + "/" + model + "/" + version;
+        String endPoint = ThreadProperty.get("KEOS_CCT_UNIVERSE_SERVICE_INGRESS_PATH") + "/v1/descriptors/schema/" + service + "/" + model + "/" + version;
         Future<Response> response = commonspec.generateRequest("GET", false, null, null, endPoint, "", null);
         commonspec.setResponse("GET", response.get());
 
