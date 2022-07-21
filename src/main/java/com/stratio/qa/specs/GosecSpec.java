@@ -20,6 +20,7 @@ import com.ning.http.client.Response;
 import com.stratio.qa.assertions.Assertions;
 import com.stratio.qa.utils.ThreadProperty;
 import cucumber.api.java.en.When;
+import cucumber.api.java.en.Given;
 import io.cucumber.datatable.DataTable;
 import org.hjson.JsonArray;
 import org.hjson.JsonObject;
@@ -1182,6 +1183,32 @@ public class GosecSpec extends BaseGSpec {
             throw e;
         }
     }
+
+    /**
+     * Sync ldap either totally or partially
+     *
+     * @param type : type of sync (total or partial)
+     * @throws Exception
+     */
+    @Given("^I make '(total|partial)' ldap sync$")
+    public void syncLDAP(String type) throws Exception {
+        String syncEndpoint = ThreadProperty.get("KEOS_GOSEC_BAAS_INGRESS_PATH") + "/management/ldap/synchronize";
+
+        List<List<String>> rawData = Arrays.asList(Arrays.asList("$.type", "UPDATE", type, "string"));
+        DataTable modifications = DataTable.create(rawData);
+
+        RestSpec rest = new RestSpec(commonspec);
+        rest.setupRestClient("securely", ThreadProperty.get("KEOS_OAUTH2_PROXY_HOST"), ":443");
+        rest.sendRequest("POST", syncEndpoint, null, "schemas/ldapSync.conf", "json", modifications);
+
+        if (commonspec.getResponse().getStatusCode() == 201) {
+            commonspec.getLogger().debug("LDAP: '" + type + "' sync performed!");
+            Thread.sleep(5000);
+        } else {
+            throw new Exception("Error performing '" + type + "' ldap sync" + " - Status code: " + commonspec.getResponse().getStatusCode());
+        }
+    }
+
 
     /**
      * Removes user or group from tenant if the resource exists and has been assigned previously
