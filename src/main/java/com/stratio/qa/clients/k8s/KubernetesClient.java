@@ -180,13 +180,13 @@ public class KubernetesClient {
                 try {
                     ThreadProperty.set("KEOS_DOMAIN", commonspec.getJSONPathString(keosJson, "$.keos.domain", null).replaceAll("\\[", "").replaceAll("\\]", "").replaceAll("\"", ""));
                 } catch (PathNotFoundException e) {
-                    ThreadProperty.set("KEOS_DOMAIN", System.getProperty("KEOS_CLUSTER_ID") + "." + "int");
+                    ThreadProperty.set("KEOS_DOMAIN", System.getProperty("KEOS_DOMAIN", System.getProperty("KEOS_CLUSTER_ID") + "." + "int"));
                 }
 
                 try {
                     ThreadProperty.set("KEOS_EXTERNAL_DOMAIN", commonspec.getJSONPathString(keosJson, "$.keos.external_domain", null).replaceAll("\\[", "").replaceAll("\\]", "").replaceAll("\"", ""));
                 } catch (PathNotFoundException e) {
-                    ThreadProperty.set("KEOS_EXTERNAL_DOMAIN", System.getProperty("KEOS_CLUSTER_ID") + "." + "ext");
+                    ThreadProperty.set("KEOS_EXTERNAL_DOMAIN", System.getProperty("KEOS_EXTERNAL_DOMAIN", System.getProperty("KEOS_CLUSTER_ID") + "." + "ext"));
                 }
 
                 ThreadProperty.set("ADMIN_SUBDOMAIN", "admin");
