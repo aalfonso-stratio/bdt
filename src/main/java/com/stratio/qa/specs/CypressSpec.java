@@ -54,9 +54,11 @@ public class CypressSpec extends BaseGSpec {
             cypressVariables = "";
         }
 
+        String cypressBrowser = System.getProperty("CYPRESS_BROWSER") == null ? "" : " --browser " + System.getProperty("CYPRESS_BROWSER");
+
         String configVariable = configFile == null ? "" : " --config-file cypress/e2e/" + configFile;
         String videoVariable = videopath == null ? "" : " --config trashAssetsBeforeRuns=false,videoUploadOnPasses=true,videosFolder=" + videopath;
-        String command = cypressVariables + " npx cypress run --spec cypress/e2e/" + testcase + configVariable + videoVariable;
+        String command = cypressVariables + " npx cypress run" + cypressBrowser + " --spec cypress/e2e/" + testcase + configVariable + videoVariable;
 
         this.commonspec.getLogger().info("Executing cypress: " + command);
 
