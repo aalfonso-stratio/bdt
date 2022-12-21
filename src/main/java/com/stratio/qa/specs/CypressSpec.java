@@ -73,7 +73,7 @@ public class CypressSpec extends BaseGSpec {
 
         String cypressBrowser = System.getProperty("CYPRESS_BROWSER") == null ? "" : " --browser " + System.getProperty("CYPRESS_BROWSER");
 
-        String Command = "CYPRESS_BASE_URL=https://" + url + " CYPRESS_TOKEN=" + token +" npx cypress run" + cypressBrowser + "  ";
+        String Command = "CYPRESS_BASE_URL=https://" + url + " CYPRESS_TOKEN=" + token + " npx cypress run" + cypressBrowser + "  ";
         commonspec.runLocalCommand(Command);
         commonspec.runCommandLoggerAndEnvVar(exitStatus, envVar, Boolean.TRUE);
         Assertions.assertThat(commonspec.getCommandExitStatus()).isEqualTo(exitStatus);
