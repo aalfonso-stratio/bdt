@@ -70,7 +70,10 @@ public class CypressSpec extends BaseGSpec {
     @Given("^I run all Cypress tests with host '(.+?)' and token '(.+?)'( and with exit status '(\\d+)')?( and save the value in environment variable '(.+?)')?$")
     public void executeAllCypressTests(String url, String token, Integer sExitStatus, String envVar) throws Exception {
         Integer exitStatus = sExitStatus == null ? 0 : sExitStatus;
-        String Command = "CYPRESS_BASE_URL=https://" + url + " CYPRESS_TOKEN=" + token + " npx cypress run  ";
+
+        String cypressBrowser = System.getProperty("CYPRESS_BROWSER") == null ? "" : " --browser " + System.getProperty("CYPRESS_BROWSER");
+
+        String Command = "CYPRESS_BASE_URL=https://" + url + " CYPRESS_TOKEN=" + token +" npx cypress run" + cypressBrowser + "  ";
         commonspec.runLocalCommand(Command);
         commonspec.runCommandLoggerAndEnvVar(exitStatus, envVar, Boolean.TRUE);
         Assertions.assertThat(commonspec.getCommandExitStatus()).isEqualTo(exitStatus);
