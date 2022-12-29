@@ -93,7 +93,6 @@ public class KubernetesClient {
         System.setProperty(KUBERNETES_AUTH_TRYSERVICEACCOUNT_SYSTEM_PROPERTY, "false");
         System.setProperty(KUBERNETES_TRYNAMESPACE_PATH_SYSTEM_PROPERTY, "false");
         System.setProperty(KUBERNETES_KUBECONFIG_FILE, kubeConfigPath);
-        
         StringBuilder contentBuilder = new StringBuilder();
         try (Stream<String> stream = Files.lines(Paths.get(kubeConfigPath), StandardCharsets.UTF_8)) {
             stream.forEach(s -> contentBuilder.append(s).append("\n"));
